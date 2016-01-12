@@ -6,71 +6,92 @@ import numpy as np
 _GAMMA = 0.3
 
 class HPC:
-    def __init__(self):
-        neuron_numbers = [5, 20, 20, 20, 5]
+    def __init__(self, dims):
+        # in, ec, dg, ca3, out
+        neuron_numbers = dims
 
         # vectors for neuron activation values.
-        self.input_values = T.fvector(neuron_numbers[0])
-        self.ec_values = T.fvector(neuron_numbers[1])
-        self.dg_values = T.fvector(neuron_numbers[2])
-        self.ca3_values = T.fvector(neuron_numbers[3])
-        self.output_values = T.fvector(neuron_numbers[4])
+        self.input_values = theano.shared(np.random.random(neuron_numbers[0]).astype(np.float32), 'input_values', True)
+        self.ec_values = theano.shared(np.random.random(neuron_numbers[1]).astype(np.float32), 'ec_values', True)
+
+        # print self.input_values.get_value()
+        # print self.ec_values.get_value()
+        #self.dg_values = T.fvector('dg_values')
+        #self.ca3_values = T.fvector('ca3_values')
+        #self.output_values = T.fvector('output_values')
 
         # initialise weight matrices.
         # TODO: Verify that these are correct.
-        self.input_ec_weights = T.fmatrix(neuron_numbers[0], neuron_numbers[1])
-        self.ec_dg_weights = T.fmatrix(neuron_numbers[1], neuron_numbers[2])
-        self.dg_ca3_weights = T.fmatrix(neuron_numbers[2], neuron_numbers[3])
-        self.ec_ca3_weights = T.fmatrix(neuron_numbers[1], neuron_numbers[3])
-        self.ca3_ca3_weights = T.fmatrix(neuron_numbers[3], neuron_numbers[3])
-        self.ca3_output_weights = T.fmatrix(neuron_numbers[3], neuron_numbers[4])
+        self.in_ec_weights = theano.shared(np.random.random((neuron_numbers[0], neuron_numbers[1])).astype(np.float32),
+                                           name='in_ec_weights', borrow=True)
+
+        # print self.in_ec_weights.get_value()
+        #self.ec_dg_weights = T.fmatrix('ec_dg_weights')
+        #self.dg_ca3_weights = T.fmatrix('dg_ca3_weights')
+        #self.ec_ca3_weights = T.fmatrix('ec_ca3_weights')
+        #self.ca3_ca3_weights = T.fmatrix('ca3_ca3_weights')
+        #self.ec_out_weights = T.fmatrix('ca3_out_weights')
 
         # setup Theano functions
-        new_input = T.fvector
-        self.set_input = theano.function(new_input, outputs=None,
-                                         updates=(self.input_values, new_input))
+        new_input = T.fvector('new_input')
+        self.set_input = theano.function([new_input], outputs=None,
+                                         updates=[(self.input_values, new_input)])
+
+        v1 = T.fmatrix('v1')
+        mat1 = T.fmatrix('mat1')
+        result = v1.dot(mat1)
+        out_test = theano.function([v1, mat1], outputs=result)
+        print out_test(np.random.random((1, 5)).astype(np.float32), np.random.random((5, 20)).astype(np.float32))
 
         # Hebbian learning weight updates for input -> EC
         # activation_prod_in_ec_matrix = T.transpose(self.input_values) * self.ec_values
         # check dims:
         # print T.dim(activation_prod_matrix) ?
         self.in_ec_pass = theano.function([], outputs=None,
-                                          updates=[(self.input_ec_weights, _GAMMA * self.input_ec_weights +
+                                          updates=[(self.in_ec_weights, _GAMMA * self.in_ec_weights +
                                                     T.transpose(self.input_values) * self.ec_values),
-                                                   (self.ec_values, self.input_values * self.input_ec_weights)])
+                                                   (self.ec_values, self.input_values * self.in_ec_weights)])
 
-        # activation_prod_ec_dg = T.transpose(self.ec_values) * self.dg_values
-        self.ec_dg_pass = theano.function([], outputs=None,
-                                          updates=[(self.ec_dg_weights, _GAMMA * self.ec_dg_weights +
-                                                    T.transpose(self.ec_values) * self.dg_values),
-                                                   (self.dg_values, self.ec_values * self.ec_dg_weights)])
-
-        # TODO: This needs to be consistent. Rewrite to one update function to ensure consistency?
-        #   (After applying the constrained Hebbian learning function)
-        # activation_prod_dg_ca3 = T.transpose(self.dg_values) * self.ca3_values
-        self.dg_ca3_pass = theano.function([], outputs=None,
-                                           updates=[(self.dg_ca3_weights, _GAMMA * self.dg_ca3_weights +
-                                                     T.transpose(self.dg_values) * self.ca3_values),
-                                                    (self.ca3_values, self.dg_values * self.dg_ca3_weights)])
-        # act_prod_ca3_ca3 = T.transpose(self.ca3_values) * self.ca3_values
-        self.ca3_ca3_pass = theano.function([], outputs=None,
-                                            updates=[(self.ca3_ca3_weights, _GAMMA * self.ca3_ca3_weights +
-                                                      T.transpose(self.ca3_values) * self.ca3_values),
-                                                     (self.ca3_values, self.ca3_values * self.ca3_ca3_weights)])
-
-        # act_prod_ca3_out = T.transpose(self.ca3_values) * self.output_values
-        self.ca3_out_pass = theano.function([], outputs=None,
-                                            updates=[(self.ca3_output_weights, _GAMMA * self.ca3_output_weights +
-                                                      T.transpose(self.ca3_values) * self.output_values),
-                                                     (self.output_values, self.ca3_values * self.ca3_output_weights)])
+        # # activation_prod_ec_dg = T.transpose(self.ec_values) * self.dg_values
+        # self.ec_dg_pass = theano.function([], outputs=None,
+        #                                   updates=[(self.ec_dg_weights, _GAMMA * self.ec_dg_weights +
+        #                                             T.transpose(self.ec_values) * self.dg_values),
+        #                                            (self.dg_values, self.ec_values * self.ec_dg_weights)])
+        #
+        # # TODO: This needs to be consistent. Rewrite to one update function to ensure consistency?
+        # #   (After applying the constrained Hebbian learning function)
+        # # activation_prod_dg_ca3 = T.transpose(self.dg_values) * self.ca3_values
+        # self.dg_ca3_pass = theano.function([], outputs=None,
+        #                                    updates=[(self.dg_ca3_weights, _GAMMA * self.dg_ca3_weights +
+        #                                              T.transpose(self.dg_values) * self.ca3_values),
+        #                                             (self.ca3_values, self.dg_values * self.dg_ca3_weights)])
+        # # act_prod_ca3_ca3 = T.transpose(self.ca3_values) * self.ca3_values
+        # self.ca3_ca3_pass = theano.function([], outputs=None,
+        #                                     updates=[(self.ca3_ca3_weights, _GAMMA * self.ca3_ca3_weights +
+        #                                               T.transpose(self.ca3_values) * self.ca3_values),
+        #                                              (self.ca3_values, self.ca3_values * self.ca3_ca3_weights)])
+        #
+        # # act_prod_ca3_out = T.transpose(self.ca3_values) * self.output_values
+        # self.ca3_out_pass = theano.function([], outputs=None,
+        #                                     updates=[(self.ec_out_weights, _GAMMA * self.ec_out_weights +
+        #                                               T.transpose(self.ca3_values) * self.output_values),
+        #                                              (self.output_values, self.ca3_values * self.ec_out_weights)])
 
 
     # TODO: Check parallelism. Check further decentralization possibilities.
     def iter(self):
         # one iter for each part, such as:
         self.in_ec_pass()
-        self.ec_dg_pass()
-        self.dg_ca3_pass()
-        self.ca3_ca3_pass()
-        self.ca3_out_pass()
-        # pass
+        #self.ec_dg_pass()
+        #self.dg_ca3_pass()
+        #self.ca3_ca3_pass()
+        #self.ca3_out_pass()
+
+
+# testing code:
+
+hpc = HPC([5, 20, 20, 20, 5])
+print "printing in and ec values:"
+print hpc.input_values, hpc.ec_values
+print "/n"
+print "weights:/n", hpc.in_ec_weights
