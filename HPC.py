@@ -4,6 +4,7 @@ import numpy as np
 
 # Note: Ensure float32 for GPU-usage. Use the profiler to analyse GPU-usage.
 _GAMMA = 0.3
+_EPSILON = 0.8
 
 class HPC:
     def __init__(self, dims):
@@ -11,9 +12,11 @@ class HPC:
         neuron_numbers = dims
 
         # vectors for neuron activation values.
+        # self.input_values = theano.shared(np.asarray([[1, 1]]).astype(np.float32), 'input_values',
         self.input_values = theano.shared(np.random.random((1, neuron_numbers[0])).astype(np.float32), 'input_values',
                                           True)
         self.ec_values = theano.shared(np.random.random((1, neuron_numbers[1])).astype(np.float32), 'ec_values', True)
+        # self.ec_values = theano.shared(np.asarray([[0.5, 0.5]]).astype(np.float32), 'ec_values', True)
 
         # print self.input_values.get_value()
         # print self.ec_values.get_value()
@@ -22,6 +25,7 @@ class HPC:
         #self.output_values = T.fvector('output_values')
 
         # initialise weight matrices.
+        # self.in_ec_weights = theano.shared(np.asarray([[1, 1], [1, 1]]).astype(np.float32),
         self.in_ec_weights = theano.shared(np.random.random((neuron_numbers[0], neuron_numbers[1])).astype(np.float32),
                                            name='in_ec_weights', borrow=True)
 
@@ -42,17 +46,18 @@ class HPC:
         result = m1.dot(m2)
         dot_product = theano.function([m1, m2], outputs=result)
 
+        theta = T.fscalar('theta')
+        f_theta = T.tanh(theta/_EPSILON)
+        self.transfer_function = theano.function([theta], outputs=f_theta)
+
         # print dot_product(np.random.random((1, 5)).astype(np.float32), np.random.random((5, 20)).astype(np.float32))
         # print "dot product:", dot_product(self.input_values.get_value(), self.in_ec_weights.get_value())
 
         # Hebbian learning weight updates for input -> EC
-        # activation_prod_in_ec_matrix = T.transpose(self.input_values) * self.ec_values
-        # check dims:
-        # print T.dim(activation_prod_matrix) ?
+        next_in_ec_weights = _GAMMA * self.in_ec_weights + T.transpose(self.input_values).dot(self.ec_values)
         self.in_ec_pass = theano.function([], outputs=None,
-                                          updates=[(self.in_ec_weights, _GAMMA * self.in_ec_weights +
-                                                    T.transpose(self.input_values).dot(self.ec_values)),
-                                                   (self.ec_values, self.input_values.dot(self.in_ec_weights))])
+                                          updates=[(self.in_ec_weights, next_in_ec_weights),
+                                                   (self.ec_values, self.input_values.dot(next_in_ec_weights))])
 
         # # activation_prod_ec_dg = T.transpose(self.ec_values) * self.dg_values
         # self.ec_dg_pass = theano.function([], outputs=None,
@@ -92,13 +97,13 @@ class HPC:
     def print_info(self):
         print "\nprinting in and ec values:"
         print hpc.input_values.get_value(), "\n", hpc.ec_values.get_value()
-        print "\n"
         print "weights:\n", hpc.in_ec_weights.get_value()
 
 
 # testing code:
 
-hpc = HPC([5, 20, 20, 20, 5])
+hpc = HPC([2, 2, 20, 20, 5])
 hpc.print_info()
-hpc.iter()
+for i in xrange(10):
+    hpc.iter()
 hpc.print_info()
