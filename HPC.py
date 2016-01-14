@@ -11,8 +11,9 @@ class HPC:
         neuron_numbers = dims
 
         # vectors for neuron activation values.
-        self.input_values = theano.shared(np.random.random(neuron_numbers[0]).astype(np.float32), 'input_values', True)
-        self.ec_values = theano.shared(np.random.random(neuron_numbers[1]).astype(np.float32), 'ec_values', True)
+        self.input_values = theano.shared(np.random.random((1, neuron_numbers[0])).astype(np.float32), 'input_values',
+                                          True)
+        self.ec_values = theano.shared(np.random.random((1, neuron_numbers[1])).astype(np.float32), 'ec_values', True)
 
         # print self.input_values.get_value()
         # print self.ec_values.get_value()
@@ -21,7 +22,6 @@ class HPC:
         #self.output_values = T.fvector('output_values')
 
         # initialise weight matrices.
-        # TODO: Verify that these are correct.
         self.in_ec_weights = theano.shared(np.random.random((neuron_numbers[0], neuron_numbers[1])).astype(np.float32),
                                            name='in_ec_weights', borrow=True)
 
@@ -33,15 +33,17 @@ class HPC:
         #self.ec_out_weights = T.fmatrix('ca3_out_weights')
 
         # setup Theano functions
-        new_input = T.fvector('new_input')
+        new_input = T.fmatrix('new_input')
         self.set_input = theano.function([new_input], outputs=None,
                                          updates=[(self.input_values, new_input)])
 
-        v1 = T.fmatrix('v1')
-        mat1 = T.fmatrix('mat1')
-        result = v1.dot(mat1)
-        out_test = theano.function([v1, mat1], outputs=result)
-        print out_test(np.random.random((1, 5)).astype(np.float32), np.random.random((5, 20)).astype(np.float32))
+        m1 = T.fmatrix('m1')
+        m2 = T.fmatrix('m2')
+        result = m1.dot(m2)
+        dot_product = theano.function([m1, m2], outputs=result)
+
+        # print dot_product(np.random.random((1, 5)).astype(np.float32), np.random.random((5, 20)).astype(np.float32))
+        # print "dot product:", dot_product(self.input_values.get_value(), self.in_ec_weights.get_value())
 
         # Hebbian learning weight updates for input -> EC
         # activation_prod_in_ec_matrix = T.transpose(self.input_values) * self.ec_values
@@ -49,8 +51,8 @@ class HPC:
         # print T.dim(activation_prod_matrix) ?
         self.in_ec_pass = theano.function([], outputs=None,
                                           updates=[(self.in_ec_weights, _GAMMA * self.in_ec_weights +
-                                                    T.transpose(self.input_values) * self.ec_values),
-                                                   (self.ec_values, self.input_values * self.in_ec_weights)])
+                                                    T.transpose(self.input_values).dot(self.ec_values)),
+                                                   (self.ec_values, self.input_values.dot(self.in_ec_weights))])
 
         # # activation_prod_ec_dg = T.transpose(self.ec_values) * self.dg_values
         # self.ec_dg_pass = theano.function([], outputs=None,
@@ -87,11 +89,16 @@ class HPC:
         #self.ca3_ca3_pass()
         #self.ca3_out_pass()
 
+    def print_info(self):
+        print "\nprinting in and ec values:"
+        print hpc.input_values.get_value(), "\n", hpc.ec_values.get_value()
+        print "\n"
+        print "weights:\n", hpc.in_ec_weights.get_value()
+
 
 # testing code:
 
 hpc = HPC([5, 20, 20, 20, 5])
-print "printing in and ec values:"
-print hpc.input_values, hpc.ec_values
-print "/n"
-print "weights:/n", hpc.in_ec_weights
+hpc.print_info()
+hpc.iter()
+hpc.print_info()
