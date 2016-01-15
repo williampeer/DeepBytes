@@ -5,6 +5,7 @@ import numpy as np
 # Note: Ensure float32 for GPU-usage. Use the profiler to analyse GPU-usage.
 _GAMMA = 0.3
 _EPSILON = 0.8
+_LAMBDA = 0.4
 
 class HPC:
     def __init__(self, dims):
@@ -68,13 +69,15 @@ class HPC:
         self.in_ec_weights = theano.shared(np.random.random((dims[0], dims[1])).astype(np.float32),
                                            name='in_ec_weights', borrow=True)
         self.ec_dg_weights = theano.shared(np.random.random((dims[1], dims[2])).astype(np.float32),
-                                           name='in_ec_weights', borrow=True)
+                                           name='ec_dg_weights', borrow=True)
         self.ec_ca3_weights = theano.shared(np.random.random((dims[1], dims[3])).astype(np.float32),
-                                           name='in_ec_weights', borrow=True)
+                                           name='ec_ca3_weights', borrow=True)
+        self.dg_ca3_weights = theano.shared(np.random.random((dims[1], dims[3])).astype(np.float32),
+                                           name='dg_ca3_weights', borrow=True)
         self.ca3_ca3_weights = theano.shared(np.random.random((dims[3], dims[3])).astype(np.float32),
-                                           name='in_ec_weights', borrow=True)
+                                           name='ca3_ca3_weights', borrow=True)
         self.ca3_out_weights = theano.shared(np.random.random((dims[3], dims[4])).astype(np.float32),
-                                           name='in_ec_weights', borrow=True)
+                                           name='ca3_out_weights', borrow=True)
 
         # ============== HEBBIAN LEARNING ==================
         # unconstrained:
@@ -83,32 +86,68 @@ class HPC:
                                           updates=[(self.in_ec_weights, next_in_ec_weights),
                                                    (self.ec_values, self.input_values.dot(next_in_ec_weights))])
 
-        next_ca3_out_weights = _GAMMA * self.ca3_values + T.transpose(self.ca3_values).dot(self.output_values)
+        next_ca3_out_weights = _GAMMA * self.ca3_out_weights + T.transpose(self.ca3_values).dot(self.output_values)
+        # without output activation value updates during learning?
         self.ca3_out_pass = theano.function([], outputs=None,
                                           updates=[(self.ca3_out_weights, next_ca3_out_weights)])
         # should the output values be updated? : (self.output_values, self.input_values.dot(next_in_ec_weights))])
 
+        # constrained:
+        next_ec_dg_weights = self.ec_dg_weights + _LAMBDA * T.transpose(self.dg_values).dot(self.ec_values -
+                                                                              self.dg_values.dot(self.ec_dg_weights))
+        self.ec_dg_pass = theano.function([], outputs=None,
+                                          updates=[(self.ec_dg_weights, next_ec_dg_weights),
+                                                   (self.dg_values, self.ec_values.dot(next_ec_dg_weights))])
+
+        next_ec_ca3_weights = self.ec_ca3_weights + _LAMBDA * T.transpose(self.ca3_values).dot(self.ec_values -
+                                                                            self.ca3_values.dot(self.ec_ca3_weights))
+        self.ec_ca3_pass = theano.function([], outputs=None,
+                                          updates=[(self.ec_ca3_weights, next_ec_ca3_weights),
+                                                   (self.ca3_values, self.ec_values.dot(next_ec_ca3_weights))])
+
+        next_dg_ca3_weights = self.dg_ca3_weights + _LAMBDA * T.transpose(self.ca3_values).dot(self.dg_values -
+                                                                            self.ca3_values.dot(self.dg_ca3_weights))
+        self.dg_ca3_pass = theano.function([], outputs=None,
+                                          updates=[(self.dg_ca3_weights, next_dg_ca3_weights),
+                                                   (self.ca3_values, self.ec_values.dot(next_dg_ca3_weights))])
+
+        next_ca3_ca3_weights = self.ca3_ca3_weights + _LAMBDA * T.transpose(self.ca3_values).dot(self.ca3_values -
+                                                                            self.ca3_values.dot(self.ca3_ca3_weights))
+        self.ca3_ca3_pass = theano.function([], outputs=None,
+                                          updates=[(self.ca3_ca3_weights, next_ca3_ca3_weights),
+                                                   (self.ca3_values, self.ca3_values.dot(next_ca3_ca3_weights))])
 
 
     # TODO: Check parallelism. Check further decentralization possibilities.
     def iter(self):
         # one iter for each part, such as:
         self.in_ec_pass()
-        #self.ec_dg_pass()
-        #self.dg_ca3_pass()
-        #self.ca3_ca3_pass()
-        #self.ca3_out_pass()
+        self.ec_dg_pass()
+        self.dg_ca3_pass()
+        self.ca3_ca3_pass()
+        self.ca3_out_pass()
 
     def print_info(self):
-        print "\nprinting in and ec values:"
-        print hpc.input_values.get_value(), "\n", hpc.ec_values.get_value()
-        print "weights:\n", hpc.in_ec_weights.get_value()
+        print "\nprinting activation values:"
+        print hpc.input_values.get_value()
+        print hpc.ec_values.get_value()
+        print hpc.dg_values.get_value()
+        print hpc.ca3_values.get_value()
+        print hpc.output_values.get_value()
+
+        print "\nweights:"
+        print hpc.in_ec_weights.get_value()
+        print hpc.ec_dg_weights.get_value()
+        print hpc.ec_ca3_weights.get_value()
+        print hpc.ca3_ca3_weights.get_value()
+        print hpc.ca3_out_weights.get_value()
 
 
 # testing code:
 
-hpc = HPC([2, 2, 20, 20, 5])
+hpc = HPC([2, 20, 20, 20, 5])
+# hpc.in_ec_pass()
+# hpc.ec_dg_pass()
 hpc.print_info()
-for i in xrange(10):
-    hpc.iter()
+hpc.iter()
 hpc.print_info()
