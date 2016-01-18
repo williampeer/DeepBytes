@@ -34,11 +34,20 @@ class HPC:
 
     def init_layers(self, dims):
         # ============== ACTIVATION VALUES ==================
-        self.input_values = theano.shared(np.random.random((1, dims[0])).astype(np.float32), 'input_values', True)
-        self.ec_values = theano.shared(np.random.random((1, dims[1])).astype(np.float32), 'ec_values', True)
-        self.dg_values = theano.shared(np.random.random((1, dims[2])).astype(np.float32), 'ec_values', True)
-        self.ca3_values = theano.shared(np.random.random((1, dims[3])).astype(np.float32), 'ec_values', True)
-        self.output_values = theano.shared(np.random.random((1, dims[4])).astype(np.float32), 'output_values', True)
+        input_values = np.random.uniform(-1, 1, (1, dims[0])).astype(np.float32)
+        self.input_values = theano.shared(name='input_values', value=input_values.astype(theano.config.floatX))
+
+        ec_values = np.random.uniform(0, 1, (1, dims[0])).astype(np.float32)
+        self.ec_values = theano.shared(name='ec_values', value=ec_values.astype(theano.config.floatX))
+
+        dg_values = np.random.uniform(0, 1, (1, dims[0])).astype(np.float32)
+        self.dg_values = theano.shared(name='dg_values', value=dg_values.astype(theano.config.floatX))
+
+        ca3_values = np.random.uniform(0, 1, (1, dims[0])).astype(np.float32)
+        self.ca3_values = theano.shared(name='ca3_values', value=ca3_values.astype(theano.config.floatX))
+
+        output_values = np.random.uniform(0, 1, (1, dims[0])).astype(np.float32)
+        self.output_values = theano.shared(name='output_values', value=output_values.astype(theano.config.floatX))
 
         # ============== WEIGHT MATRICES ===================
         self.in_ec_weights = theano.shared(np.random.random((dims[0], dims[1])).astype(np.float32),
