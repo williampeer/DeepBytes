@@ -3,11 +3,10 @@ import theano.tensor as T
 import numpy as np
 
 # Note: Ensure float32 for GPU-usage. Use the profiler to analyse GPU-usage.
+theano.config.floatX = 'float32'
 _GAMMA = 0.3
 _EPSILON = 1
 _LAMBDA = 0.05
-K = 8
-
 
 class HPC:
     def __init__(self, dims):
@@ -17,15 +16,9 @@ class HPC:
         result = m1.dot(m2)
         self.dot_product = theano.function([m1, m2], outputs=result)
 
-        theta = T.fmatrix('theta')
-        f_theta = T.tanh(theta/_EPSILON)
-        self.transfer_function = theano.function([theta], outputs=f_theta)
-
-        new_input = T.fmatrix('new_input')
-        self.set_input = theano.function([new_input], outputs=None,
-                                         updates=[(self.input_values, new_input)])
-        new_output = T.fmatrix('new_output')
-        self.set_output = theano.function([new_output], outputs=None, updates=[(self.output_values, new_output)])
+        theta_ec = T.fmatrix('theta')
+        f_theta = T.tanh(theta_ec/_EPSILON)
+        self.transfer_function = theano.function([theta_ec], outputs=f_theta)
 
         # ============== ACTIVATION VALUES ==================
         input_values = np.random.uniform(-1, 1, (1, dims[0])).astype(np.float32)
@@ -41,7 +34,7 @@ class HPC:
         ca3_values = np.random.uniform(0, 1, (1, dims[3])).astype(np.float32)
         self.ca3_values = theano.shared(name='ca3_values', value=ca3_values.astype(theano.config.floatX), borrow=True)
 
-        output_values = np.random.uniform(0, 1, (1, dims[4])).astype(np.float32)
+        output_values = np.random.uniform(-1, 1, (1, dims[4])).astype(np.float32)
         self.output_values = theano.shared(name='output_values', value=output_values.astype(theano.config.floatX),
                                            borrow=True)
 
@@ -60,7 +53,7 @@ class HPC:
         for row in range(dims[1]):
             for col in range(dims[2]):
                 if np.random.random() < 0.25:
-                    ec_dg_weights = np.random.random().astype(theano.config.floatX)
+                    ec_dg_weights[row][col] = np.random.random()
         self.ec_dg_weights = theano.shared(name='ec_dg_weights', value=ec_dg_weights.astype(theano.config.floatX),
                                            borrow=True)
 
@@ -74,7 +67,7 @@ class HPC:
         for row in range(dims[2]):
             for col in range(dims[3]):
                 if np.random.random() < 0.04:
-                    dg_ca3_weights[row][col] = np.random.random().astype(theano.config.floatX)
+                    dg_ca3_weights[row][col] = np.random.random()
         self.dg_ca3_weights = theano.shared(name='dg_ca3_weights', value=dg_ca3_weights.astype(theano.config.floatX),
                                             borrow=True)
 
@@ -83,74 +76,74 @@ class HPC:
         self.ca3_ca3_weights = theano.shared(name='ca3_ca3_weights', value=ca3_ca3_weights.astype(theano.config.floatX),
                                              borrow=True)
 
-        ca3_output_weights = np.random.random((dims[2], dims[3])).astype(np.float32)
+        ca3_output_weights = np.random.random((dims[3], dims[4])).astype(np.float32)
         self.ca3_out_weights = theano.shared(name='ca3_out_weights',
                                              value=ca3_output_weights.astype(theano.config.floatX), borrow=True)
 
         # ============== HEBBIAN LEARNING ==================
-        # === WITH FORGETTING ===
-        # Note: Use either, both both, of the functions.
+        # Input:
+        # Note: Use only one of the fire or fire_and_wire functions.
+        # Apparently, weights are 0 or 1 between the input and EC and constant after initialization
         next_activation_values_ec = T.tanh(self.input_values.dot(self.in_ec_weights)/_EPSILON)
-        self.fire_input_ec = theano.function([], outputs=None, updates=[(self.ec_values, next_activation_values_ec)])
-        # Apparently, weights are 0 or 1 between the input and EC and constant after initialization:
-        # next_in_ec_weights = _GAMMA * self.in_ec_weights +
-        # T.transpose(self.input_values).dot(next_activation_values_ec)
-        # self.fire_and_wire_input_ec = theano.function([], outputs=None, updates=[(self.ec_values,
-        #                                                                           next_activation_values_ec),
-        #                                                                          (self.in_ec_weights,
-        #                                                                           next_in_ec_weights)])  # wire
+        self.propagate_input_to_ec = theano.function([], outputs=None, updates=[(self.ec_values,
+                                                                                 next_activation_values_ec)])
 
-        next_activation_values_ca3_ca3 = T.tanh(self.ca3_values.dot(self.ca3_ca3_weights)/_EPSILON)
-        next_ca3_ca3_weights = _GAMMA * self.ca3_ca3_weights + \
-            T.transpose(next_activation_values_ca3_ca3).dot(self.ca3_values)
-        self.fire_ca3_ca3 = theano.function([], outputs=None, updates=[(self.ca3_values,
-                                                                        next_activation_values_ca3_ca3)])
-        self.fire_and_wire_ca3_ca3 = theano.function([], outputs=None, updates=[(self.ca3_values,
-                                                                                 next_activation_values_ca3_ca3),
-                                                                                (self.ca3_ca3_weights,
-                                                                                 next_ca3_ca3_weights)])
-
-        next_activation_values_out = T.tanh(self.ca3_values.dot(self.ca3_out_weights)/_EPSILON)
-        self.fire_ca3_out = theano.function([], outputs=None, updates=[(self.output_values,
-                                                                        next_activation_values_out)])
-        next_ca3_out_weights = _GAMMA * self.ca3_out_weights + T.transpose(self.ca3_values).dot(self.output_values)
-        self.wire_ca3_out = theano.function([], outputs=None, updates=[(self.ca3_out_weights, next_ca3_out_weights)])
-
-        # === CONSTRAINED ===
+        # ================= CONSTRAINED ====================
         next_activation_values_dg = T.tanh(self.ec_values.dot(self.ec_dg_weights)/_EPSILON)
-        next_ec_dg_weights = self.ec_dg_weights + _LAMBDA * T.transpose(next_activation_values_dg).dot(
-                self.ec_values - self.dg_values.dot(self.ec_dg_weights))
+
+        next_ec_dg_weights = self.ec_dg_weights + _LAMBDA * \
+            (self.ec_values - (self.dg_values.dot(T.transpose(self.ec_dg_weights)))).T.dot(
+                    next_activation_values_dg)
+
         self.fire_ec_dg = theano.function([], outputs=None, updates=[(self.dg_values, next_activation_values_dg)])
         self.fire_and_wire_ec_dg = theano.function([], outputs=None, updates=[(self.dg_values,
                                                                                next_activation_values_dg),
                                                                               (self.ec_dg_weights,
                                                                                next_ec_dg_weights)])
 
-        next_activation_values_ec_ca3 = T.tanh(self.ec_values.dot(self.ec_ca3_weights)/_EPSILON)
-        next_ec_ca3_weights = self.ec_ca3_weights + _LAMBDA * T.transpose(next_activation_values_ec_ca3).dot(
-                                      self.ec_values - next_activation_values_ec_ca3.dot(self.ec_ca3_weights))
-        self.fire_ec_ca3 = theano.function([], outputs=None, updates=[(self.ca3_values, next_activation_values_ec_ca3)])
-        self.fire_and_wire_ec_ca3 = theano.function([], outputs=None,
-                                                    updates=[(self.ca3_values, next_activation_values_ec_ca3),
-                                                             (self.ec_ca3_weights, next_ec_ca3_weights)])
+        theta_ec = self.ec_values.dot(self.ec_ca3_weights) + self.dg_values.dot(self.dg_ca3_weights) + \
+            self.ca3_values.dot(self.ca3_ca3_weights)
+        next_activation_values_ca3 = T.tanh(theta_ec/_EPSILON)
+        self.fire_to_ca3 = theano.function([], outputs=None, updates=[(self.ca3_values, next_activation_values_ca3)])
 
-        next_activation_values_dg_ca3 = T.tanh(self.dg_values.dot(self.dg_ca3_weights)/_EPSILON)
-        next_dg_ca3_weights = self.dg_ca3_weights + _LAMBDA * T.transpose(next_activation_values_dg_ca3).dot(
-                self.dg_values - next_activation_values_dg_ca3.dot(self.dg_ca3_weights))
-        self.fire_dg_ca3 = theano.function([], outputs=None, updates=[(self.ca3_values, next_activation_values_dg_ca3)])
-        self.fire_and_wire_dg_ca3 = theano.function([], outputs=None, updates=[(self.ca3_values,
-                                                                                next_activation_values_dg_ca3),
-                                                                               (self.dg_ca3_weights,
-                                                                                next_dg_ca3_weights)])
+        next_ec_ca3_weights = self.ec_ca3_weights + _LAMBDA * \
+            (self.ec_values - next_activation_values_ca3.dot(T.transpose(self.ec_ca3_weights))).T.dot(
+                    next_activation_values_ca3)
+
+        next_dg_ca3_weights = self.dg_ca3_weights + _LAMBDA *\
+            (self.dg_values - next_activation_values_ca3.dot(T.transpose(self.dg_ca3_weights))).T.dot(
+                    next_activation_values_ca3)
+
+        next_ca3_ca3_weights = _GAMMA * self.ca3_ca3_weights + \
+            T.transpose(next_activation_values_ca3).dot(self.ca3_values)
+
+        self.fire_and_wire_ca3 = theano.function([], outputs=None,
+                                                 updates=[(self.ca3_values, next_activation_values_ca3),
+                                                          (self.ec_ca3_weights, next_ec_ca3_weights),
+                                                          (self.dg_ca3_weights, next_dg_ca3_weights),
+                                                          (self.ca3_ca3_weights, next_ca3_ca3_weights)])
+        # ===================================================
+        # Output:
+        next_activation_values_out = T.tanh(self.ca3_values.dot(self.ca3_out_weights)/_EPSILON)
+        self.fire_ca3_out = theano.function([], outputs=None, updates=[(self.output_values,
+                                                                        next_activation_values_out)])
+        next_ca3_out_weights = _GAMMA * self.ca3_out_weights + T.transpose(self.ca3_values).\
+            dot(self.output_values.get_value())
+        self.wire_ca3_out = theano.function([], outputs=None, updates=[(self.ca3_out_weights, next_ca3_out_weights)])
+
+        # =================== SETTERS =======================
+        new_input = T.fmatrix('new_input')
+        self.set_input = theano.function([new_input], outputs=None,
+                                         updates=[(self.input_values, new_input)])
+        new_output = T.fmatrix('new_output')
+        self.set_output = theano.function([new_output], outputs=None, updates=[(self.output_values, new_output)])
 
     # TODO: Check parallelism. Check further decentralization possibilities.
     def iter(self):
         # one iter for each part, such as:
-        self.fire_input_ec()
-        self.fire_and_wire_ec_ca3()
+        self.propagate_input_to_ec()
         self.fire_and_wire_ec_dg()
-        self.fire_and_wire_dg_ca3()
-        self.fire_and_wire_ca3_ca3()
+        self.fire_and_wire_ca3()
         self.wire_ca3_out()
 
     def print_info(self):
@@ -171,11 +164,11 @@ class HPC:
 
 # testing code:
 
-hpc = HPC([3, 3, 3, 3, 3])
+hpc = HPC([32, 240, 1600, 480, 32])
+hpc.iter()
 # sample IO:
-hpc.set_input(np.asarray([[1, 0, -1]]).astype(np.float32))
-hpc.set_output(np.asarray([[1, 0, -1]]).astype(np.float32))
-hpc.print_info()
-for i in xrange(10):
-    hpc.iter()
-hpc.print_info()
+# hpc.set_input(np.asarray([[1, 0, -1]]).astype(np.float32))
+# hpc.set_output(np.asarray([[1, 0, -1]]).astype(np.float32))
+# hpc.print_info()
+# for i in xrange(1):
+#     hpc.iter()
