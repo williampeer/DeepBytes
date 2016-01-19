@@ -33,7 +33,12 @@ class HPC:
         self.transfer_function = theano.function([theta_ec], outputs=f_theta)
 
         # ============== ACTIVATION VALUES ==================
-        input_values = np.random.uniform(-1, 1, (1, dims[0])).astype(np.float32)
+        input_values = np.zeros((1, dims[0])).astype(np.float32)
+        for n_in in range(dims[0]):
+            if np.random.random() < 0.5:
+                input_values[0][n_in] = 1
+            else:
+                input_values[0][n_in] = -1
         self.input_values = theano.shared(name='input_values', value=input_values.astype(theano.config.floatX),
                                           borrow=True)
 
@@ -46,7 +51,12 @@ class HPC:
         ca3_values = np.random.uniform(0, 1, (1, dims[3])).astype(np.float32)
         self.ca3_values = theano.shared(name='ca3_values', value=ca3_values.astype(theano.config.floatX), borrow=True)
 
-        output_values = np.random.uniform(-1, 1, (1, dims[4])).astype(np.float32)
+        output_values = np.zeros((1, dims[4])).astype(np.float32)
+        for n_in in range(dims[4]):
+            if np.random.random() < 0.5:
+                output_values[0][n_in] = 1
+            else:
+                output_values[0][n_in] = -1
         self.output_values = theano.shared(name='output_values', value=output_values.astype(theano.config.floatX),
                                            borrow=True)
 
@@ -149,9 +159,12 @@ class HPC:
         new_output = T.fmatrix('new_output')
         self.set_output = theano.function([new_output], outputs=None, updates=[(self.output_values, new_output)])
 
-        y = T.iscalar()
-        x = T.iscalar()
-        val = T.fscalar()
+        new_ec_values = T.fmatrix('new_ec_values')
+        self.set_ec_values = theano.function([new_ec_values], outputs=None, updates=[(self.ec_values, new_ec_values)])
+
+        y = T.iscalar('y')
+        x = T.iscalar('x')
+        val = T.fscalar('val')
         self.update_ec_dg_weights_value = theano.function(inputs=[y, x, val], updates=[(self.ec_dg_weights,
             T.set_subtensor(self.ec_dg_weights[y, x], val))])
         self.update_dg_ca3_weights_value = theano.function(inputs=[y, x, val], updates=[(self.dg_ca3_weights,
@@ -190,11 +203,11 @@ class HPC:
 
     def kWTA_ec(self):
         # kWTA EC:
-        k_ec = int(self.dims[1] * self.firing_rate_ec)
+        k_neurons_in_ec = int(self.dims[1] * self.firing_rate_ec)  # k determined by the firing rate
 
-        # assuming descending order
-        ec_act_vals_sorted = self.ec_values.get_value(borrow=False, return_internal_type=True)
-        print "ec_act_vals_sorted:", ec_act_vals_sorted
+        # get a deep copy of the ec values in constant time:
+        ec_act_vals = self.ec_values.get_value(borrow=False, return_internal_type=True)
+        print "ec_act_vals:", ec_act_vals
 
         # for act_val_index in range(self.dims[1]):
         #     if T.ge(self.ec_values[1][act_val_index], k_th_largest_act_val_ec):
@@ -206,7 +219,7 @@ class HPC:
     def iter(self):
         # one iter for each part, such as:
         self.propagate_input_to_ec()
-        # self.kWTA_ec()
+        self.kWTA_ec()
 
         self.fire_and_wire_ec_dg()
         self.fire_and_wire_ca3()
@@ -237,7 +250,7 @@ hpc = HPC([32, 240, 1600, 480, 32],
 # hpc.set_input(np.asarray([[1, 0, -1]]).astype(np.float32))
 # hpc.set_output(np.asarray([[1, 0, -1]]).astype(np.float32))
 # hpc.print_info()
-for i in xrange(2):
+for i in xrange(1):
     hpc.iter()
-    print hpc.ec_values.get_value()
-hpc.neuronal_turnover_dg()
+# hpc.neuronal_turnover_dg()
+print "input:", hpc.input_values.get_value()
