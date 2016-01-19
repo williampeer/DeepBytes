@@ -10,10 +10,17 @@ _LAMBDA = 0.05
 _TURNOVER_RATE = 0.50
 
 class HPC:
-    def __init__(self, dims, connection_rate_input_ec, perforant_path, mossy_fibers):
+    def __init__(self, dims, connection_rate_input_ec, perforant_path, mossy_fibers,
+                 firing_rate_ec, firing_rate_dg, firing_rate_ca3):
+        self.dims = dims  # numbers of neurons in the different layers
         self.connection_rate_input_ec = connection_rate_input_ec
         self.PP = perforant_path  # connection_rate_ec_dg
         self.MF = mossy_fibers  # connection_rate_dg_ca3
+
+        # firing rates, used to decide the number of winners in kWTA
+        self.firing_rate_ec = firing_rate_ec
+        self.firing_rate_dg = firing_rate_dg
+        self.firing_rate_ca3 = firing_rate_ca3
 
         # ============= setup Theano functions ==============
         m1 = T.fmatrix('m1')
@@ -94,12 +101,11 @@ class HPC:
                                                                                  next_activation_values_ec)])
 
         # ================= CONSTRAINED ====================
+        # kWTA outputs:
         next_activation_values_dg = T.tanh(self.ec_values.dot(self.ec_dg_weights)/_EPSILON)
-
         next_ec_dg_weights = self.ec_dg_weights + _LAMBDA * \
             (self.ec_values - (self.dg_values.dot(T.transpose(self.ec_dg_weights)))).T.dot(
                     next_activation_values_dg)
-
         self.fire_ec_dg = theano.function([], outputs=None, updates=[(self.dg_values, next_activation_values_dg)])
         self.fire_and_wire_ec_dg = theano.function([], outputs=None, updates=[(self.dg_values,
                                                                                next_activation_values_dg),
@@ -143,12 +149,24 @@ class HPC:
         new_output = T.fmatrix('new_output')
         self.set_output = theano.function([new_output], outputs=None, updates=[(self.output_values, new_output)])
 
+        y = T.iscalar()
+        x = T.iscalar()
+        val = T.fscalar()
+        self.update_ec_dg_weights_value = theano.function(inputs=[y, x, val], updates=[(self.ec_dg_weights,
+            T.set_subtensor(self.ec_dg_weights[y, x], val))])
+        self.update_dg_ca3_weights_value = theano.function(inputs=[y, x, val], updates=[(self.dg_ca3_weights,
+            T.set_subtensor(self.dg_ca3_weights[y, x], val))])
+        self.update_ca3_ca3_weights_value = theano.function(inputs=[y, x, val], updates=[(self.ca3_ca3_weights,
+            T.set_subtensor(self.ca3_ca3_weights[y, x], val))])
+        # ===================================================
+
+    # TODO: Theano-ize (parallelization). Use profiler?
     def neuronal_turnover_dg(self):
         # get beta %
         # for each of those neurons, initialize weights according to the percentage above.
-        num_of_dg_neurons = self.dg_values.get_value().shape[0]
-        num_of_ca3_neurons = self.dg_ca3_weights.get_value().shape[1]
-        num_of_ec_neurons = self.ec_values.get_value().shape[0]
+        num_of_dg_neurons = self.dims[2]
+        num_of_ca3_neurons = self.dims[3]
+        num_of_ec_neurons = self.dims[1]
 
         num_of_neurons_to_be_turned_over = int(num_of_dg_neurons * _TURNOVER_RATE)
         for n in range(num_of_neurons_to_be_turned_over):
@@ -160,21 +178,36 @@ class HPC:
             # from ec to dg:
             for ec_n in range(num_of_ec_neurons):
                 if np.random.random() < self.PP:
-                    self.ec_dg_weights[ec_n][random_dg_neuron_index] = np.random.random()
+                    self.update_ec_dg_weights_value(ec_n, random_dg_neuron_index, np.random.random())
                 else:
-                    self.ec_dg_weights[ec_n][random_dg_neuron_index] = 0
-
+                    self.update_ec_dg_weights_value(ec_n, random_dg_neuron_index, 0.0)
             # from dg to ca3:
-            for col in range(num_of_ca3_neurons):
+            for ca3_neuron_index in range(num_of_ca3_neurons):
                 if np.random.random() < self.MF:
-                    self.dg_ca3_weights[random_dg_neuron_index][col] = np.random.random()
+                    self.update_dg_ca3_weights_value(random_dg_neuron_index, ca3_neuron_index, np.random.random())
                 else:
-                    self.dg_ca3_weights[random_dg_neuron_index][col] = 0
+                    self.update_dg_ca3_weights_value(random_dg_neuron_index, ca3_neuron_index, 0.0)
+
+    def kWTA_ec(self):
+        # kWTA EC:
+        k_ec = int(self.dims[1] * self.firing_rate_ec)
+
+        # assuming descending order
+        ec_act_vals_sorted = self.ec_values.get_value(borrow=False, return_internal_type=True)
+        print "ec_act_vals_sorted:", ec_act_vals_sorted
+
+        # for act_val_index in range(self.dims[1]):
+        #     if T.ge(self.ec_values[1][act_val_index], k_th_largest_act_val_ec):
+        #         self.ec_values[1][act_val_index].set_value(1)
+        #     else:
+        #         self.ec_values[1][act_val_index].set_value(0)
 
     # TODO: Check parallelism. Check further decentralization possibilities.
     def iter(self):
         # one iter for each part, such as:
         self.propagate_input_to_ec()
+        # self.kWTA_ec()
+
         self.fire_and_wire_ec_dg()
         self.fire_and_wire_ca3()
         self.wire_ca3_out()
@@ -197,11 +230,14 @@ class HPC:
 
 # testing code:
 
-hpc = HPC([32, 240, 1600, 480, 32], 0.67, 0.25, 0.04)
+hpc = HPC([32, 240, 1600, 480, 32],
+          0.67, 0.25, 0.04,  # connection rates: (in_ec, ec_dg, dg_ca3)
+          0.10, 0.01, 0.04)  # firing rates: (ec, dg, ca3)
 # sample IO:
 # hpc.set_input(np.asarray([[1, 0, -1]]).astype(np.float32))
 # hpc.set_output(np.asarray([[1, 0, -1]]).astype(np.float32))
-hpc.print_info()
+# hpc.print_info()
 for i in xrange(2):
     hpc.iter()
+    print hpc.ec_values.get_value()
 hpc.neuronal_turnover_dg()
