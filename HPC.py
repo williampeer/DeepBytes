@@ -7,9 +7,14 @@ theano.config.floatX = 'float32'
 _GAMMA = 0.3
 _EPSILON = 1
 _LAMBDA = 0.05
+_TURNOVER_RATE = 0.50
 
 class HPC:
-    def __init__(self, dims):
+    def __init__(self, dims, connection_rate_input_ec, perforant_path, mossy_fibers):
+        self.connection_rate_input_ec = connection_rate_input_ec
+        self.PP = perforant_path  # connection_rate_ec_dg
+        self.MF = mossy_fibers  # connection_rate_dg_ca3
+
         # ============= setup Theano functions ==============
         m1 = T.fmatrix('m1')
         m2 = T.fmatrix('m2')
@@ -40,10 +45,10 @@ class HPC:
 
         # ============== WEIGHT MATRICES ===================
         input_ec_weights = np.ones((dims[0], dims[1])).astype(np.float32)
-        # for each row, dims[0]: make 67 % of dims[1] 1, the rest 0:
+        # for each row in dims[0]: make 67 % of columns in dims[1] equal to 1, the rest 0:
         for row in range(dims[0]):
             for column in range(dims[1]):
-                if np.random.random() < 0.33:
+                if np.random.random() < (1 - self.connection_rate_input_ec):
                     input_ec_weights[row][column] = 0
         self.in_ec_weights = theano.shared(name='in_ec_weights', value=input_ec_weights.astype(theano.config.floatX),
                                            borrow=True)
@@ -52,7 +57,7 @@ class HPC:
         # randomly assign about 25 % of the weights to a random connection weight
         for row in range(dims[1]):
             for col in range(dims[2]):
-                if np.random.random() < 0.25:
+                if np.random.random() < self.PP:
                     ec_dg_weights[row][col] = np.random.random()
         self.ec_dg_weights = theano.shared(name='ec_dg_weights', value=ec_dg_weights.astype(theano.config.floatX),
                                            borrow=True)
@@ -66,7 +71,7 @@ class HPC:
         # randomly assign about 4 % of the weights to random connection weights
         for row in range(dims[2]):
             for col in range(dims[3]):
-                if np.random.random() < 0.04:
+                if np.random.random() < self.MF:
                     dg_ca3_weights[row][col] = np.random.random()
         self.dg_ca3_weights = theano.shared(name='dg_ca3_weights', value=dg_ca3_weights.astype(theano.config.floatX),
                                             borrow=True)
@@ -138,6 +143,34 @@ class HPC:
         new_output = T.fmatrix('new_output')
         self.set_output = theano.function([new_output], outputs=None, updates=[(self.output_values, new_output)])
 
+    def neuronal_turnover_dg(self):
+        # get beta %
+        # for each of those neurons, initialize weights according to the percentage above.
+        num_of_dg_neurons = self.dg_values.get_value().shape[0]
+        num_of_ca3_neurons = self.dg_ca3_weights.get_value().shape[1]
+        num_of_ec_neurons = self.ec_values.get_value().shape[0]
+
+        num_of_neurons_to_be_turned_over = int(num_of_dg_neurons * _TURNOVER_RATE)
+        for n in range(num_of_neurons_to_be_turned_over):
+            # Note: These neurons may be drawn so that we get a more exact number of beta %. This implementation,
+            #   however, introduces random fluctuations. Which might be beneficial?
+            # this neuron is selected to have re-initialised its weights:
+            random_dg_neuron_index = int(np.random.random() * num_of_dg_neurons)
+
+            # from ec to dg:
+            for ec_n in range(num_of_ec_neurons):
+                if np.random.random() < self.PP:
+                    self.ec_dg_weights[ec_n][random_dg_neuron_index] = np.random.random()
+                else:
+                    self.ec_dg_weights[ec_n][random_dg_neuron_index] = 0
+
+            # from dg to ca3:
+            for col in range(num_of_ca3_neurons):
+                if np.random.random() < self.MF:
+                    self.dg_ca3_weights[random_dg_neuron_index][col] = np.random.random()
+                else:
+                    self.dg_ca3_weights[random_dg_neuron_index][col] = 0
+
     # TODO: Check parallelism. Check further decentralization possibilities.
     def iter(self):
         # one iter for each part, such as:
@@ -154,21 +187,21 @@ class HPC:
         print self.ca3_values.get_value()
         print self.output_values.get_value()
 
-        print "\nweights:"
-        print self.in_ec_weights.get_value()
-        print self.ec_dg_weights.get_value()
-        print self.ec_ca3_weights.get_value()
-        print self.ca3_ca3_weights.get_value()
-        print self.ca3_out_weights.get_value()
+        # print "\nweights:"
+        # print self.in_ec_weights.get_value()
+        # print self.ec_dg_weights.get_value()
+        # print self.ec_ca3_weights.get_value()
+        # print self.ca3_ca3_weights.get_value()
+        # print self.ca3_out_weights.get_value()
 
 
 # testing code:
 
-hpc = HPC([32, 240, 1600, 480, 32])
-hpc.iter()
+hpc = HPC([32, 240, 1600, 480, 32], 0.67, 0.25, 0.04)
 # sample IO:
 # hpc.set_input(np.asarray([[1, 0, -1]]).astype(np.float32))
 # hpc.set_output(np.asarray([[1, 0, -1]]).astype(np.float32))
-# hpc.print_info()
-# for i in xrange(1):
-#     hpc.iter()
+hpc.print_info()
+for i in xrange(2):
+    hpc.iter()
+hpc.neuronal_turnover_dg()
