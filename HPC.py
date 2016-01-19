@@ -10,10 +10,17 @@ _LAMBDA = 0.05
 _TURNOVER_RATE = 0.50
 
 class HPC:
-    def __init__(self, dims, connection_rate_input_ec, perforant_path, mossy_fibers):
+    def __init__(self, dims, connection_rate_input_ec, perforant_path, mossy_fibers,
+                 firing_rate_ec, firing_rate_dg, firing_rate_ca3):
+        self.dims = dims  # numbers of neurons in the different layers
         self.connection_rate_input_ec = connection_rate_input_ec
         self.PP = perforant_path  # connection_rate_ec_dg
         self.MF = mossy_fibers  # connection_rate_dg_ca3
+
+        # firing rates, used to decide the number of winners in kWTA
+        self.firing_rate_ec = firing_rate_ec
+        self.firing_rate_dg = firing_rate_dg
+        self.firing_rate_ca3 = firing_rate_ca3
 
         # ============= setup Theano functions ==============
         m1 = T.fmatrix('m1')
@@ -26,7 +33,12 @@ class HPC:
         self.transfer_function = theano.function([theta_ec], outputs=f_theta)
 
         # ============== ACTIVATION VALUES ==================
-        input_values = np.random.uniform(-1, 1, (1, dims[0])).astype(np.float32)
+        input_values = np.zeros((1, dims[0])).astype(np.float32)
+        for n_in in range(dims[0]):
+            if np.random.random() < 0.5:
+                input_values[0][n_in] = 1
+            else:
+                input_values[0][n_in] = -1
         self.input_values = theano.shared(name='input_values', value=input_values.astype(theano.config.floatX),
                                           borrow=True)
 
@@ -39,7 +51,12 @@ class HPC:
         ca3_values = np.random.uniform(0, 1, (1, dims[3])).astype(np.float32)
         self.ca3_values = theano.shared(name='ca3_values', value=ca3_values.astype(theano.config.floatX), borrow=True)
 
-        output_values = np.random.uniform(-1, 1, (1, dims[4])).astype(np.float32)
+        output_values = np.zeros((1, dims[4])).astype(np.float32)
+        for n_in in range(dims[4]):
+            if np.random.random() < 0.5:
+                output_values[0][n_in] = 1
+            else:
+                output_values[0][n_in] = -1
         self.output_values = theano.shared(name='output_values', value=output_values.astype(theano.config.floatX),
                                            borrow=True)
 
@@ -58,12 +75,15 @@ class HPC:
         for row in range(dims[1]):
             for col in range(dims[2]):
                 if np.random.random() < self.PP:
-                    ec_dg_weights[row][col] = np.random.random()
+                    sign = 1
+                    if np.random.random() < 0.5:
+                        sign = -1
+                    ec_dg_weights[row][col] = sign * np.random.random()
         self.ec_dg_weights = theano.shared(name='ec_dg_weights', value=ec_dg_weights.astype(theano.config.floatX),
                                            borrow=True)
 
         # randomly assign all weights between the EC and CA3
-        ec_ca3_weights = np.random.random((dims[1], dims[3])).astype(np.float32)
+        ec_ca3_weights = np.random.uniform(-1, 1, (dims[1], dims[3])).astype(np.float32)
         self.ec_ca3_weights = theano.shared(name='ec_ca3_weights', value=ec_ca3_weights.astype(theano.config.floatX),
                                             borrow=True)
 
@@ -72,39 +92,37 @@ class HPC:
         for row in range(dims[2]):
             for col in range(dims[3]):
                 if np.random.random() < self.MF:
-                    dg_ca3_weights[row][col] = np.random.random()
+                    sign = 1
+                    if np.random.random() < 0.5:
+                        sign = -1
+                    dg_ca3_weights[row][col] = sign * np.random.random()
         self.dg_ca3_weights = theano.shared(name='dg_ca3_weights', value=dg_ca3_weights.astype(theano.config.floatX),
                                             borrow=True)
 
         # randomly assign 100 % of the weights
-        ca3_ca3_weights = np.random.random((dims[3], dims[3])).astype(np.float32)
+        ca3_ca3_weights = np.random.uniform(-1, 1, (dims[3], dims[3])).astype(np.float32)
         self.ca3_ca3_weights = theano.shared(name='ca3_ca3_weights', value=ca3_ca3_weights.astype(theano.config.floatX),
                                              borrow=True)
 
-        ca3_output_weights = np.random.random((dims[3], dims[4])).astype(np.float32)
+        ca3_output_weights = np.random.uniform(-1, 1, (dims[3], dims[4])).astype(np.float32)
         self.ca3_out_weights = theano.shared(name='ca3_out_weights',
                                              value=ca3_output_weights.astype(theano.config.floatX), borrow=True)
 
         # ============== HEBBIAN LEARNING ==================
         # Input:
-        # Note: Use only one of the fire or fire_and_wire functions.
         # Apparently, weights are 0 or 1 between the input and EC and constant after initialization
         next_activation_values_ec = T.tanh(self.input_values.dot(self.in_ec_weights)/_EPSILON)
         self.propagate_input_to_ec = theano.function([], outputs=None, updates=[(self.ec_values,
                                                                                  next_activation_values_ec)])
 
         # ================= CONSTRAINED ====================
+        # kWTA outputs:
         next_activation_values_dg = T.tanh(self.ec_values.dot(self.ec_dg_weights)/_EPSILON)
-
         next_ec_dg_weights = self.ec_dg_weights + _LAMBDA * \
             (self.ec_values - (self.dg_values.dot(T.transpose(self.ec_dg_weights)))).T.dot(
                     next_activation_values_dg)
-
         self.fire_ec_dg = theano.function([], outputs=None, updates=[(self.dg_values, next_activation_values_dg)])
-        self.fire_and_wire_ec_dg = theano.function([], outputs=None, updates=[(self.dg_values,
-                                                                               next_activation_values_dg),
-                                                                              (self.ec_dg_weights,
-                                                                               next_ec_dg_weights)])
+        self.wire_ec_dg = theano.function([], outputs=None, updates=[(self.ec_dg_weights, next_ec_dg_weights)])
 
         theta_ec = self.ec_values.dot(self.ec_ca3_weights) + self.dg_values.dot(self.dg_ca3_weights) + \
             self.ca3_values.dot(self.ca3_ca3_weights)
@@ -121,17 +139,14 @@ class HPC:
 
         next_ca3_ca3_weights = _GAMMA * self.ca3_ca3_weights + \
             T.transpose(next_activation_values_ca3).dot(self.ca3_values)
-
-        self.fire_and_wire_ca3 = theano.function([], outputs=None,
-                                                 updates=[(self.ca3_values, next_activation_values_ca3),
-                                                          (self.ec_ca3_weights, next_ec_ca3_weights),
-                                                          (self.dg_ca3_weights, next_dg_ca3_weights),
-                                                          (self.ca3_ca3_weights, next_ca3_ca3_weights)])
+        self.fire_ca3 = theano.function([], outputs=None, updates=[(self.ca3_values, next_activation_values_ca3)])
+        self.wire_ca3 = theano.function([], outputs=None, updates=[(self.ec_ca3_weights, next_ec_ca3_weights),
+                                                                   (self.dg_ca3_weights, next_dg_ca3_weights),
+                                                                   (self.ca3_ca3_weights, next_ca3_ca3_weights)])
         # ===================================================
         # Output:
         next_activation_values_out = T.tanh(self.ca3_values.dot(self.ca3_out_weights)/_EPSILON)
-        self.fire_ca3_out = theano.function([], outputs=None, updates=[(self.output_values,
-                                                                        next_activation_values_out)])
+        self.fire_ca3_out = theano.function([], outputs=None, updates=[(self.output_values, next_activation_values_out)])
         next_ca3_out_weights = _GAMMA * self.ca3_out_weights + T.transpose(self.ca3_values).\
             dot(self.output_values.get_value())
         self.wire_ca3_out = theano.function([], outputs=None, updates=[(self.ca3_out_weights, next_ca3_out_weights)])
@@ -140,15 +155,37 @@ class HPC:
         new_input = T.fmatrix('new_input')
         self.set_input = theano.function([new_input], outputs=None,
                                          updates=[(self.input_values, new_input)])
+
+        new_ec_values = T.fmatrix('new_ec_values')
+        self.set_ec_values = theano.function([new_ec_values], outputs=None, updates=[(self.ec_values, new_ec_values)])
+
+        new_dg_values = T.fmatrix('new_dg_values')
+        self.set_dg_values = theano.function([new_dg_values], outputs=None, updates=[(self.dg_values, new_dg_values)])
+
+        new_ca3_values = T.fmatrix('new_ca3_values')
+        self.set_ca3_values = theano.function([new_ca3_values], outputs=None, updates=[(self.ca3_values, new_ca3_values)])
+
         new_output = T.fmatrix('new_output')
         self.set_output = theano.function([new_output], outputs=None, updates=[(self.output_values, new_output)])
 
+        y = T.iscalar('y')
+        x = T.iscalar('x')
+        val = T.fscalar('val')
+        self.update_ec_dg_weights_value = theano.function(inputs=[y, x, val], updates=[(self.ec_dg_weights,
+            T.set_subtensor(self.ec_dg_weights[y, x], val))])
+        self.update_dg_ca3_weights_value = theano.function(inputs=[y, x, val], updates=[(self.dg_ca3_weights,
+            T.set_subtensor(self.dg_ca3_weights[y, x], val))])
+        self.update_ca3_ca3_weights_value = theano.function(inputs=[y, x, val], updates=[(self.ca3_ca3_weights,
+            T.set_subtensor(self.ca3_ca3_weights[y, x], val))])
+        # ===================================================
+
+    # TODO: Theano-ize (parallelization). Use profiler?
     def neuronal_turnover_dg(self):
         # get beta %
         # for each of those neurons, initialize weights according to the percentage above.
-        num_of_dg_neurons = self.dg_values.get_value().shape[0]
-        num_of_ca3_neurons = self.dg_ca3_weights.get_value().shape[1]
-        num_of_ec_neurons = self.ec_values.get_value().shape[0]
+        num_of_dg_neurons = self.dims[2]
+        num_of_ca3_neurons = self.dims[3]
+        num_of_ec_neurons = self.dims[1]
 
         num_of_neurons_to_be_turned_over = int(num_of_dg_neurons * _TURNOVER_RATE)
         for n in range(num_of_neurons_to_be_turned_over):
@@ -160,23 +197,49 @@ class HPC:
             # from ec to dg:
             for ec_n in range(num_of_ec_neurons):
                 if np.random.random() < self.PP:
-                    self.ec_dg_weights[ec_n][random_dg_neuron_index] = np.random.random()
+                    self.update_ec_dg_weights_value(ec_n, random_dg_neuron_index, np.random.random())
                 else:
-                    self.ec_dg_weights[ec_n][random_dg_neuron_index] = 0
-
+                    self.update_ec_dg_weights_value(ec_n, random_dg_neuron_index, 0.0)
             # from dg to ca3:
-            for col in range(num_of_ca3_neurons):
+            for ca3_neuron_index in range(num_of_ca3_neurons):
                 if np.random.random() < self.MF:
-                    self.dg_ca3_weights[random_dg_neuron_index][col] = np.random.random()
+                    self.update_dg_ca3_weights_value(random_dg_neuron_index, ca3_neuron_index, np.random.random())
                 else:
-                    self.dg_ca3_weights[random_dg_neuron_index][col] = 0
+                    self.update_dg_ca3_weights_value(random_dg_neuron_index, ca3_neuron_index, 0.0)
+
+    #
+    # Returns a vector with the corresponding output, i.e. the k largest values as 1, the rest 0.
+    def kWTA(self, values, firing_rate):
+        # kWTA EC:
+        k_neurons = int(len(values[0]) * firing_rate)  # k determined by the firing rate
+
+        sort_act_vals = theano.function([], outputs=T.sort(values))
+        act_vals_sorted = sort_act_vals()
+        k_th_largest_act_val = act_vals_sorted[0, len(values[0]) - k_neurons-1]
+
+        for act_val_index in range(len(values[0])):
+            if values[0, act_val_index] >= k_th_largest_act_val:
+                values[0, act_val_index] = 1
+            else:
+                values[0, act_val_index] = 0
+
+        return values
 
     # TODO: Check parallelism. Check further decentralization possibilities.
     def iter(self):
-        # one iter for each part, such as:
+        # one iteration for each layer/HPC-part
         self.propagate_input_to_ec()
-        self.fire_and_wire_ec_dg()
-        self.fire_and_wire_ca3()
+        # kWTA for EC firing:
+        self.set_ec_values(
+                self.kWTA(self.ec_values.get_value(borrow=False, return_internal_type=True), self.firing_rate_ec))  # deep in-memory copy
+        self.fire_ec_dg()
+        self.set_dg_values(
+                self.kWTA(self.dg_values.get_value(borrow=False, return_internal_type=True), self.firing_rate_dg))  # deep in-memory copy
+        self.wire_ec_dg()
+        self.fire_ca3()
+        self.set_ca3_values(
+                self.kWTA(self.ca3_values.get_value(borrow=False, return_internal_type=True), self.firing_rate_ca3))  # deep in-memory copy
+        self.wire_ca3()
         self.wire_ca3_out()
 
     def print_info(self):
@@ -197,11 +260,15 @@ class HPC:
 
 # testing code:
 
-hpc = HPC([32, 240, 1600, 480, 32], 0.67, 0.25, 0.04)
+hpc = HPC([32, 240, 1600, 480, 32],
+          0.67, 0.25, 0.04,  # connection rates: (in_ec, ec_dg, dg_ca3)
+          0.10, 0.01, 0.04)  # firing rates: (ec, dg, ca3)
 # sample IO:
 # hpc.set_input(np.asarray([[1, 0, -1]]).astype(np.float32))
 # hpc.set_output(np.asarray([[1, 0, -1]]).astype(np.float32))
-hpc.print_info()
-for i in xrange(2):
+# hpc.print_info()
+for i in xrange(10):
     hpc.iter()
-hpc.neuronal_turnover_dg()
+    hpc.print_info()
+    # hpc.neuronal_turnover_dg()
+    # print "input:", hpc.input_values.get_value()
