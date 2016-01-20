@@ -1,6 +1,7 @@
 import theano
 import theano.tensor as T
 import numpy as np
+import time
 
 # Note: Ensure float32 for GPU-usage. Use the profiler to analyse GPU-usage.
 theano.config.floatX = 'float32'
@@ -217,13 +218,13 @@ class HPC:
         act_vals_sorted = sort_act_vals()
         k_th_largest_act_val = act_vals_sorted[0, len(values[0]) - k_neurons-1]
 
+        new_values = np.zeros_like(values, dtype=np.float32)
+
         for act_val_index in range(len(values[0])):
             if values[0, act_val_index] >= k_th_largest_act_val:
-                values[0, act_val_index] = 1
-            else:
-                values[0, act_val_index] = 0
+                new_values[0, act_val_index] = 1
 
-        return values
+        return new_values
 
     # TODO: Check parallelism. Check further decentralization possibilities.
     def iter(self):
@@ -267,8 +268,11 @@ hpc = HPC([32, 240, 1600, 480, 32],
 # hpc.set_input(np.asarray([[1, 0, -1]]).astype(np.float32))
 # hpc.set_output(np.asarray([[1, 0, -1]]).astype(np.float32))
 # hpc.print_info()
+time_before = time.time()
 for i in xrange(10):
     hpc.iter()
-    hpc.print_info()
-    # hpc.neuronal_turnover_dg()
-    # print "input:", hpc.input_values.get_value()
+time_after = time.time()
+hpc.print_info()
+print "Execution time: ", time_after - time_before
+# hpc.neuronal_turnover_dg()
+# print "input:", hpc.input_values.get_value()
