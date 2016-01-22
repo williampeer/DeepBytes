@@ -1,7 +1,6 @@
 import theano
 import theano.tensor as T
 import numpy as np
-import time
 
 # Note: Ensure float32 for GPU-usage. Use the profiler to analyse GPU-usage.
 theano.config.floatX = 'float32'
@@ -257,49 +256,59 @@ class HPC:
         self.propagate_input_to_ec()
         # kWTA for EC firing:
         self.set_ec_values(
-                self.kWTA(self.ec_values.get_value(borrow=False, return_internal_type=True), self.firing_rate_ec))  # deep in-memory copy
+                self.kWTA(self.ec_values.get_value(return_internal_type=True), self.firing_rate_ec))  # deep in-memory copy
         self.fire_ec_dg()
         self.set_dg_values(
-                self.kWTA(self.dg_values.get_value(borrow=False, return_internal_type=True), self.firing_rate_dg))  # deep in-memory copy
+                self.kWTA(self.dg_values.get_value(return_internal_type=True), self.firing_rate_dg))  # deep in-memory copy
         self.wire_ec_dg()
         self.fire_all_to_ca3()
         self.set_ca3_values(
-                self.kWTA(self.ca3_values.get_value(borrow=False, return_internal_type=True), self.firing_rate_ca3))  # deep in-memory copy
+                self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # deep in-memory copy
         self.wire_ca3()
         self.wire_ca3_out()
 
     def print_info(self):
         print "\nprinting activation values:"
-        print self.input_values.get_value()
-        print self.ec_values.get_value()
-        print self.dg_values.get_value()
-        print self.ca3_values.get_value()
-        print self.output_values.get_value()
+        print "in:", self.input_values.get_value()
+        print "ec:", self.ec_values.get_value()
+        print "dg:", self.dg_values.get_value()
+        print "ca3:", self.ca3_values.get_value()
+        print "out:", self.output_values.get_value()
 
-        # print "\nweights:"
-        # print self.in_ec_weights.get_value()
-        # print self.ec_dg_weights.get_value()
-        # print self.ec_ca3_weights.get_value()
-        # print self.ca3_ca3_weights.get_value()
-        # print self.ca3_out_weights.get_value()
+        print "\nweights:"
+        print "in-ec:", self.in_ec_weights.get_value()
+        print "ec-dg:", self.ec_dg_weights.get_value()
+        print "ec-ca3:", self.ec_ca3_weights.get_value()
+        print "dg-ca3:", self.dg_ca3_weights.get_value()
+        print "CA3-CA3:", self.ca3_ca3_weights.get_value()
+        print "ca3-out:", self.ca3_out_weights.get_value()
 
+    def iter_without_learning(self):
+        # one iteration for each layer/HPC-part
+        self.propagate_input_to_ec()
+        # kWTA for EC firing:
+        self.set_ec_values(
+                self.kWTA(self.ec_values.get_value(return_internal_type=True), self.firing_rate_ec))  # in-memory
+        self.fire_to_ca3_no_learning()
+        self.set_ca3_values(
+                self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory
+        self.fire_ca3_out()
 
-# testing code:
-
-hpc = HPC([32, 240, 1600, 480, 32],
-          0.67, 0.25, 0.04,  # connection rates: (in_ec, ec_dg, dg_ca3)
-          0.10, 0.01, 0.04,  # firing rates: (ec, dg, ca3)
-          0.7, 0.1, 1, 0.5,  # gamma, epsilon, nu, turnover rate
-          0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha, alpha is 2, 4, and 5 in different experiments in Hattori (2014)
-# sample IO:
-# hpc.set_input(np.asarray([[1, 0, -1]]).astype(np.float32))
-# hpc.set_output(np.asarray([[1, 0, -1]]).astype(np.float32))
-# hpc.print_info()
-time_before = time.time()
-for i in xrange(10):
-    hpc.iter()
-time_after = time.time()
-hpc.print_info()
-print "Execution time: ", time_after - time_before
-# hpc.neuronal_turnover_dg()
-# print "input:", hpc.input_values.get_value()
+    def iter_until_stopping_criteria(self):  # for now defined as unchanged output for three iterations
+        out_min_2 = []
+        out_min_1 = []
+        out_now = self.output_values
+        stopping_criteria = False
+        ctr = 0
+        self.set_input(np.random.random(self.input_values.get_value().shape))
+        while not stopping_criteria:
+            out_min_2 = np.copy(out_min_1)
+            out_min_1 = np.copy(out_now)
+            self.iter_without_learning()
+            stopping_criteria = True
+            for i in range(len(out_now[0])):
+                if not (out_min_2[0][i] == out_min_1[0][i] == out_now[0][i]):
+                    stopping_criteria = False
+                    break
+            ctr += 1
+        print "Reached stability after", ctr, "iterations."
