@@ -1,0 +1,106 @@
+import theano
+import theano.tensor as T
+import numpy as np
+
+theano.config.floatX = 'float32'
+
+
+class SimpleNeocorticalNetwork:
+    def __init__(self, in_dim, h_dim, out_dim, alpha, momentum):
+
+        self.alpha = alpha
+        self.momentum = momentum
+
+        _in = np.random.random((1, in_dim)).astype(np.float32)
+        _h = np.zeros((1, h_dim), dtype=np.float32)
+        _out = np.zeros((1, out_dim), dtype=np.float32)
+
+        self._in = theano.shared(name='_in', value=_in.astype(theano.config.floatX))
+        self._h = theano.shared(name='_h', value=_h.astype(theano.config.floatX))
+        self._out = theano.shared(name='_out', value=_out.astype(theano.config.floatX))
+
+        in_h_Ws = np.random.random((in_dim, h_dim)).astype(np.float32)
+        h_out_Ws = np.random.random((h_dim, out_dim)).astype(np.float32)
+
+        self.in_h_Ws = theano.shared(name='in_h_Ws', value=in_h_Ws.astype(theano.config.floatX))
+        self.h_out_Ws = theano.shared(name='h_out_Ws', value=h_out_Ws.astype(theano.config.floatX))
+
+        prev_dW1 = np.zeros_like(in_h_Ws, dtype=np.float32)
+        prev_dW2 = np.zeros_like(h_out_Ws, dtype=np.float32)
+        self.prev_delta_W_in_h = theano.shared(name='prev_delta_W_in_h', value=prev_dW1.astype(theano.config.floatX))
+        self.prev_delta_W_h_out = theano.shared(name='prev_delta_W_h_out', value=prev_dW2.astype(theano.config.floatX))
+
+        new_input = T.fmatrix()
+        input_hidden_Ws = T.fmatrix()
+        hidden_output_Ws = T.fmatrix()
+        sum_h = new_input.dot(input_hidden_Ws)
+        next_h = T.tanh(sum_h)
+        sum_out = next_h.dot(hidden_output_Ws)
+        next_out = T.tanh(sum_out)
+
+        self.feed_forward = theano.function([new_input, input_hidden_Ws, hidden_output_Ws],
+                                            updates=[(self._in, new_input), (self._h, next_h), (self._out, next_out)])
+
+        Ws_h_out = T.fmatrix()
+        Ws_in_h = T.fmatrix()
+        prev_delta_W_in_h = T.fmatrix()
+        prev_delta_W_h_out = T.fmatrix()
+        o_in = T.fmatrix()
+        o_h = T.fmatrix()
+        o_out = T.fmatrix()
+        target_out = T.fmatrix()
+
+        # L2 norm
+        tmp = o_out-target_out
+        error = tmp
+
+        tmp_grad_h_out = np.ones_like(o_out, dtype=np.float32) / T.cosh(o_out)
+        diracs_out = error * tmp_grad_h_out * tmp_grad_h_out
+        delta_W_h_out = - self.alpha * o_h.T.dot(diracs_out) + self.momentum * prev_delta_W_h_out
+        new_Ws_h_out = Ws_h_out + delta_W_h_out
+
+        tmp_grad_in_h = np.ones_like(o_h, dtype=np.float32) / T.cosh(o_h)
+        diracs_h_layer_terms = tmp_grad_in_h * tmp_grad_in_h
+        diracs_h_chain = diracs_out.dot(Ws_h_out.T)
+        diracs_h = diracs_h_chain * diracs_h_layer_terms
+        delta_W_in_h = - self.alpha * o_in.T.dot(diracs_h) + self.momentum * prev_delta_W_in_h
+        new_Ws_in_h = Ws_in_h + delta_W_in_h
+
+        self.back_propagate = theano.function([Ws_in_h, Ws_h_out, o_in, o_h, o_out, target_out,
+                                               prev_delta_W_in_h, prev_delta_W_h_out],
+                                              updates=[(self.h_out_Ws, new_Ws_h_out), (self.in_h_Ws, new_Ws_in_h),
+                                                       (self.prev_delta_W_in_h, delta_W_in_h),
+                                                       (self.prev_delta_W_h_out, delta_W_h_out)])
+
+    def train(self, IOPairs):
+        for pair in IOPairs:
+            input_pattern = pair[0]
+            output_pattern = pair[1]
+
+            # no learning criteria, only propagate once?
+            self.feed_forward(input_pattern, self.in_h_Ws.get_value(), self.h_out_Ws.get_value())
+            self.back_propagate(self.in_h_Ws.get_value(), self.h_out_Ws.get_value(), self._in.get_value(),
+                                self._h.get_value(), self._out.get_value(), output_pattern,
+                                self.prev_delta_W_in_h.get_value(), self.prev_delta_W_h_out.get_value())
+
+    def print_layers(self):
+        print "\nPrinting layer activation values:"
+        print "input:\t", self._in.get_value()
+        print "hidden:\t", self._h.get_value()
+        print "output:\t", self._out.get_value()
+
+ann = SimpleNeocorticalNetwork(32, 50, 32, 0.85, 0.01)
+
+# a = np.random.random((1, 32)).astype(np.float32)
+# b = -1 * np.random.random((1, 32)).astype(np.float32)
+a = np.asarray([[0.1, 0.2] * 16], dtype=np.float32)
+b = np.asarray([[-0.2, -0.4] * 16], dtype=np.float32)
+
+iopair = [a, b]
+
+print "target output:", b
+for i in range(100000):
+    ann.train([iopair])
+print ann.in_h_Ws.get_value()
+print ann.h_out_Ws.get_value()
+ann.print_layers()
