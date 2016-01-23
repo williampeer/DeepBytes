@@ -18,15 +18,21 @@ hpc.set_input(c)
 hpc.set_output(d)
 # hpc.print_info()
 time_before = time.time()
-for i in xrange(10):
+for i in xrange(1):
      hpc.iter()
-     hpc.print_info()
-# hpc.iter_until_stopping_criteria()
+     # hpc.print_info()
 time_after = time.time()
+train_time = time_after - time_before
+
+time_before = time.time()
+hpc.iter_until_stopping_criteria()
+time_after = time.time()
+prop_time_until_stable = time_after - time_before
+print "output:", hpc.output_values.get_value()
+
 hpc.print_info()
-print "Execution time: ", time_after - time_before
-# hpc.neuronal_turnover_dg()
-# print "input:", hpc.input_values.get_value()
+print "Training time: ", train_time
+print "Propagation time until stability:", prop_time_until_stable
 
 
 

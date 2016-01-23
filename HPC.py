@@ -400,23 +400,3 @@ class HPC:
         print "dg-ca3:", self.dg_ca3_weights.get_value()
         print "CA3-CA3:", self.ca3_ca3_weights.get_value()
         print "ca3-out:", self.ca3_out_weights.get_value()
-
-# ==================== TESTING CODE: ======================
-# Hippocampal module
-hpc = HPC([32, 240, 1600, 480, 32],
-          0.67, 0.25, 0.04,  # connection rates: (in_ec, ec_dg, dg_ca3)
-          0.10, 0.01, 0.04,  # firing rates: (ec, dg, ca3)
-          0.7, 0.1, 1, 0.5,  # gamma, epsilon, nu, turnover rate
-          0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha, alpha is 2, 4, and 5 in different experiments in Hattori (2014)
-# sample IO:
-c = np.asarray([[1, -1] * 16], dtype=np.float32)
-d = np.asarray([[-1, 1] * 16], dtype=np.float32)
-hpc.set_input(c)
-hpc.set_output(d)
-# hpc.print_info()
-for i in xrange(1):
-     hpc.iter()
-     # hpc.print_info()
-hpc.iter_until_stopping_criteria()
-print "output:", hpc.output_values.get_value()
-# hpc.iter_until_stopping_criteria()
