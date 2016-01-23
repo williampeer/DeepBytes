@@ -5,7 +5,6 @@ import numpy as np
 # Note: Ensure float32 for GPU-usage. Use the profiler to analyse GPU-usage.
 theano.config.floatX = 'float32'
 
-
 # dims: neuron layer sizes
 # gamma: forgetting factor
 # epsilon: steepness parameter (used in transfer function)
@@ -400,3 +399,7 @@ class HPC:
         print "dg-ca3:", self.dg_ca3_weights.get_value()
         print "CA3-CA3:", self.ca3_ca3_weights.get_value()
         print "ca3-out:", self.ca3_out_weights.get_value()
+
+    def test_pydotprint(self):
+        theano.printing.pydotprint(self.fire_all_to_ca3, outfile="/hpc_pydotprint_test.png",
+                                   var_with_name_simple=True)

@@ -18,7 +18,7 @@ hpc.set_input(c)
 hpc.set_output(d)
 # hpc.print_info()
 time_before = time.time()
-for i in xrange(10):
+for i in xrange(1):
      hpc.iter()
      # hpc.print_info()
 time_after = time.time()
@@ -33,7 +33,7 @@ print "output:", hpc.output_values.get_value()
 print "Training time: ", train_time
 print "Propagation time until stability:", prop_time_until_stable
 
-
+hpc.test_pydotprint()
 
 # Neocortical module:
 # ann = SimpleNeocorticalNetwork(32, 50, 32, 0.85, 0.01)
