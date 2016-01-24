@@ -1,6 +1,7 @@
 import theano
 import theano.tensor as T
 import numpy as np
+from PIL import Image, ImageDraw
 
 # Note: Ensure float32 for GPU-usage. Use the profiler to analyse GPU-usage.
 theano.config.floatX = 'float32'
@@ -82,6 +83,7 @@ class HPC:
             for column in range(dims[1]):
                 if np.random.random() < (1 - self.connection_rate_input_ec):
                     input_ec_weights[row][column] = 0
+        # These are fixed at 1.
         self.in_ec_weights = theano.shared(name='in_ec_weights', value=input_ec_weights.astype(theano.config.floatX),
                                            borrow=True)
 
@@ -145,9 +147,9 @@ class HPC:
                                           updates=[(self.dg_values, next_activation_values_dg)])
 
         # wire after kWTA for this layer
-        u_prev_reshaped_transposed = T.fmatrix()
-        u_next_reshaped = T.fmatrix()
-        Ws_prev_next = T.fmatrix()
+        u_prev_reshaped_transposed = T.fmatrix('u_prev_reshaped_transposed')
+        u_next_reshaped = T.fmatrix('u_next_reshaped')
+        Ws_prev_next = T.fmatrix('Ws_prev_next')
         # Element-wise operations. w_13_next = w_13 + nu u_3(u_1-u_3 w_13).
         next_Ws = Ws_prev_next + self._nu * u_next_reshaped * (u_prev_reshaped_transposed.T - u_next_reshaped * Ws_prev_next)
         self.wire_ec_dg = theano.function([u_prev_reshaped_transposed, u_next_reshaped, Ws_prev_next],
@@ -244,12 +246,12 @@ class HPC:
         num_of_ca3_neurons = self.dims[3]
         num_of_ec_neurons = self.dims[1]
 
-        num_of_neurons_to_be_turned_over = int(num_of_dg_neurons * self._turnover_rate)
-        for n in range(num_of_neurons_to_be_turned_over):
+        num_of_neurons_to_be_turned_over = np.round(num_of_dg_neurons * self._turnover_rate).astype(np.int8)
+        for n in xrange(num_of_neurons_to_be_turned_over):
             # Note: These neurons may be drawn so that we get a more exact number of beta %. This implementation,
             #   however, introduces random fluctuations. Which might be beneficial?
             # this neuron is selected to have re-initialised its weights:
-            random_dg_neuron_index = int(np.random.random() * num_of_dg_neurons)
+            random_dg_neuron_index = np.round(np.random.random() * num_of_dg_neurons).astype(np.int8)
 
             # from ec to dg:
             for ec_n in range(num_of_ec_neurons):
@@ -283,14 +285,14 @@ class HPC:
         return new_values
 
     # TODO: Check parallelism. Check further decentralization possibilities.
-    def iter(self):
+    def learn(self):
         # one iteration for each layer/HPC-part
         # fire EC to DG
         self.fire_ec_dg(self.ec_values.get_value(return_internal_type=True),
                         self.ec_dg_weights.get_value(return_internal_type=True))
         # kWTA
         self.set_dg_values(
-                self.kWTA(self.dg_values.get_value(return_internal_type=True), self.firing_rate_dg))  # deep in-memory copy
+                self.kWTA(self.dg_values.get_value(return_internal_type=True), self.firing_rate_dg))  # in-memory copy
 
         # wire EC to DG
         n_rows_for_u_next = self.ec_values.get_value(return_internal_type=True).shape[1]
@@ -313,7 +315,7 @@ class HPC:
         self.fire_all_to_ca3(l_ec_vals, l_ec_ca3_Ws, l_dg_vals, l_dg_ca3_Ws, l_ca3_vals, l_ca3_ca3_Ws, l_nu_ca3, l_zeta_ca3)
         # kWTA
         self.set_ca3_values(
-                self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # deep in-memory copy
+                self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory copy
 
         # wire EC to CA3
         n_rows = self.ec_values.get_value(return_internal_type=True).shape[1]
@@ -345,13 +347,14 @@ class HPC:
                                    self.in_ec_weights.get_value(return_internal_type=True))
         # kWTA for EC firing:
         self.set_ec_values(
-                self.kWTA(self.ec_values.get_value(return_internal_type=True), self.firing_rate_ec))  # deep in-memory copy
+                self.kWTA(self.ec_values.get_value(return_internal_type=True), self.firing_rate_ec))  # in-memory copy
 
     def setup_pattern(self, input_pattern, output_pattern):
+        self.neuronal_turnover_dg()
         self.setup_input(input_pattern)
         self.set_output(output_pattern)
 
-    def iter_without_learning(self):
+    def recall(self):
         # Fire EC to CA3, CA3 to CA3
         self.fire_to_ca3_no_learning(self.ec_values.get_value(return_internal_type=True),
                                      self.ec_ca3_weights.get_value(return_internal_type=True),
@@ -366,23 +369,54 @@ class HPC:
         self.fire_ca3_out(self.ca3_values.get_value(return_internal_type=True),
                           self.ca3_out_weights.get_value(return_internal_type=True))
 
-    def iter_until_stopping_criteria(self):  # for now defined as unchanged output for three iterations
+        # Binary output:
+        self.set_output(self.get_binary_in_out_values(self.output_values.get_value(return_internal_type=True)))
+
+    def recall_until_stability_criteria(self, should_display_image):  # recall until output unchanged three iterations
         out_now = np.copy(self.output_values.get_value(borrow=False))
         out_min_1 = np.zeros_like(out_now, dtype=np.float32)
         out_min_2 = np.zeros_like(out_now, dtype=np.float32)
         stopping_criteria = False
         ctr = 0
-        while not stopping_criteria:
+        while not stopping_criteria and ctr < 300:
             out_min_2 = np.copy(out_min_1)
             out_min_1 = np.copy(out_now)
-            self.iter_without_learning()
+
+            self.recall()
+            out_now = np.copy(self.output_values.get_value(borrow=False))
             stopping_criteria = True
-            for i in range(len(out_now[0])):
-                if not (out_min_2[0][i] == out_min_1[0][i] == out_now[0][i]):
+            for out_y in xrange(out_now.shape[1]):
+                if not (out_min_2[0][out_y] == out_min_1[0][out_y] == out_now[0][out_y]):
                     stopping_criteria = False
                     break
+            if should_display_image:
+                self.show_image_from(out_now)
+
             ctr += 1
+
         print "Reached stability after", ctr, "iterations."
+
+    def show_image_from(self, out_now):
+        width = 7
+        height = 7
+        pixel_scaling_factor = 2 ** 3  # Exponent of two for symmetry.
+        im = Image.new('1', (width*pixel_scaling_factor, height*pixel_scaling_factor))
+        for element in xrange(out_now.shape[1]):
+            for i in xrange(pixel_scaling_factor):
+                for j in xrange(pixel_scaling_factor):
+                    im.putpixel(((element % width)*pixel_scaling_factor + j,
+                                 np.floor(element/height).astype(np.int8) * pixel_scaling_factor + i),
+                                out_now[0][element]*255)
+        im.show()
+        print "Output image"
+
+    def get_binary_in_out_values(self, values):
+        new_values = np.ones_like(values, dtype=np.float32)
+        for value_index in xrange(values.shape[1]):
+            if values[0][value_index] < 0:
+                new_values[0][value_index] = -1
+        return new_values
+
 
     def print_info(self):
         print "\nprinting activation values:"
