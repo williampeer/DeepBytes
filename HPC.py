@@ -394,7 +394,7 @@ class HPC:
 
             ctr += 1
 
-        print "Reached stability after", ctr, "iterations."
+        print "Reached stability during chaotic recall after", ctr, "iterations."
 
     def show_image_from(self, out_now):
         width = 7
