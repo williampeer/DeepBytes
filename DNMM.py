@@ -1,6 +1,7 @@
 import time
 from HPC import *
 from SimpleNeocorticalNetwork import *
+from data import *
 
 def hpc_learn_patterns_wrapper(hpc, patterns, training_iterations):
     print "Commencing learning of", len(patterns), "I/O patterns."
@@ -28,17 +29,21 @@ def hpc_chaotic_recall_wrapper(hpc, display_images_of_intermediate_output):
     hpc.recall_until_stability_criteria(should_display_image=display_images_of_intermediate_output)
     time_after = time.time()
     prop_time_until_stable = time_after - time_before
-    print "output:", hpc.output_values.get_value()
+    # print "output:", hpc.output_values.get_value()
 
     print "Propagation time until stability:", "{:0.3f}".format(prop_time_until_stable), "seconds."
 
 # ==================== TESTING CODE: ======================
 # Hippocampal module
 io_dim = 49
+# dims,
+# connection_rate_input_ec, perforant_path, mossy_fibers,
+#                  firing_rate_ec, firing_rate_dg, firing_rate_ca3,
+#                  _gamma, _epsilon, _nu, _turnover_rate, _k_m, _k_r, _a_i, _alpha):
 hpc = HPC([io_dim, 240, 1600, 480, io_dim],
           0.67, 0.25, 0.04,  # connection rates: (in_ec, ec_dg, dg_ca3)
           0.10, 0.01, 0.04,  # firing rates: (ec, dg, ca3)
-          0.7, 0.1, 1, 0.5,  # gamma, epsilon, nu, turnover rate
+          0.7, 1, 0.1, 0.5,  # gamma, epsilon, nu, turnover rate
           0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha, alpha is 2, 4, and 5 in different experiments in Hattori (2014)
 # sample IO:
 I = np.asarray([[1, -1, 1, -1, 1, -1, 1] * 7], dtype=np.float32)
@@ -56,9 +61,25 @@ for index in xrange(rand_I.shape[1]):
     else:
         rand_O[0][index] = 1
 
-hpc_learn_patterns_wrapper(hpc, [[I, O], [rand_I, rand_O]], training_iterations=1)
+patterns = []
+for pattern in data_letters:
+    io = [[]]
+    for row in pattern:
+        for el in row:
+            io[0].append(el)
+    new_array = np.asarray(io, dtype=np.float32)
+    patterns.append([new_array, new_array])
+# patterns.reverse()
+hpc_learn_patterns_wrapper(hpc, patterns=patterns, training_iterations=2)
 
-hpc_chaotic_recall_wrapper(hpc, display_images_of_intermediate_output=True)
+hpc_chaotic_recall_wrapper(hpc, display_images_of_intermediate_output=False)
+
+print "Recalling all learned patterns:"
+for i in xrange(len(patterns)):
+    print "Pattern #", i
+    hpc.setup_input(patterns[i][0])
+    hpc.recall()
+    hpc.show_image_from(hpc.output_values.get_value())
 
 
 # Neocortical module:
