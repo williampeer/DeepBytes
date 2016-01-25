@@ -72,7 +72,7 @@ for pattern in data_letters:
 # patterns.reverse()
 hpc_learn_patterns_wrapper(hpc, patterns=patterns, training_iterations=1)
 
-hpc_chaotic_recall_wrapper(hpc, display_images_of_intermediate_output=False)
+# hpc_chaotic_recall_wrapper(hpc, display_images_of_intermediate_output=False)
 
 print "Recalling all learned patterns:"
 for i in xrange(len(patterns)):
