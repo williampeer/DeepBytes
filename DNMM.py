@@ -62,7 +62,7 @@ for index in xrange(rand_I.shape[1]):
         rand_O[0][index] = 1
 
 patterns = []
-for pattern in data_letters_capital:
+for pattern in data_letters_capital[:4]:
     io = [[]]
     for row in pattern:
         for el in row:
@@ -70,9 +70,7 @@ for pattern in data_letters_capital:
     new_array = np.asarray(io, dtype=np.float32)
     patterns.append([new_array, new_array])
 # patterns.reverse()
-hpc.print_info()
 hpc_learn_patterns_wrapper(hpc, patterns=patterns, training_iterations=1)
-hpc.print_info()
 
 # hpc_chaotic_recall_wrapper(hpc, display_images_of_intermediate_output=False)
 
