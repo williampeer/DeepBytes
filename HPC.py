@@ -41,33 +41,34 @@ class HPC:
 
         # ============== ACTIVATION VALUES ==================
         input_values = np.zeros((1, dims[0]), dtype=np.float32)
-        for n_in in range(dims[0]):
-            if np.random.random() < 0.5:
-                input_values[0][n_in] = 1
-            else:
-                input_values[0][n_in] = -1
+        # for n_in in range(dims[0]):
+        #     if np.random.random() < 0.5:
+        #         input_values[0][n_in] = 1
+        #     else:
+        #         input_values[0][n_in] = -1
         self.input_values = theano.shared(name='input_values', value=input_values.astype(theano.config.floatX),
                                           borrow=True)
 
         # in order to create fmatrices, we need to call random.random, and not zeros(1, N).
-        ec_values = np.random.random((1, dims[1])).astype(np.float32)
+        # ec_values = np.random.random((1, dims[1])).astype(np.float32)
+        ec_values = np.random.uniform(-1, 1, (1, dims[1])).astype(np.float32)
         self.ec_values = theano.shared(name='ec_values', value=ec_values.astype(theano.config.floatX), borrow=True)
 
-        dg_values = np.random.random((1, dims[2])).astype(np.float32)
+        dg_values = np.random.uniform(-1, 1, (1, dims[2])).astype(np.float32)
         self.dg_values = theano.shared(name='dg_values', value=dg_values.astype(theano.config.floatX), borrow=True)
 
-        ca3_values = np.random.random((1, dims[3])).astype(np.float32)
+        ca3_values = np.random.uniform(-1, 1, (1, dims[3])).astype(np.float32)
         self.ca3_values = theano.shared(name='ca3_values', value=ca3_values.astype(theano.config.floatX), borrow=True)
         prev_ca3_values = np.zeros_like(ca3_values, dtype=np.float32)
         self.prev_ca3_values = theano.shared(name='prev_ca3_values', value=prev_ca3_values.astype(theano.config.floatX),
                                              borrow=True)
 
         output_values = np.zeros((1, dims[4])).astype(np.float32)
-        for n_in in range(dims[4]):
-            if np.random.random() < 0.5:
-                output_values[0][n_in] = 1
-            else:
-                output_values[0][n_in] = -1
+        # for n_in in range(dims[4]):
+        #     if np.random.random() < 0.5:
+        #         output_values[0][n_in] = 1
+        #     else:
+        #         output_values[0][n_in] = -1
         self.output_values = theano.shared(name='output_values', value=output_values.astype(theano.config.floatX),
                                            borrow=True)
 
@@ -96,15 +97,16 @@ class HPC:
             for col in range(dims[2]):
                 if np.random.random() < self.PP:
                     sign = 1
-                    # if np.random.random() < 0.5:
-                    #     sign = -1
+                    if np.random.random() < 0.5:
+                        sign = -1
                     ec_dg_weights[row][col] = sign * np.random.random()
         self.ec_dg_weights = theano.shared(name='ec_dg_weights', value=ec_dg_weights.astype(theano.config.floatX),
                                            borrow=True)
 
         # randomly assign all weights between the EC and CA3
         np.random.seed(np.sqrt(time.time()).astype(np.int64))
-        ec_ca3_weights = np.random.random((dims[1], dims[3])).astype(np.float32)
+        ec_ca3_weights = np.random.uniform(-1, 1, (dims[1], dims[3])).astype(np.float32)
+        # ec_ca3_weights = np.random.random((dims[1], dims[3])).astype(np.float32)
         # ec_ca3_weights = 2 * np.random.random((dims[1], dims[3])).astype(np.float32)
         # ec_ca3_weights = ec_ca3_weights - np.ones_like(ec_ca3_weights, dtype=np.float32)
         self.ec_ca3_weights = theano.shared(name='ec_ca3_weights', value=ec_ca3_weights.astype(theano.config.floatX),
@@ -125,7 +127,7 @@ class HPC:
 
         # randomly assign 100 % of the weights between CA3 and CA3
         np.random.seed(np.sqrt(time.time()).astype(np.int64))
-        ca3_ca3_weights = np.random.random((dims[3], dims[3])).astype(np.float32)
+        ca3_ca3_weights = np.random.uniform(-1, 1, (dims[3], dims[3])).astype(np.float32)
         # ca3_ca3_weights = 2 * np.random.random((dims[3], dims[3])).astype(np.float32)
         # ca3_ca3_weights = ca3_ca3_weights - np.ones_like(ca3_ca3_weights, dtype=np.float32)
         self.ca3_ca3_weights = theano.shared(name='ca3_ca3_weights', value=ca3_ca3_weights.astype(theano.config.floatX),
@@ -133,7 +135,7 @@ class HPC:
 
         # random weight assignment, full connection rate CA3-out
         np.random.seed(np.sqrt(time.time()).astype(np.int64))
-        ca3_output_weights = np.random.random((dims[3], dims[4])).astype(np.float32)
+        ca3_output_weights = np.random.uniform(-1, 1, (dims[3], dims[4])).astype(np.float32)
         # ca3_output_weights = 2 * np.random.random((dims[3], dims[4])).astype(np.float32)
         # ca3_output_weights = ca3_output_weights - np.ones_like(ca3_output_weights, dtype=np.float32)
         self.ca3_out_weights = theano.shared(name='ca3_out_weights',

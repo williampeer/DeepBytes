@@ -53,7 +53,7 @@ io_dim = 49
 hpc = HPC([io_dim, 240, 1600, 480, io_dim],
           0.67, 0.25, 0.04,  # connection rates: (in_ec, ec_dg, dg_ca3)
           0.10, 0.01, 0.04,  # firing rates: (ec, dg, ca3)
-          0.7, 1.0, 0.1, 0.1,  # gamma, epsilon, nu, turnover rate
+          0.7, 1.0, 0.1, 0.5,  # gamma, epsilon, nu, turnover rate
           0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha, alpha is 2, 4, and 5 in different experiments in Hattori (2014)
 
 patterns = []
