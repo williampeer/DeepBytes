@@ -70,7 +70,9 @@ for pattern in data_letters:
     new_array = np.asarray(io, dtype=np.float32)
     patterns.append([new_array, new_array])
 # patterns.reverse()
+hpc.print_info()
 hpc_learn_patterns_wrapper(hpc, patterns=patterns, training_iterations=1)
+hpc.print_info()
 
 # hpc_chaotic_recall_wrapper(hpc, display_images_of_intermediate_output=False)
 
@@ -81,6 +83,7 @@ for i in xrange(len(patterns)):
     hpc.recall()
     hpc.show_image_from(hpc.output_values.get_value())
 
+hpc.print_info()
 
 # Neocortical module:
 # ann = SimpleNeocorticalNetwork(32, 50, 32, 0.85, 0.01)
