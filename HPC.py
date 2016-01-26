@@ -51,13 +51,13 @@ class HPC:
 
         # in order to create fmatrices, we need to call random.random, and not zeros(1, N).
         # ec_values = np.random.random((1, dims[1])).astype(np.float32)
-        ec_values = np.random.uniform(-1, 1, (1, dims[1])).astype(np.float32)
+        ec_values = 0 * np.random.uniform(-1, 1, (1, dims[1])).astype(np.float32)
         self.ec_values = theano.shared(name='ec_values', value=ec_values.astype(theano.config.floatX), borrow=True)
 
-        dg_values = np.random.uniform(-1, 1, (1, dims[2])).astype(np.float32)
+        dg_values = 0 * np.random.uniform(-1, 1, (1, dims[2])).astype(np.float32)
         self.dg_values = theano.shared(name='dg_values', value=dg_values.astype(theano.config.floatX), borrow=True)
 
-        ca3_values = np.random.uniform(-1, 1, (1, dims[3])).astype(np.float32)
+        ca3_values = 0 * np.random.uniform(-1, 1, (1, dims[3])).astype(np.float32)
         self.ca3_values = theano.shared(name='ca3_values', value=ca3_values.astype(theano.config.floatX), borrow=True)
         prev_ca3_values = np.zeros_like(ca3_values, dtype=np.float32)
         self.prev_ca3_values = theano.shared(name='prev_ca3_values', value=prev_ca3_values.astype(theano.config.floatX),
@@ -105,10 +105,10 @@ class HPC:
 
         # randomly assign all weights between the EC and CA3
         np.random.seed(np.sqrt(time.time()).astype(np.int64))
-        ec_ca3_weights = np.random.uniform(-1, 1, (dims[1], dims[3])).astype(np.float32)
+        # ec_ca3_weights = np.random.uniform(-1, 1, (dims[1], dims[3])).astype(np.float32)
         # ec_ca3_weights = np.random.random((dims[1], dims[3])).astype(np.float32)
-        # ec_ca3_weights = 2 * np.random.random((dims[1], dims[3])).astype(np.float32)
-        # ec_ca3_weights = ec_ca3_weights - np.ones_like(ec_ca3_weights, dtype=np.float32)
+        ec_ca3_weights = 2 * np.random.random((dims[1], dims[3])).astype(np.float32)
+        ec_ca3_weights = ec_ca3_weights - np.ones_like(ec_ca3_weights, dtype=np.float32)
         self.ec_ca3_weights = theano.shared(name='ec_ca3_weights', value=ec_ca3_weights.astype(theano.config.floatX),
                                             borrow=True)
 
@@ -119,25 +119,25 @@ class HPC:
             for col in range(dims[3]):
                 if np.random.random() < self.MF:
                     sign = 1
-                    # if np.random.random() < 0.5:
-                    #     sign = -1
+                    if np.random.random() < 0.5:
+                        sign = -1
                     dg_ca3_weights[row][col] = sign * np.random.random()
         self.dg_ca3_weights = theano.shared(name='dg_ca3_weights', value=dg_ca3_weights.astype(theano.config.floatX),
                                             borrow=True)
 
         # randomly assign 100 % of the weights between CA3 and CA3
         np.random.seed(np.sqrt(time.time()).astype(np.int64))
-        ca3_ca3_weights = np.random.uniform(-1, 1, (dims[3], dims[3])).astype(np.float32)
-        # ca3_ca3_weights = 2 * np.random.random((dims[3], dims[3])).astype(np.float32)
-        # ca3_ca3_weights = ca3_ca3_weights - np.ones_like(ca3_ca3_weights, dtype=np.float32)
+        # ca3_ca3_weights = np.random.uniform(-1, 1, (dims[3], dims[3])).astype(np.float32)
+        ca3_ca3_weights = 2 * np.random.random((dims[3], dims[3])).astype(np.float32)
+        ca3_ca3_weights = ca3_ca3_weights - np.ones_like(ca3_ca3_weights, dtype=np.float32)
         self.ca3_ca3_weights = theano.shared(name='ca3_ca3_weights', value=ca3_ca3_weights.astype(theano.config.floatX),
                                              borrow=True)
 
         # random weight assignment, full connection rate CA3-out
         np.random.seed(np.sqrt(time.time()).astype(np.int64))
-        ca3_output_weights = np.random.uniform(-1, 1, (dims[3], dims[4])).astype(np.float32)
-        # ca3_output_weights = 2 * np.random.random((dims[3], dims[4])).astype(np.float32)
-        # ca3_output_weights = ca3_output_weights - np.ones_like(ca3_output_weights, dtype=np.float32)
+        # ca3_output_weights = np.random.uniform(-1, 1, (dims[3], dims[4])).astype(np.float32)
+        ca3_output_weights = 2 * np.random.random((dims[3], dims[4])).astype(np.float32)
+        ca3_output_weights = ca3_output_weights - np.ones_like(ca3_output_weights, dtype=np.float32)
         self.ca3_out_weights = theano.shared(name='ca3_out_weights',
                                              value=ca3_output_weights.astype(theano.config.floatX), borrow=True)
 
@@ -267,13 +267,13 @@ class HPC:
         num_of_ca3_neurons = self.dims[3]
         num_of_ec_neurons = self.dims[1]
 
-        num_of_neurons_to_be_turned_over = np.round(num_of_dg_neurons * self._turnover_rate).astype(np.int8)
+        num_of_neurons_to_be_turned_over = np.round(num_of_dg_neurons * self._turnover_rate).astype(np.int16)
         # np.random.seed(np.sqrt(time.time()).astype(np.int64))
         for n in xrange(num_of_neurons_to_be_turned_over):
             # Note: These neurons may be drawn so that we get a more exact number of beta %. This implementation,
             #   however, introduces random fluctuations. Which might be beneficial?
             # this neuron is selected to have re-initialised its weights:
-            random_dg_neuron_index = np.round(np.random.random() * num_of_dg_neurons).astype(np.int8)
+            random_dg_neuron_index = np.round(np.random.random() * (num_of_dg_neurons-1)).astype(np.int16)
 
             # from ec to dg:
             for ec_n in range(num_of_ec_neurons):
