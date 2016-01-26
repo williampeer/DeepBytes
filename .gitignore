@@ -1,5 +1,5 @@
 .idea/*
-HPC.pyc
+*.pyc
+*.txt
 data\ letters~
-data.pyc
 Workbench.py
