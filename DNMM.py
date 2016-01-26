@@ -15,7 +15,7 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
             setup_start = time.time()
             hpc.setup_pattern(input_pattern, output_pattern)
             setup_end = time.time()
-            print "Setup took:", "{:0.3f}".format(setup_end-setup_start), "seconds."
+            print "Setup took:", "{:6.3f}".format(setup_end-setup_start), "seconds."
 
             # one iteration of learning using Hebbian learning
             time_before = time.time()
@@ -23,7 +23,7 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
             # hpc.print_activation_values_sum()
             time_after = time.time()
             print "Iterated over pattern", p_ctr, "in", \
-                "{:0.3f}".format(time_after - time_before), "seconds."
+                "{:6.3f}".format(time_after - time_before), "seconds."
             p_ctr += 1
 
         learned_all = True
@@ -47,7 +47,7 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
         iter_ctr += 1
     time_stop_overall = time.time()
 
-    print "Learned", len(patterns), "pattern-associations in ", iter_ctr, "iterations, which took" "{:0.3f}". \
+    print "Learned", len(patterns), "pattern-associations in ", iter_ctr, "iterations, which took" "{:6.3f}". \
         format(time_stop_overall-time_start_overall), "seconds."
 
 def hpc_chaotic_recall_wrapper(hpc, display_images_of_intermediate_output, recall_iterations):
@@ -66,7 +66,7 @@ def hpc_chaotic_recall_wrapper(hpc, display_images_of_intermediate_output, recal
         time_after = time.time()
         prop_time_until_stable = time_after - time_before
 
-        print "Propagation time until stability:", "{:0.3f}".format(prop_time_until_stable), "seconds."
+        print "Propagation time until stability:", "{:6.3f}".format(prop_time_until_stable), "seconds."
         print "t =", cur_iters
         time_before = time.time()
     print "Total chaotic recall time:", "{:6.3f}".format(time.time()-time_the_beginning_of_time), "seconds."
