@@ -301,7 +301,8 @@ class HPC:
     # Returns a vector with the corresponding output, i.e. the k largest values as 1, the rest 0.
     def kWTA(self, values, firing_rate):
         # kWTA EC:
-        k_neurons = np.round(len(values[0]) * firing_rate).astype(np.int8)  # k determined by the firing rate
+        k_neurons = np.round(len(values[0]) * firing_rate).astype(np.int32)  # k determined by the firing rate
+        # k_neurons = int(len(values[0]) * firing_rate)  # k determined by the firing rate
 
         sort_act_vals = theano.function([], outputs=T.sort(values))
         act_vals_sorted = sort_act_vals()
@@ -310,7 +311,7 @@ class HPC:
         new_values = np.zeros_like(values, dtype=np.float32)
 
         for act_val_index in range(len(values[0])):
-            if values[0, act_val_index] > k_th_largest_act_val:
+            if values[0, act_val_index] >= k_th_largest_act_val:
                 new_values[0, act_val_index] = 1
 
         return new_values
@@ -336,18 +337,18 @@ class HPC:
                         self.ec_dg_weights.get_value(return_internal_type=True))
 
         # fire EC to CA3, DG to CA3, and CA3 to CA3
-        l_ec_vals = self.ec_values.get_value()
-        l_ec_ca3_Ws = self.ec_ca3_weights.get_value()
+        l_ec_vals = self.ec_values.get_value(return_internal_type=True)
+        l_ec_ca3_Ws = self.ec_ca3_weights.get_value(return_internal_type=True)
         l_dg_vals = self.dg_values.get_value(return_internal_type=True)
         l_dg_ca3_Ws = self.dg_ca3_weights.get_value(return_internal_type=True)
-        l_ca3_vals = self.ca3_values.get_value()
-        l_ca3_ca3_Ws = self.ca3_ca3_weights.get_value()
+        l_ca3_vals = self.ca3_values.get_value(return_internal_type=True)
+        l_ca3_ca3_Ws = self.ca3_ca3_weights.get_value(return_internal_type=True)
         l_nu_ca3 = self.nu_ca3.get_value(return_internal_type=True)
         l_zeta_ca3 = self.zeta_ca3.get_value(return_internal_type=True)
         self.fire_all_to_ca3(l_ec_vals, l_ec_ca3_Ws, l_dg_vals, l_dg_ca3_Ws, l_ca3_vals, l_ca3_ca3_Ws, l_nu_ca3, l_zeta_ca3)
         # kWTA
         self.set_ca3_values(
-                self.kWTA(self.ca3_values.get_value(), self.firing_rate_ca3))  # in-memory copy
+                self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory copy
 
         # wire EC to CA3
         n_rows = self.ec_values.get_value(return_internal_type=True).shape[1]
@@ -397,19 +398,19 @@ class HPC:
                                      self.nu_ca3.get_value(return_internal_type=True),
                                      self.zeta_ca3.get_value(return_internal_type=True))
         # kWTA CA3
-        print "ca3 after firing, before kWTA:", self.ca3_values.get_value()
+        # print "ca3 after firing, before kWTA:", self.ca3_values.get_value()
         self.set_ca3_values(
                 self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory
         # fire CA3 to output
-        print "ca3 after kWTA:", self.ca3_values.get_value()
-        print "output before firing:", self.output_values.get_value()
+        # print "ca3 after kWTA:", self.ca3_values.get_value()
+        # print "output before firing:", self.output_values.get_value()
         self.fire_ca3_out(self.ca3_values.get_value(return_internal_type=True),
                           self.ca3_out_weights.get_value(return_internal_type=True))
-        print "output after firing:", self.output_values.get_value()
+        # print "output after firing:", self.output_values.get_value()
 
         # Bipolar output:
         self.set_output(self.get_bipolar_in_out_values(self.output_values.get_value(return_internal_type=True)))
-        print "output after bipolar output:", self.output_values.get_value()
+        # print "output after bipolar output:", self.output_values.get_value()
 
     def recall_until_stability_criteria(self, should_display_image, max_iterations):  # recall until output unchanged three iterations
         out_now = np.copy(self.output_values.get_value(borrow=False))

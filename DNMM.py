@@ -6,23 +6,26 @@ from data_capital import *
 def hpc_learn_patterns_wrapper(hpc, patterns, training_iterations):
     print "Commencing learning of", len(patterns), "I/O patterns."
     time_start_overall = time.time()
-    for [input_pattern, output_pattern] in patterns:
-        # Neuronal turnover, setting input and output in the hpc network.
-        setup_start = time.time()
-        hpc.setup_pattern(input_pattern, output_pattern)
-        setup_end = time.time()
-        print "Setup took:", "{:10.4f}".format(setup_end-setup_start), "seconds."
+    for i in xrange(training_iterations):
+        for [input_pattern, output_pattern] in patterns:
+            # Neuronal turnover, setting input and output in the hpc network.
+            setup_start = time.time()
+            hpc.setup_pattern(input_pattern, output_pattern)
+            setup_end = time.time()
+            print "Setup took:", "{:10.4f}".format(setup_end-setup_start), "seconds."
 
-        time_before = time.time()
-        for i in xrange(training_iterations):
             # one iteration of learning using Hebbian learning
+            time_before = time.time()
             hpc.learn()
             hpc.print_activation_values_sum()
-        time_after = time.time()
-        train_time = time_after - time_before
-        print "Training time: ", "{:10.4f}".format(train_time), "seconds. Trained for", training_iterations, "iteration(s)."
+            time_after = time.time()
+            print "Iterated over pattern in", "{:10.4f}".format(time_after - time_before), "seconds."
+        cur_t = time.time()
+        print "Iterated over all patterns. Total training time: ", "{:10.4f}".format(cur_t-time_start_overall), \
+            "seconds. Currently trained for", i, "iteration(s)."
     time_stop_overall = time.time()
-    print "Learned", len(patterns), "pattern-associations in ", "{:10.4f}".format(time_stop_overall-time_start_overall), "seconds."
+    print "Learned", len(patterns), "pattern-associations in ", "{:10.4f}".format(time_stop_overall-time_start_overall)\
+        , "seconds."
 
 def hpc_chaotic_recall_wrapper(hpc, display_images_of_intermediate_output, recall_iterations):
     time_before = time.time()
@@ -57,7 +60,7 @@ hpc = HPC([io_dim, 240, 1600, 480, io_dim],
           0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha, alpha is 2, 4, and 5 in different experiments in Hattori (2014)
 
 patterns = []
-num_to_learn = 1
+num_to_learn = 2
 for pattern in data_letters_capital[:num_to_learn]:
     io = [[]]
     for row in pattern:
@@ -66,9 +69,8 @@ for pattern in data_letters_capital[:num_to_learn]:
     new_array = np.asarray(io, dtype=np.float32)
     patterns.append([new_array, new_array])
 # patterns.reverse()
-hpc_learn_patterns_wrapper(hpc, patterns=patterns, training_iterations=1)
-# hpc.print_info()
-# hpc_chaotic_recall_wrapper(hpc, display_images_of_intermediate_output=True, recall_iterations=30)
+
+hpc_learn_patterns_wrapper(hpc, patterns=patterns, training_iterations=15)
 
 print "Recalling all learned patterns:"
 for i in xrange(len(patterns[:num_to_learn])):
@@ -77,6 +79,9 @@ for i in xrange(len(patterns[:num_to_learn])):
     hpc.recall()
     hpc.show_image_from(hpc.output_values.get_value())
     hpc.print_activation_values_sum()
+
+hpc_chaotic_recall_wrapper(hpc, display_images_of_intermediate_output=True, recall_iterations=70)
+# hpc.print_info()
 
 
 # Neocortical module:
