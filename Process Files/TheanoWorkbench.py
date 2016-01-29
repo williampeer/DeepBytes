@@ -23,7 +23,6 @@ hpc = HPC([49, 240, 1600, 480, 49],
           0.10, 0.01, 0.04,  # firing rates: (ec, dg, ca3)
           0.7, 1.0, 0.1, 0.5,  # gamma, epsilon, nu, turnover rate
           0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha, alpha is 2 in 4.1.1
-hpc.neuronal_turnover_dg_optimized()
 
 # test = np.asarray([np.arange(5), np.arange(5)*2])
 # shared_test = theano.shared(name='shared_test', value=test.astype(theano.config.floatX), borrow=True)

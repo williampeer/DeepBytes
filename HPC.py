@@ -235,7 +235,7 @@ class HPC:
         # ===================================================
 
     # Partly optimized neuronal turnover. Not sure how to make the scan operations work.
-    def neuronal_turnover_dg_optimized(self):
+    def neuronal_turnover_dg(self):
         # get beta %
         # for each of those neurons, initialize weights according to the percentage above.
 
@@ -256,10 +256,10 @@ class HPC:
         dg_neuron_selection = self.binomial_f(1, num_of_dg_neurons, self._turnover_rate)
         neuron_index = 0
         for dg_sel in dg_neuron_selection[0]:
-            neuron_index += 1
             if dg_sel == 1:
                 self.neuronal_turnover_helper_ec_dg(neuron_index)
                 self.neuronal_turnover_helper_dg_ca3(neuron_index)
+            neuron_index += 1
 
     def neuronal_turnover_helper_ec_dg(self, column_index):
         # DG neuron connections are rewired.
