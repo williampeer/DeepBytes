@@ -41,10 +41,11 @@ class HPC:
 
 
         self.shared_random_generator = RandomStreams()
-        input_matrix_rand = T.fmatrix('input_matrix_rand')
+        x_r = T.iscalar()
+        y_r = T.iscalar()
         p_scalar = T.fscalar('p_scalar')
-        self.binomial_f = theano.function([input_matrix_rand, p_scalar], outputs=self.shared_random_generator.
-                                            binomial(size=input_matrix_rand.shape, n=1, p=p_scalar,
+        self.binomial_f = theano.function([x_r, y_r, p_scalar], outputs=self.shared_random_generator.
+                                            binomial(size=(x_r, y_r), n=1, p=p_scalar,
                                                      dtype='float32'))
         rows = T.iscalar()
         columns = T.iscalar()
@@ -81,14 +82,12 @@ class HPC:
         self.zeta_ca3 = theano.shared(name='zeta_ca3', value=zeta_ca3.astype(theano.config.floatX), borrow=True)
 
         # ============== WEIGHT MATRICES ===================
-        input_ec_weights = np.ones((dims[0], dims[1])).astype(np.float32)
-        input_ec_weights = self.binomial_f(input_ec_weights, self.connection_rate_input_ec)
+        input_ec_weights = self.binomial_f(dims[0], dims[1], self.connection_rate_input_ec)
         self.in_ec_weights = theano.shared(name='in_ec_weights', value=input_ec_weights.astype(theano.config.floatX),
                                            borrow=True)
 
-        ec_dg_weights = np.ones(shape=(dims[1], dims[2]), dtype=np.float32)
         # randomly assign about 25 % of the weights to a random connection weight
-        ec_dg_weights = self.binomial_f(ec_dg_weights, self.PP)  # * self.uniform_f(ec_dg_weights.shape)  # elemwise
+        ec_dg_weights = self.binomial_f(dims[1], dims[2], self.PP)  # * self.uniform_f(ec_dg_weights.shape)  # elemwise
         self.ec_dg_weights = theano.shared(name='ec_dg_weights', value=ec_dg_weights.astype(theano.config.floatX),
                                            borrow=True)
 
@@ -97,9 +96,8 @@ class HPC:
         self.ec_ca3_weights = theano.shared(name='ec_ca3_weights', value=ec_ca3_weights.astype(theano.config.floatX),
                                             borrow=True)
 
-        dg_ca3_weights = np.zeros((dims[2], dims[3])).astype(np.float32)
         # randomly assign about 4 % of the weights to random connection weights
-        dg_ca3_weights = self.binomial_f(dg_ca3_weights, self.MF) * self.uniform_f(dims[2], dims[3])  # elemwise
+        dg_ca3_weights = self.binomial_f(dims[2], dims[3], self.MF) * self.uniform_f(dims[2], dims[3])  # elemwise
         self.dg_ca3_weights = theano.shared(name='dg_ca3_weights', value=dg_ca3_weights.astype(theano.config.floatX),
                                             borrow=True)
 
@@ -218,6 +216,13 @@ class HPC:
         new_weights = T.fmatrix('new_weights')
         self.update_input_ec_weights = theano.function(inputs=[new_weights], updates=[(self.in_ec_weights, new_weights)])
 
+        new_weights_row = T.fvector('new_weights_row')
+        index_x_or_y = T.iscalar()
+        self.update_ec_dg_weights_column = theano.function([index_x_or_y, new_weights_row],
+            updates={self.ec_dg_weights: T.set_subtensor(self.ec_dg_weights[index_x_or_y, :], new_weights_row)})
+        self.update_dg_ca3_weights_row = theano.function([index_x_or_y, new_weights_row],
+            updates={self.dg_ca3_weights: T.set_subtensor(self.dg_ca3_weights[:, index_x_or_y], new_weights_row)})
+
         y = T.iscalar('y')
         x = T.iscalar('x')
         val = T.fscalar('val')
@@ -262,21 +267,37 @@ class HPC:
         # get beta %
         # for each of those neurons, initialize weights according to the percentage above.
         num_of_dg_neurons = self.dims[2]
-        num_of_ca3_neurons = self.dims[3]
-        num_of_ec_neurons = self.dims[1]
 
-        dg_neuron_selection = np.asarray([np.arange(num_of_dg_neurons)]).astype(np.float32)
-        dg_neuron_selection = self.binomial_f(dg_neuron_selection, self._turnover_rate)
+        dg_neuron_selection = self.binomial_f(1, num_of_dg_neurons, self._turnover_rate)
+        dg_indices = np.arange(num_of_dg_neurons)
+        _, updates_ec_dg = theano.scan(fn=self.neuronal_turnover_helper_ec_dg, outputs_info=None,
+                                       sequences=[dg_neuron_selection, dg_indices], non_sequences=[self.ec_dg_weights])
+        neuronal_turnover_ec_dg = theano.function([], outputs=None, updates=updates_ec_dg)
 
-        ctr = 0
-        for n_val in dg_neuron_selection:
-            if n_val == 1:
-                # DG neuron connections are rewired.
-                # for every neuron in ec, rewire its weights to this neuron - that means ONE row in the weights matrix!
-                weights_row_connection_rate_factor = np.asarray([np.arange(num_of_ec_neurons)]).astype(np.float32)
-                weights_row_connection_rate_factor = binomial_f(weights_row_connection_rate_factor, self.PP)
-                # multiply with random weights:
+        _, updates_dg_ca3 = theano.scan(self.neuronal_turnover_helper_dg_ca3, outputs_info=None,
+                                        sequences=[dg_neuron_selection, dg_indices],
+                                        non_sequences=[self.dg_ca3_weights])
+        neuronal_turnover_dg_ca3 = theano.function([], outputs=None, updates=updates_dg_ca3)
 
+        neuronal_turnover_ec_dg()
+        neuronal_turnover_dg_ca3()
+
+    def neuronal_turnover_helper_ec_dg(self, should_replace_column, column_index):
+        if should_replace_column == 1:
+            # DG neuron connections are rewired.
+            # for every neuron in ec, rewire its weights to this neuron - that means ONE row in the weights matrix!
+            weights_row_connection_rate_factor = self.binomial_f(1, self.dims[1], self.PP)
+            # multiply with random weights:
+            weights_row = self.uniform_f(weights_row_connection_rate_factor.shape) * weights_row_connection_rate_factor
+            self.update_ec_dg_weights_column(column_index, weights_row)
+
+    def neuronal_turnover_helper_dg_ca3(self, should_replace_row, row_index):
+        # DG neuron connections are rewired.
+        # for every neuron in dg, rewire its weights to all neurons of ca3
+        weights_row_connection_rate_factor = self.binomial_f(1, self.dims[3], self.MF)
+        # multiply with random weights:
+        weights_row = self.uniform_f(weights_row_connection_rate_factor.shape) * weights_row_connection_rate_factor
+        self.update_dg_ca3_weights_row(row_index, weights_row)
 
     def re_wire_fixed_input_to_ec_weights(self):
         input_ec_weights = np.ones((self.dims[0], self.dims[1]), dtype=np.float32)
