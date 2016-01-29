@@ -216,12 +216,12 @@ class HPC:
         new_weights = T.fmatrix('new_weights')
         self.update_input_ec_weights = theano.function(inputs=[new_weights], updates=[(self.in_ec_weights, new_weights)])
 
-        new_weights_row = T.fvector('new_weights_row')
+        new_weights_vector = T.fvector('new_weights_vector')
         index_x_or_y = T.iscalar()
-        self.update_ec_dg_weights_column = theano.function([index_x_or_y, new_weights_row],
-            updates={self.ec_dg_weights: T.set_subtensor(self.ec_dg_weights[index_x_or_y, :], new_weights_row)})
-        self.update_dg_ca3_weights_row = theano.function([index_x_or_y, new_weights_row],
-            updates={self.dg_ca3_weights: T.set_subtensor(self.dg_ca3_weights[:, index_x_or_y], new_weights_row)})
+        self.update_ec_dg_weights_column = theano.function([index_x_or_y, new_weights_vector],
+            updates={self.ec_dg_weights: T.set_subtensor(self.ec_dg_weights[:, index_x_or_y], new_weights_vector)})
+        self.update_dg_ca3_weights_row = theano.function([index_x_or_y, new_weights_vector],
+            updates={self.dg_ca3_weights: T.set_subtensor(self.dg_ca3_weights[index_x_or_y, :], new_weights_vector)})
 
         y = T.iscalar('y')
         x = T.iscalar('x')
@@ -234,70 +234,48 @@ class HPC:
                                                                                           T.set_subtensor(self.ca3_ca3_weights[y, x], val))])
         # ===================================================
 
-    # TODO: Theano-ize (parallelization). Could use profiler.
-    def neuronal_turnover_dg(self):
-        # get beta %
-        # for each of those neurons, initialize weights according to the percentage above.
-        num_of_dg_neurons = self.dims[2]
-        num_of_ca3_neurons = self.dims[3]
-        num_of_ec_neurons = self.dims[1]
-
-        num_of_neurons_to_be_turned_over = np.round(num_of_dg_neurons * self._turnover_rate).astype(np.int16)
-        # np.random.seed(np.sqrt(time.time()).astype(np.int64))
-        for n in range(num_of_neurons_to_be_turned_over):
-            # Note: These neurons may be drawn so that we get a more exact number of beta %. This implementation,
-            #   however, introduces random fluctuations. Which might be beneficial?
-            # this neuron is selected to have re-initialised its weights:
-            random_dg_neuron_index = np.round(np.random.random() * (num_of_dg_neurons-1)).astype(np.int16)
-
-            # from ec to dg:
-            for ec_n in range(num_of_ec_neurons):
-                if np.random.random() < self.PP:
-                    self.update_ec_dg_weights_value(ec_n, random_dg_neuron_index, np.random.random())
-                else:
-                    self.update_ec_dg_weights_value(ec_n, random_dg_neuron_index, 0.0)
-            # from dg to ca3:
-            for ca3_neuron_index in range(num_of_ca3_neurons):
-                if np.random.random() < self.MF:
-                    self.update_dg_ca3_weights_value(random_dg_neuron_index, ca3_neuron_index, np.random.random())
-                else:
-                    self.update_dg_ca3_weights_value(random_dg_neuron_index, ca3_neuron_index, 0.0)
-
+    # Partly optimized neuronal turnover. Not sure how to make the scan operations work.
     def neuronal_turnover_dg_optimized(self):
         # get beta %
         # for each of those neurons, initialize weights according to the percentage above.
+
+        # # Symbolically: DOESN'T WORK. WTF.
+        # dg_res = T.fvector()
+        # dg_num = T.iscalar()
+        # ctr = T.iscalar()
+        # _, updates_ec_dg = theano.scan(fn=self.neuronal_turnover_helper_ec_dg, outputs_info=ctr,
+        #                                sequences=[dg_res, T.arange(dg_num)])
+        # neuronal_turnover_ec_dg = theano.function([dg_res, dg_num, ctr], outputs=None, updates=updates_ec_dg)
+        #
+        # _, updates_dg_ca3 = theano.scan(self.neuronal_turnover_helper_dg_ca3, outputs_info=ctr,
+        #                                 sequences=[dg_res, T.arange(dg_num)])
+        # neuronal_turnover_dg_ca3 = theano.function([dg_res, dg_num, ctr], outputs=None, updates=updates_dg_ca3)
+
+        # Execution:
         num_of_dg_neurons = self.dims[2]
-
         dg_neuron_selection = self.binomial_f(1, num_of_dg_neurons, self._turnover_rate)
-        dg_indices = np.arange(num_of_dg_neurons)
-        _, updates_ec_dg = theano.scan(fn=self.neuronal_turnover_helper_ec_dg, outputs_info=None,
-                                       sequences=[dg_neuron_selection, dg_indices], non_sequences=[self.ec_dg_weights])
-        neuronal_turnover_ec_dg = theano.function([], outputs=None, updates=updates_ec_dg)
+        neuron_index = 0
+        for dg_sel in dg_neuron_selection[0]:
+            neuron_index += 1
+            if dg_sel == 1:
+                self.neuronal_turnover_helper_ec_dg(neuron_index)
+                self.neuronal_turnover_helper_dg_ca3(neuron_index)
 
-        _, updates_dg_ca3 = theano.scan(self.neuronal_turnover_helper_dg_ca3, outputs_info=None,
-                                        sequences=[dg_neuron_selection, dg_indices],
-                                        non_sequences=[self.dg_ca3_weights])
-        neuronal_turnover_dg_ca3 = theano.function([], outputs=None, updates=updates_dg_ca3)
+    def neuronal_turnover_helper_ec_dg(self, column_index):
+        # DG neuron connections are rewired.
+        # for every neuron in ec, rewire its weights to this neuron - that means ONE row in the weights matrix!
+        weights_row_connection_rate_factor = self.binomial_f(1, self.dims[1], self.PP)
+        # multiply with random weights:
+        weights_vector = self.uniform_f(1, self.dims[1]) * weights_row_connection_rate_factor
+        self.update_ec_dg_weights_column(column_index, weights_vector[0])
 
-        neuronal_turnover_ec_dg()
-        neuronal_turnover_dg_ca3()
-
-    def neuronal_turnover_helper_ec_dg(self, should_replace_column, column_index):
-        if should_replace_column == 1:
-            # DG neuron connections are rewired.
-            # for every neuron in ec, rewire its weights to this neuron - that means ONE row in the weights matrix!
-            weights_row_connection_rate_factor = self.binomial_f(1, self.dims[1], self.PP)
-            # multiply with random weights:
-            weights_row = self.uniform_f(weights_row_connection_rate_factor.shape) * weights_row_connection_rate_factor
-            self.update_ec_dg_weights_column(column_index, weights_row)
-
-    def neuronal_turnover_helper_dg_ca3(self, should_replace_row, row_index):
+    def neuronal_turnover_helper_dg_ca3(self, row_index):
         # DG neuron connections are rewired.
         # for every neuron in dg, rewire its weights to all neurons of ca3
         weights_row_connection_rate_factor = self.binomial_f(1, self.dims[3], self.MF)
         # multiply with random weights:
-        weights_row = self.uniform_f(weights_row_connection_rate_factor.shape) * weights_row_connection_rate_factor
-        self.update_dg_ca3_weights_row(row_index, weights_row)
+        weights_vector = self.uniform_f(1, self.dims[3]) * weights_row_connection_rate_factor
+        self.update_dg_ca3_weights_row(row_index, weights_vector[0])
 
     def re_wire_fixed_input_to_ec_weights(self):
         input_ec_weights = np.ones((self.dims[0], self.dims[1]), dtype=np.float32)
