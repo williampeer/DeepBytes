@@ -248,7 +248,7 @@ class HPC:
 
         num_of_neurons_to_be_turned_over = np.round(num_of_dg_neurons * self._turnover_rate).astype(np.int16)
         # np.random.seed(np.sqrt(time.time()).astype(np.int64))
-        for n in xrange(num_of_neurons_to_be_turned_over):
+        for n in range(num_of_neurons_to_be_turned_over):
             # Note: These neurons may be drawn so that we get a more exact number of beta %. This implementation,
             #   however, introduces random fluctuations. Which might be beneficial?
             # this neuron is selected to have re-initialised its weights:
@@ -266,6 +266,15 @@ class HPC:
                     self.update_dg_ca3_weights_value(random_dg_neuron_index, ca3_neuron_index, np.random.random())
                 else:
                     self.update_dg_ca3_weights_value(random_dg_neuron_index, ca3_neuron_index, 0.0)
+
+    def neuronal_turnover_dg_optimized(self):
+        # get beta %
+        # for each of those neurons, initialize weights according to the percentage above.
+        num_of_dg_neurons = self.dims[2]
+        num_of_ca3_neurons = self.dims[3]
+        num_of_ec_neurons = self.dims[1]
+
+
 
     def re_wire_fixed_input_to_ec_weights(self):
         input_ec_weights = np.ones((self.dims[0], self.dims[1]), dtype=np.float32)
@@ -408,8 +417,8 @@ class HPC:
                     stopping_criteria = False
                     break
             ctr += 1
-            if should_display_image:
-                self.show_image_from(out_now)
+        if should_display_image and stopping_criteria:
+            self.show_image_from(out_now)
 
         print "Reached stability or max. #iterations during chaotic recall after", ctr, "iterations."
         return ctr
