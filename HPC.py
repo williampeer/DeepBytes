@@ -1,5 +1,6 @@
 import theano
 import theano.tensor as T
+from theano.tensor.shared_randomstreams import RandomStreams
 import numpy as np
 from PIL import Image
 
@@ -38,6 +39,18 @@ class HPC:
         self._k_r = _k_r
         self._alpha = _alpha
 
+
+        self.shared_random_generator = RandomStreams()
+        input_matrix_rand = T.fmatrix('input_matrix_rand')
+        p_scalar = T.fscalar('p_scalar')
+        self.binomial_f = theano.function([input_matrix_rand, p_scalar], outputs=self.shared_random_generator.
+                                            binomial(size=input_matrix_rand.shape, n=1, p=p_scalar,
+                                                     dtype='float32'))
+        rows = T.iscalar()
+        columns = T.iscalar()
+        self.uniform_f = theano.function([rows, columns], outputs=self.shared_random_generator.
+                                         uniform(size=(rows, columns), low=-1, high=1, dtype='float32'))
+
         # ============== ACTIVATION VALUES ==================
         input_values = np.zeros((1, dims[0]), dtype=np.float32)
         self.input_values = theano.shared(name='input_values', value=input_values.astype(theano.config.floatX),
@@ -69,56 +82,34 @@ class HPC:
 
         # ============== WEIGHT MATRICES ===================
         input_ec_weights = np.ones((dims[0], dims[1])).astype(np.float32)
-        for row in range(self.dims[0]):
-            for column in range(self.dims[1]):
-                if np.random.random() < (1 - self.connection_rate_input_ec):
-                    input_ec_weights[row][column] = 0
+        input_ec_weights = self.binomial_f(input_ec_weights, self.connection_rate_input_ec)
         self.in_ec_weights = theano.shared(name='in_ec_weights', value=input_ec_weights.astype(theano.config.floatX),
                                            borrow=True)
 
-        ec_dg_weights = np.zeros((dims[1], dims[2])).astype(np.float32)
+        ec_dg_weights = np.ones(shape=(dims[1], dims[2]), dtype=np.float32)
         # randomly assign about 25 % of the weights to a random connection weight
-        for row in range(dims[1]):
-            for col in range(dims[2]):
-                if np.random.random() < self.PP:
-                    sign = 1
-                    if np.random.random() < 0.5:
-                        sign = -1
-                    ec_dg_weights[row][col] = sign * np.random.random()
+        ec_dg_weights = self.binomial_f(ec_dg_weights, self.PP)  # * self.uniform_f(ec_dg_weights.shape)  # elemwise
         self.ec_dg_weights = theano.shared(name='ec_dg_weights', value=ec_dg_weights.astype(theano.config.floatX),
                                            borrow=True)
 
         # randomly assign all weights between the EC and CA3
-        # ec_ca3_weights = np.random.uniform(-1, 1, (dims[1], dims[3])).astype(np.float32)
-        ec_ca3_weights = 2 * np.random.random((dims[1], dims[3])).astype(np.float32)
-        ec_ca3_weights = ec_ca3_weights - np.ones_like(ec_ca3_weights, dtype=np.float32)
+        ec_ca3_weights = self.uniform_f(dims[1], dims[3])
         self.ec_ca3_weights = theano.shared(name='ec_ca3_weights', value=ec_ca3_weights.astype(theano.config.floatX),
                                             borrow=True)
 
         dg_ca3_weights = np.zeros((dims[2], dims[3])).astype(np.float32)
         # randomly assign about 4 % of the weights to random connection weights
-        # np.random.seed(np.sqrt(time.time()).astype(np.int64))
-        for row in range(dims[2]):
-            for col in range(dims[3]):
-                if np.random.random() < self.MF:
-                    sign = 1
-                    if np.random.random() < 0.5:
-                        sign = -1
-                    dg_ca3_weights[row][col] = sign * np.random.random()
+        dg_ca3_weights = self.binomial_f(dg_ca3_weights, self.MF) * self.uniform_f(dims[2], dims[3])  # elemwise
         self.dg_ca3_weights = theano.shared(name='dg_ca3_weights', value=dg_ca3_weights.astype(theano.config.floatX),
                                             borrow=True)
 
         # randomly assign 100 % of the weights between CA3 and CA3
-        # ca3_ca3_weights = np.random.uniform(-1, 1, (dims[3], dims[3])).astype(np.float32)
-        ca3_ca3_weights = 2 * np.random.random((dims[3], dims[3])).astype(np.float32)
-        ca3_ca3_weights = ca3_ca3_weights - np.ones_like(ca3_ca3_weights, dtype=np.float32)
+        ca3_ca3_weights = self.uniform_f(dims[3], dims[3])
         self.ca3_ca3_weights = theano.shared(name='ca3_ca3_weights', value=ca3_ca3_weights.astype(theano.config.floatX),
                                              borrow=True)
 
         # random weight assignment, full connection rate CA3-out
-        # ca3_output_weights = np.random.uniform(-1, 1, (dims[3], dims[4])).astype(np.float32)
-        ca3_output_weights = 2 * np.random.random((dims[3], dims[4])).astype(np.float32)
-        ca3_output_weights = ca3_output_weights - np.ones_like(ca3_output_weights, dtype=np.float32)
+        ca3_output_weights = self.uniform_f(dims[3], dims[4])
         self.ca3_out_weights = theano.shared(name='ca3_out_weights',
                                              value=ca3_output_weights.astype(theano.config.floatX), borrow=True)
 
@@ -274,6 +265,17 @@ class HPC:
         num_of_ca3_neurons = self.dims[3]
         num_of_ec_neurons = self.dims[1]
 
+        dg_neuron_selection = np.asarray([np.arange(num_of_dg_neurons)]).astype(np.float32)
+        dg_neuron_selection = self.binomial_f(dg_neuron_selection, self._turnover_rate)
+
+        ctr = 0
+        for n_val in dg_neuron_selection:
+            if n_val == 1:
+                # DG neuron connections are rewired.
+                # for every neuron in ec, rewire its weights to this neuron - that means ONE row in the weights matrix!
+                weights_row_connection_rate_factor = np.asarray([np.arange(num_of_ec_neurons)]).astype(np.float32)
+                weights_row_connection_rate_factor = binomial_f(weights_row_connection_rate_factor, self.PP)
+                # multiply with random weights:
 
 
     def re_wire_fixed_input_to_ec_weights(self):
