@@ -29,6 +29,8 @@ for i in range(number_of_sets):
             for el in row:
                 io[0].append(el)
         new_array = np.asarray(io, dtype=np.float32)
+        # print "Appending the following image..."
+        # hpc.show_image_from(new_array)
         training_set.append([new_array, new_array])
 
     print "Performing neuronal turnover in DG for", hpc._turnover_rate * 100, "% of the neurons.."
@@ -36,13 +38,17 @@ for i in range(number_of_sets):
     hpc.neuronal_turnover_dg()
     t1 = time.time()
     print "Neuronal turnover completed in", "{:7.3f}".format(t1-t0), "seconds."
-    hpc_learn_patterns_wrapper(hpc, patterns=training_set, max_training_iterations=10)
-    for pat in training_set:
-        learned_patterns.append(pat)
+    hpc_learn_patterns_wrapper(hpc, patterns=training_set, max_training_iterations=5)
+    # hpc_learn_patterns_iterations_hardcoded_wrapper(hpc, patterns=training_set)
 
-hpc.show_image_from(np.asarray(next_experiment_im).astype(np.float32))
-for learned_pattern in learned_patterns:
-    hpc.setup_input(learned_pattern[0])
-    hpc.recall()
-    hpc.show_image_from(hpc.output_values.get_value())
-# hpc_chaotic_recall_wrapper(hpc, display_images_of_intermediate_output=True, recall_iterations=300)
+    learned_ctr = 0
+    for pat in training_set:
+        hpc.setup_input(pat[0])
+        print "Recalling pattern #", learned_ctr
+        # hpc.show_image_from(np.asarray(next_experiment_im).astype(np.float32))
+        hpc.recall()
+        hpc.show_image_from(hpc.output_values.get_value())
+        learned_ctr += 1
+
+    # hpc.show_image_from(np.asarray(next_experiment_im).astype(np.float32))
+    # hpc_chaotic_recall_wrapper(hpc, display_images_of_intermediate_output=True, recall_iterations=50)

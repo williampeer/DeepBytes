@@ -1,5 +1,6 @@
 from HPC import *
 from data_capital import *
+import time
 
 io_dim = 49
 
@@ -8,6 +9,10 @@ hpc = HPC([io_dim, 240, 1600, 480, io_dim],
           0.10, 0.01, 0.04,  # firing rates: (ec, dg, ca3)
           0.7, 1, 0.1, 0.5,  # gamma, epsilon, nu, turnover rate
           0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha
+t0 = time.time()
+hpc.neuronal_turnover_dg()
+t1 = time.time()
+print "nt in:", "{:7.3f}".format(t1-t0), "seconds."
 
 I = np.asarray([[1, -1, 1, -1, 1, -1, 1] * 7], dtype=np.float32)
 O = np.asarray([[-1, 1, -1, 1, -1, 1, -1] * 7], dtype=np.float32)
