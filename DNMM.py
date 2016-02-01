@@ -20,26 +20,28 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
             # one iteration of learning using Hebbian learning
             time_before = time.time()
             hpc.learn()
-            # hpc.print_activation_values_sum()
             time_after = time.time()
             print "Iterated over pattern", p_ctr, "in", \
-                "{:6.3f}".format(time_after - time_before), "seconds."
+                "{:7.3f}".format(time_after - time_before), "seconds."
             p_ctr += 1
 
         learned_all = True
         print "Attempting to recall patterns..."
-        for pattern_index in xrange(len(patterns)):
+        for pattern_index in range(len(patterns)):
             print "Recalling pattern #", pattern_index
             hpc.setup_input(patterns[pattern_index][0])
             hpc.recall()
-            out_values = hpc.output_values.get_value()[0]
-            cur_p = patterns[pattern_index][0][0]
+            out_values_row = hpc.output_values.get_value()[0]
+            cur_p_row = patterns[pattern_index][1][0]
             # print "outvals:", out_values
             # print "curp", cur_p
-            for el_index in xrange(len(cur_p)):
-                if out_values[el_index] != cur_p[el_index]:
+            for el_index in range(len(cur_p_row)):
+                if out_values_row[el_index] != cur_p_row[el_index]:
                     learned_all = False
                     print "Patterns are not yet successfully learned. Learning more..."
+                    print "Displaying intermediary results... (output, target)"
+                    hpc.show_image_from(np.asarray([out_values_row], dtype=np.float32))
+                    hpc.show_image_from(np.asarray([cur_p_row], dtype=np.float32))
                     break
             if not learned_all:
                 break
@@ -47,19 +49,15 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
         iter_ctr += 1
     time_stop_overall = time.time()
 
-    print "Learned", len(patterns), "pattern-associations in ", iter_ctr, "iterations, which took" "{:6.3f}". \
+    print "Learned", len(patterns), "pattern-associations in ", iter_ctr, "iterations, which took" "{:7.3f}". \
         format(time_stop_overall-time_start_overall), "seconds."
 
 def hpc_chaotic_recall_wrapper(hpc, display_images_of_intermediate_output, recall_iterations):
     time_the_beginning_of_time = time.time()
     time_before = time.time()
     cur_iters = 0
-    new_random_input = np.ones_like(hpc.input_values.get_value(), dtype=np.float32)
-    np.random.seed()
-    for rand_in_index in xrange(new_random_input.shape[1]):
-        if np.random.random() < 0.5:
-            new_random_input[0][rand_in_index] = -1
-    hpc.setup_input(new_random_input)
+    random_input = hpc.uniform_f(1, hpc.dims[0]) * 2 - np.ones_like(hpc.input_values, dtype=np.float32)
+    hpc.setup_input(random_input)
     while cur_iters < recall_iterations:
         cur_iters += hpc.recall_until_stability_criteria(should_display_image=display_images_of_intermediate_output,
                                                          max_iterations=recall_iterations-cur_iters)

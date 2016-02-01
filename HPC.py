@@ -39,7 +39,7 @@ class HPC:
         self._k_r = _k_r
         self._alpha = _alpha
 
-
+        # -------------------------------------------------
         self.shared_random_generator = RandomStreams()
         x_r = T.iscalar()
         y_r = T.iscalar()
@@ -312,8 +312,9 @@ class HPC:
 
     # TODO: Check parallelism. Check further decentralization possibilities.
     def learn(self):
-        # self.neuronal_turnover_dg()
         # one iteration for each layer/HPC-part
+        self.internal_recall()  # sets the t-1 nu- and zeta-values.
+
         # fire EC to DG
         self.fire_ec_dg(self.ec_values.get_value(return_internal_type=True),
                         self.ec_dg_weights.get_value(return_internal_type=True))
@@ -382,6 +383,19 @@ class HPC:
         self.setup_input(input_pattern)
         self.set_output(output_pattern)
 
+    # Method used to update the previous nu- and zeta-values with the current I/O pattern before weight updates.
+    def internal_recall(self):
+        # Fire EC to CA3, CA3 to CA3
+        self.fire_to_ca3_no_learning(self.ec_values.get_value(return_internal_type=True),
+                                     self.ec_ca3_weights.get_value(return_internal_type=True),
+                                     self.ca3_values.get_value(return_internal_type=True),
+                                     self.ca3_ca3_weights.get_value(return_internal_type=True),
+                                     self.nu_ca3.get_value(return_internal_type=True),
+                                     self.zeta_ca3.get_value(return_internal_type=True))
+        # kWTA CA3
+        self.set_ca3_values(
+                self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory
+
     def recall(self):
         # Fire EC to CA3, CA3 to CA3
         self.fire_to_ca3_no_learning(self.ec_values.get_value(return_internal_type=True),
@@ -410,6 +424,7 @@ class HPC:
             out_min_2 = np.copy(out_min_1)
             out_min_1 = np.copy(out_now)
 
+            # Attempt to set a random input for every iteration:
             self.recall()
             out_now = np.copy(self.output_values.get_value(borrow=False))
             stopping_criteria = True
