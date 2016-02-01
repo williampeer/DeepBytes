@@ -47,7 +47,7 @@ for i in range(number_of_sets):
         print "Recalling pattern #", learned_ctr
         # hpc.show_image_from(np.asarray(next_experiment_im).astype(np.float32))
         hpc.recall()
-        hpc.show_image_from(hpc.output_values.get_value())
+        show_image_from(hpc.output_values.get_value())
         learned_ctr += 1
 
     # hpc.show_image_from(np.asarray(next_experiment_im).astype(np.float32))

@@ -1,8 +1,4 @@
-import theano
-import theano.tensor as T
-from theano.tensor.shared_randomstreams import RandomStreams
-import numpy as np
-from PIL import Image
+from Tools import *
 
 # Note: Ensure float32 for GPU-usage. Use the profiler to analyse GPU-usage.
 theano.config.floatX = 'float32'
@@ -38,19 +34,6 @@ class HPC:
         self._k_m = _k_m
         self._k_r = _k_r
         self._alpha = _alpha
-
-        # -------------------------------------------------
-        self.shared_random_generator = RandomStreams()
-        x_r = T.iscalar()
-        y_r = T.iscalar()
-        p_scalar = T.fscalar('p_scalar')
-        self.binomial_f = theano.function([x_r, y_r, p_scalar], outputs=self.shared_random_generator.
-                                            binomial(size=(x_r, y_r), n=1, p=p_scalar,
-                                                     dtype='float32'))
-        rows = T.iscalar()
-        columns = T.iscalar()
-        self.uniform_f = theano.function([rows, columns], outputs=self.shared_random_generator.
-                                         uniform(size=(rows, columns), low=-1, high=1, dtype='float32'))
 
         # ============== ACTIVATION VALUES ==================
         input_values = np.zeros((1, dims[0]), dtype=np.float32)
@@ -418,40 +401,26 @@ class HPC:
         out_now = np.copy(self.output_values.get_value(borrow=False))
         out_min_1 = np.zeros_like(out_now, dtype=np.float32)
         out_min_2 = np.zeros_like(out_now, dtype=np.float32)
-        stopping_criteria = False
+        found_stable_output = False
         ctr = 0
-        while not stopping_criteria and ctr < max_iterations:
+        while not found_stable_output and ctr < max_iterations:
             out_min_2 = np.copy(out_min_1)
             out_min_1 = np.copy(out_now)
 
             # Attempt to set a random input for every iteration:
             self.recall()
             out_now = np.copy(self.output_values.get_value(borrow=False))
-            stopping_criteria = True
+            found_stable_output = True
             for out_y in xrange(out_now.shape[1]):
                 if not (out_min_2[0][out_y] == out_min_1[0][out_y] == out_now[0][out_y]):
-                    stopping_criteria = False
+                    found_stable_output = False
                     break
             ctr += 1
-        if should_display_image and stopping_criteria:
-            self.show_image_from(out_now)
+        if should_display_image and found_stable_output:
+            show_image_from(out_now=out_now)
 
         print "Reached stability or max. #iterations during chaotic recall after", ctr, "iterations."
-        return ctr
-
-    def show_image_from(self, out_now):
-        width = 7
-        height = 7
-        pixel_scaling_factor = 2 ** 3  # Exponent of two for symmetry.
-        im = Image.new('1', (width*pixel_scaling_factor, height*pixel_scaling_factor))
-        for element in xrange(out_now.shape[1]):
-            for i in xrange(pixel_scaling_factor):
-                for j in xrange(pixel_scaling_factor):
-                    im.putpixel(((element % width)*pixel_scaling_factor + j,
-                                 np.floor(element/height).astype(np.int8) * pixel_scaling_factor + i),
-                                out_now[0][element]*255)
-        im.show()
-        # print "Output image"
+        return [ctr, found_stable_output, out_now]
 
     def get_bipolar_in_out_values(self, values):
         new_values = np.ones_like(values, dtype=np.float32)

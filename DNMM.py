@@ -1,7 +1,6 @@
 import time
-from HPC import *
 from SimpleNeocorticalNetwork import *
-from data_capital import *
+
 
 def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
     print "Commencing learning of", len(patterns), "I/O patterns."
@@ -52,15 +51,22 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
     print "Learned", len(patterns), "pattern-associations in ", iter_ctr, "iterations, which took" "{:7.3f}". \
         format(time_stop_overall-time_start_overall), "seconds."
 
+
 def hpc_chaotic_recall_wrapper(hpc, display_images_of_intermediate_output, recall_iterations):
     time_the_beginning_of_time = time.time()
     time_before = time.time()
     cur_iters = 0
     random_input = hpc.uniform_f(1, hpc.dims[0]) * 2 - np.ones_like(hpc.input_values, dtype=np.float32)
     hpc.setup_input(random_input)
+    hpc_extracted_pseudopatterns = []
     while cur_iters < recall_iterations:
-        cur_iters += hpc.recall_until_stability_criteria(should_display_image=display_images_of_intermediate_output,
-                                                         max_iterations=recall_iterations-cur_iters)
+        [cur_iters_term, found_stable_output, output] = hpc.recall_until_stability_criteria(
+                should_display_image=display_images_of_intermediate_output, max_iterations=recall_iterations-cur_iters)
+        cur_iters += cur_iters_term
+
+        if found_stable_output:
+            hpc_extracted_pseudopatterns.append(output)
+
         time_after = time.time()
         prop_time_until_stable = time_after - time_before
 
@@ -68,21 +74,14 @@ def hpc_chaotic_recall_wrapper(hpc, display_images_of_intermediate_output, recal
         print "t =", cur_iters
         time_before = time.time()
     print "Total chaotic recall time:", "{:6.3f}".format(time.time()-time_the_beginning_of_time), "seconds."
+    return hpc_extracted_pseudopatterns
 
 
-# Neocortical module:
-# ann = SimpleNeocorticalNetwork(32, 50, 32, 0.85, 0.01)
-#
-# # a = np.random.random((1, 32)).astype(np.float32)
-# # b = -1 * np.random.random((1, 32)).astype(np.float32)
-# a = np.asarray([[0.1, 0.2] * 16], dtype=np.float32)
-# b = np.asarray([[-0.2, -0.4] * 16], dtype=np.float32)
-#
-# iopair = [a, b]
-#
-# print "target output:", b
-# for i in range(20000):
-#     ann.train([iopair])
-# print ann.in_h_Ws.get_value()
-# print ann.h_out_Ws.get_value()
-# ann.print_layers()
+def generate_pseodupatterns_II(dim, hpc_extracted_pseudopatterns, reverse_P):
+    pseudopatterns_II = []
+    for pattern in hpc_extracted_pseudopatterns:
+        # q=1-p because we're flipping the sign of the ones that are not flipped.
+        reverse_vector = binomial_f(1, dim, (1-reverse_P))
+        reverse_vector = reverse_vector * 2 - np.ones_like(reverse_vector)
+        pseudopatterns_II.append(pattern * reverse_vector)
+    return pseudopatterns_II

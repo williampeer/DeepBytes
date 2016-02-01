@@ -1,7 +1,4 @@
-import theano
-import theano.tensor as T
-from theano.tensor.shared_randomstreams import RandomStreams
-import numpy as np
+from Tools import *
 
 theano.config.floatX = 'float32'
 
@@ -11,6 +8,8 @@ class SimpleNeocorticalNetwork:
 
         self.alpha = alpha
         self.momentum = momentum
+
+        self.dims = [in_dim, h_dim, out_dim]
 
         _in = np.random.random((1, in_dim)).astype(np.float32)
         _h = np.zeros((1, h_dim), dtype=np.float32)
@@ -75,6 +74,8 @@ class SimpleNeocorticalNetwork:
                                                        (self.prev_delta_W_in_h, delta_W_in_h),
                                                        (self.prev_delta_W_h_out, delta_W_h_out)])
 
+        # self.set_input = theano.function([new_input], updates=[(self._in, new_input)])
+
     def train(self, IOPairs):
         for pair in IOPairs:
             input_pattern = pair[0]
@@ -94,9 +95,17 @@ class SimpleNeocorticalNetwork:
     def get_pseudopattern_I(self):
         # random input
         rng = RandomStreams()
+        random_in_pattern = rng.binomial((1, self.dims[0]), 1, 0.5, dtype='float32')
+        random_in_pattern = random_in_pattern * 2 - np.ones_like(random_in_pattern)
+        print "random_in_pattern:", random_in_pattern
 
-        # get output
-        # return [I, O]
+        return self.get_IO(random_in_pattern)
+
+    def get_IO(self, input_pattern):
+        self.feed_forward(input_pattern, self.in_h_Ws, self.h_out_Ws)
+
+        corresponding_output = self._out.get_value()
+        return [input_pattern, corresponding_output]
 
     def print_layers(self):
         print "\nPrinting layer activation values:"
