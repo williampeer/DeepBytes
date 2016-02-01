@@ -47,3 +47,24 @@ for index in xrange(rand_I.shape[1]):
     #                 self.update_dg_ca3_weights_value(random_dg_neuron_index, ca3_neuron_index, np.random.random())
     #             else:
     #                 self.update_dg_ca3_weights_value(random_dg_neuron_index, ca3_neuron_index, 0.0)
+
+
+# def hpc_learn_patterns_iterations_hardcoded_wrapper(hpc, patterns):
+#     print "Commencing learning of", len(patterns), "I/O patterns."
+#     time_start_overall = time.time()
+#     iter_ctr = 0
+#     while iter_ctr < 2:
+#         p_ctr = 0
+#         for [input_pattern, output_pattern] in patterns:
+#             # Neuronal turnover, setting input and output in the hpc network.
+#             hpc.setup_pattern(input_pattern, output_pattern)
+#
+#             # one iteration of learning using Hebbian learning
+#             hpc.learn()
+#             p_ctr += 1
+#
+#         iter_ctr += 1
+#     time_stop_overall = time.time()
+#
+#     print "Learned", len(patterns), "pattern-associations in ", iter_ctr, "iterations, which took" "{:7.3f}". \
+#         format(time_stop_overall-time_start_overall), "seconds."

@@ -1,5 +1,6 @@
 import theano
 import theano.tensor as T
+from theano.tensor.shared_randomstreams import RandomStreams
 import numpy as np
 
 theano.config.floatX = 'float32'
@@ -89,6 +90,13 @@ class SimpleNeocorticalNetwork:
                                 self._out.get_value(return_internal_type=True), output_pattern,
                                 self.prev_delta_W_in_h.get_value(return_internal_type=True),
                                 self.prev_delta_W_h_out.get_value(return_internal_type=True))
+
+    def get_pseudopattern_I(self):
+        # random input
+        rng = RandomStreams()
+
+        # get output
+        # return [I, O]
 
     def print_layers(self):
         print "\nPrinting layer activation values:"
