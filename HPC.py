@@ -44,13 +44,13 @@ class HPC:
                                           borrow=True)
 
         # in order to create fmatrices, we need to call random.random, and not zeros(1, N).
-        ec_values = 0 * np.random.uniform(0, 1, (1, dims[1])).astype(np.float32)
+        ec_values = uniform_f(1, dims[1])
         self.ec_values = theano.shared(name='ec_values', value=ec_values.astype(theano.config.floatX), borrow=True)
 
-        dg_values = np.random.uniform(0, 1, (1, dims[2])).astype(np.float32)
+        dg_values = uniform_f(1, dims[2])
         self.dg_values = theano.shared(name='dg_values', value=dg_values.astype(theano.config.floatX), borrow=True)
 
-        ca3_values = np.random.uniform(0, 1, (1, dims[3])).astype(np.float32)
+        ca3_values = uniform_f(1, dims[3])
         self.ca3_values = theano.shared(name='ca3_values', value=ca3_values.astype(theano.config.floatX), borrow=True)
         prev_ca3_values = np.zeros_like(ca3_values, dtype=np.float32)
         self.prev_ca3_values = theano.shared(name='prev_ca3_values', value=prev_ca3_values.astype(theano.config.floatX),
@@ -73,7 +73,7 @@ class HPC:
                                            borrow=True)
 
         # randomly assign about 25 % of the weights to a random connection weight
-        ec_dg_weights = binomial_f(dims[1], dims[2], self.PP)  # * uniform_f(ec_dg_weights.shape)  # elemwise
+        ec_dg_weights = binomial_f(dims[1], dims[2], self.PP)
         self.ec_dg_weights = theano.shared(name='ec_dg_weights', value=ec_dg_weights.astype(theano.config.floatX),
                                            borrow=True)
 
@@ -144,7 +144,8 @@ class HPC:
         next_activation_values_ca3 = T.tanh((nu_ca3 + zeta_ca3) / self._epsilon)
         self.fire_all_to_ca3 = theano.function([c_ec_vals, c_ec_ca3_Ws, c_dg_vals, c_dg_ca3_Ws, c_ca3_vals,
                                                 c_ca3_ca3_Ws, c_nu_ca3, c_zeta_ca3],
-                                               updates=[(self.ca3_values, next_activation_values_ca3),
+                                               updates=[(self.prev_ca3_values, c_ca3_vals),
+                                                        (self.ca3_values, next_activation_values_ca3),
                                                         (self.nu_ca3, nu_ca3), (self.zeta_ca3, zeta_ca3)])
 
         # after kWTA:
@@ -167,7 +168,8 @@ class HPC:
         no_learning_next_act_vals_ca3 = T.tanh((no_learning_nu_ca3 + no_learning_zeta_ca3) / self._epsilon)
         self.fire_to_ca3_no_learning = theano.function([c_ec_vals, c_ec_ca3_Ws, c_ca3_vals, c_ca3_ca3_Ws, c_nu_ca3,
                                                         c_zeta_ca3],
-                                                       updates=[(self.ca3_values, no_learning_next_act_vals_ca3),
+                                                       updates=[(self.prev_ca3_values, c_ca3_vals),
+                                                                (self.ca3_values, no_learning_next_act_vals_ca3),
                                                                 (self.nu_ca3, no_learning_nu_ca3),
                                                                 (self.zeta_ca3, no_learning_zeta_ca3)])
 
@@ -195,6 +197,9 @@ class HPC:
 
         self.set_ca3_values = theano.function([new_activation_values], outputs=None,
                                               updates=[(self.ca3_values, new_activation_values)])
+
+        self.set_prev_ca3_values = theano.function([new_activation_values], outputs=None,
+                                                   updates=[(self.prev_ca3_values, new_activation_values)])
 
         self.set_output = theano.function([new_activation_values], outputs=None,
                                           updates=[(self.output_values, new_activation_values)])
@@ -224,18 +229,6 @@ class HPC:
     def neuronal_turnover_dg(self):
         # get beta %
         # for each of those neurons, initialize weights according to the percentage above.
-
-        # # Symbolically: DOESN'T WORK. WTF.
-        # dg_res = T.fvector()
-        # dg_num = T.iscalar()
-        # ctr = T.iscalar()
-        # _, updates_ec_dg = theano.scan(fn=self.neuronal_turnover_helper_ec_dg, outputs_info=ctr,
-        #                                sequences=[dg_res, T.arange(dg_num)])
-        # neuronal_turnover_ec_dg = theano.function([dg_res, dg_num, ctr], outputs=None, updates=updates_ec_dg)
-        #
-        # _, updates_dg_ca3 = theano.scan(self.neuronal_turnover_helper_dg_ca3, outputs_info=ctr,
-        #                                 sequences=[dg_res, T.arange(dg_num)])
-        # neuronal_turnover_dg_ca3 = theano.function([dg_res, dg_num, ctr], outputs=None, updates=updates_dg_ca3)
 
         # Execution:
         num_of_dg_neurons = self.dims[2]
