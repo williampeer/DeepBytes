@@ -16,6 +16,12 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
             hpc.setup_pattern(input_pattern, output_pattern)
             setup_end = time.time()
             print "Setup took:", "{:6.3f}".format(setup_end-setup_start), "seconds."
+            # if setup_end-setup_start < 0.120:
+                # hpc.print_activation_values()
+                # hpc.print_ca3_info()
+                # hpc.print_activation_values_and_weights()
+            hpc.print_last_halves_of_activation_values_sums()
+            hpc.print_activation_values_sum()
 
             # one iteration of learning using Hebbian learning
             time_before = time.time()
@@ -23,6 +29,7 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
             time_after = time.time()
             print "Iterated over pattern", p_ctr, "in", \
                 "{:7.3f}".format(time_after - time_before), "seconds."
+            # hpc.print_activation_values_sum()
             p_ctr += 1
 
         learned_all = True

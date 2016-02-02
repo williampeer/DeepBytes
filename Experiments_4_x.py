@@ -21,7 +21,8 @@ def experiment_4_x_1(hpc, training_set_size, original_training_patterns):
         t1 = time.time()
         print "Neuronal turnover completed in", "{:7.3f}".format(t1-t0), "seconds."
         print "Learning patterns in training set..."
-        hpc_learn_patterns_wrapper(hpc, patterns=training_set, max_training_iterations=15)
+        hpc.re_wire_fixed_input_to_ec_weights()
+        hpc_learn_patterns_wrapper(hpc, patterns=training_set, max_training_iterations=5)
 
         # extract by chaotic recall:
         # print "Recalling patterns for 300 time-steps by chaotic recall..."

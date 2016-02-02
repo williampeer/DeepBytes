@@ -43,7 +43,7 @@ for letter_data in data_letters_lowercase:
     training_patterns_heterogeneous.append([uppercase_letter, lowercase_letter])
 
 
-hipp_chaotic_pats = experiment_4_x_1(hpc, 2, training_patterns_associative)
+hipp_chaotic_pats = experiment_4_x_1(hpc, 2, training_patterns_associative[4:])
 for recalled_pat in hipp_chaotic_pats:
     show_image_from(recalled_pat)
 

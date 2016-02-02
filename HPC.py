@@ -449,6 +449,22 @@ class HPC:
             ctr+=el
         print "sum output:", ctr
 
+    def print_activation_values(self):
+        print "\nprinting activation values:"
+        print "in:", self.input_values.get_value()
+        print "ec:", self.ec_values.get_value()
+        print "dg:", self.dg_values.get_value()
+        print "ca3:", self.ca3_values.get_value()
+        print "out:", self.output_values.get_value()
+
+    def print_last_halves_of_activation_values_sums(self):
+        print "\nprinting activation values:"
+        print "sum in, last 50 %:", np.sum(self.input_values.get_value()[0][len(self.input_values.get_value()[0])/2:])
+        print "sum ec, last 50 %:", np.sum(self.ec_values.get_value()[0][len(self.ec_values.get_value()[0])/2:])
+        print "sum dg, last 50 %:", np.sum(self.dg_values.get_value()[0][len(self.dg_values.get_value()[0])/2:])
+        print "sum ca3, last 50 %:", np.sum(self.ca3_values.get_value()[0][len(self.ca3_values.get_value()[0])/2:])
+        print "sum out, last 50 %:", np.sum(self.output_values.get_value()[0][len(self.output_values.get_value()[0])/2:])
+
     def print_activation_values_and_weights(self):
         print "\nprinting activation values:"
         print "in:", self.input_values.get_value()
