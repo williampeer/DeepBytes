@@ -268,7 +268,10 @@ class HPC:
 
         sort_act_vals = theano.function([], outputs=T.sort(values))
         act_vals_sorted = sort_act_vals()
-        k_th_largest_act_val = act_vals_sorted[0, len(values[0])-1 - k_neurons]
+        k_th_largest_act_val = act_vals_sorted[0, len(values[0])-1 - k_neurons]  # TODO: Check that it is sorted in an ascending order.
+
+        # TODO: Build hash-map. Draw random for same value 'til k nodes drawn.
+        # TODO: Check if source for this bug stems from weights. Perhaps execute equations on paper?
 
         new_values = np.zeros_like(values, dtype=np.float32)
 
