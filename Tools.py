@@ -31,4 +31,4 @@ binomial_f = theano.function([x_r, y_r, p_scalar], outputs=shared_random_generat
 rows = T.iscalar()
 columns = T.iscalar()
 uniform_f = theano.function([rows, columns], outputs=shared_random_generator.
-                            uniform(size=(rows, columns), low=-1, high=1, dtype='float32'))
+                            uniform(size=(rows, columns), low=-0.5, high=0.5, dtype='float32'))

@@ -1,10 +1,11 @@
 import theano
 import theano.tensor as T
 import numpy as np
-from Tools import binomial_f
+from Tools import binomial_f, uniform_f
 theano.config.floatX = 'float32'
 
 
+# Ans et al. (1997): Error measure the cross-entropy. Learning rate: 0.01, momentum term: 0.5.
 class SimpleNeocorticalNetwork:
     def __init__(self, in_dim, h_dim, out_dim, alpha, momentum):
 
@@ -13,7 +14,7 @@ class SimpleNeocorticalNetwork:
 
         self.dims = [in_dim, h_dim, out_dim]
 
-        _in = np.random.random((1, in_dim)).astype(np.float32)
+        _in = np.zeros((1, in_dim), dtype=np.float32)
         _h = np.zeros((1, h_dim), dtype=np.float32)
         _out = np.zeros((1, out_dim), dtype=np.float32)
 
@@ -21,8 +22,8 @@ class SimpleNeocorticalNetwork:
         self._h = theano.shared(name='_h', value=_h.astype(theano.config.floatX), borrow=True)
         self._out = theano.shared(name='_out', value=_out.astype(theano.config.floatX), borrow=True)
 
-        in_h_Ws = np.random.random((in_dim, h_dim)).astype(np.float32)
-        h_out_Ws = np.random.random((h_dim, out_dim)).astype(np.float32)
+        in_h_Ws = uniform_f(in_dim, h_dim)
+        h_out_Ws = uniform_f(h_dim, out_dim)
 
         self.in_h_Ws = theano.shared(name='in_h_Ws', value=in_h_Ws.astype(theano.config.floatX), borrow=True)
         self.h_out_Ws = theano.shared(name='h_out_Ws', value=h_out_Ws.astype(theano.config.floatX), borrow=True)
