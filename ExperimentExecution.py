@@ -5,6 +5,7 @@ from SimpleNeocorticalNetwork import SimpleNeocorticalNetwork
 from Experiments_4_x import experiment_4_x_1, experiment_4_x_2
 from data_capital import data_letters_capital
 from data_lowercase import data_letters_lowercase
+from Tools import show_image_from
 
 # Hippocampal module
 io_dim = 49
@@ -31,13 +32,20 @@ for letter_data in data_letters_capital:
     training_patterns_associative.append([new_array, new_array])
 
 training_patterns_heterogeneous = []
+letter_ctr = 0
 for letter_data in data_letters_lowercase:
-    pass
+    io_lowercase = [[]]
+    for row in letter_data:
+        for el in row:
+            io_lowercase[0].append(el)
+    lowercase_letter = np.asarray(io_lowercase, dtype=np.float32)
+    uppercase_letter = training_patterns_associative[letter_ctr][0]
+    training_patterns_heterogeneous.append([uppercase_letter, lowercase_letter])
 
 
-# hipp_chaotic_pats = experiment_4_x_1(2)
-# for recalled_pat in hipp_chaotic_pats:
-#     show_image_from(recalled_pat)
+hipp_chaotic_pats = experiment_4_x_1(hpc, 2, training_patterns_associative)
+for recalled_pat in hipp_chaotic_pats:
+    show_image_from(recalled_pat)
 
-information_vector = experiment_4_x_2(2, training_patterns_associative)
+# information_vector = experiment_4_x_2(hpc, ann, 2, training_patterns_associative)
 # could cPickle this vector, or write to file.

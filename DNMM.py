@@ -44,7 +44,7 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
                     # print "Displaying intermediary results... (output, target)"
                     # show_image_from(np.asarray([out_values_row], dtype=np.float32))
                     # show_image_from(np.asarray([cur_p_row], dtype=np.float32))
-                    print "iter:", pattern_index
+                    print "iter:", iter_ctr
                     break
             if not learned_all:
                 break
