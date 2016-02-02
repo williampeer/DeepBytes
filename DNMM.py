@@ -1,6 +1,6 @@
 import time
 import numpy as np
-from Tools import binomial_f
+from Tools import binomial_f, uniform_f, show_image_from
 
 
 def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
@@ -31,6 +31,8 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
             print "Recalling pattern #", pattern_index
             hpc.setup_input(patterns[pattern_index][0])
             hpc.recall()
+            hpc.recall()
+            hpc.recall()
             out_values_row = hpc.output_values.get_value()[0]
             cur_p_row = patterns[pattern_index][1][0]
             # print "outvals:", out_values
@@ -39,9 +41,10 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
                 if out_values_row[el_index] != cur_p_row[el_index]:
                     learned_all = False
                     print "Patterns are not yet successfully learned. Learning more..."
-                    print "Displaying intermediary results... (output, target)"
-                    hpc.show_image_from(np.asarray([out_values_row], dtype=np.float32))
-                    hpc.show_image_from(np.asarray([cur_p_row], dtype=np.float32))
+                    # print "Displaying intermediary results... (output, target)"
+                    # show_image_from(np.asarray([out_values_row], dtype=np.float32))
+                    # show_image_from(np.asarray([cur_p_row], dtype=np.float32))
+                    print "iter:", pattern_index
                     break
             if not learned_all:
                 break
@@ -53,16 +56,16 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
         format(time_stop_overall-time_start_overall), "seconds."
 
 
-def hpc_chaotic_recall_wrapper(hpc, display_images_of_intermediate_output, recall_iterations):
+def hpc_chaotic_recall_wrapper(hpc, display_images_of_stable_output, recall_iterations):
     time_the_beginning_of_time = time.time()
     time_before = time.time()
     cur_iters = 0
-    random_input = hpc.uniform_f(1, hpc.dims[0]) * 2 - np.ones_like(hpc.input_values, dtype=np.float32)
+    random_input = uniform_f(1, hpc.dims[0]) * 2 - np.ones_like(hpc.input_values, dtype=np.float32)
     hpc.setup_input(random_input)
     hpc_extracted_pseudopatterns = []
     while cur_iters < recall_iterations:
         [cur_iters_term, found_stable_output, output] = hpc.recall_until_stability_criteria(
-                should_display_image=display_images_of_intermediate_output, max_iterations=recall_iterations-cur_iters)
+                should_display_image=display_images_of_stable_output, max_iterations=recall_iterations-cur_iters)
         cur_iters += cur_iters_term
 
         if found_stable_output:

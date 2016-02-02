@@ -257,13 +257,7 @@ class HPC:
         self.update_dg_ca3_weights_row(row_index, weights_vector[0])
 
     def re_wire_fixed_input_to_ec_weights(self):
-        input_ec_weights = np.ones((self.dims[0], self.dims[1]), dtype=np.float32)
-        # for each row in dims[0]: make 67 % of columns in dims[1] equal to 1, the rest 0:
-        # np.random.seed(np.sqrt(time.time()).astype(np.int64))
-        for row in range(self.dims[0]):
-            for column in range(self.dims[1]):
-                if np.random.random() < (1 - self.connection_rate_input_ec):
-                    input_ec_weights[row][column] = 0
+        input_ec_weights = binomial_f(self.dims[0], self.dims[1], 0.67)
         self.update_input_ec_weights(input_ec_weights)
 
     # Returns a vector with the corresponding output, i.e. the k largest values as 1, the rest 0.
@@ -292,7 +286,7 @@ class HPC:
     # TODO: Check parallelism. Check further decentralization possibilities.
     def learn(self):
         # one iteration for each layer/HPC-part
-        self.internal_recall()  # sets the t-1 nu- and zeta-values.
+        # self.internal_recall()  # sets the t-1 nu- and zeta-values for recalling the current letter.
 
         # fire EC to DG
         self.fire_ec_dg(self.ec_values.get_value(return_internal_type=True),
@@ -419,6 +413,9 @@ class HPC:
         return [ctr, found_stable_output, out_now]
 
     def get_bipolar_in_out_values(self, values):
+        # new_values = values + 0.000001 * np.ones_like(values, dtype=np.float32)
+        # return new_values / np.abs(new_values)
+
         new_values = np.ones_like(values, dtype=np.float32)
         for value_index in xrange(values.shape[1]):
             if values[0][value_index] < 0:
