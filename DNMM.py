@@ -1,5 +1,6 @@
 import time
-from SimpleNeocorticalNetwork import *
+import numpy as np
+from Tools import binomial_f
 
 
 def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):

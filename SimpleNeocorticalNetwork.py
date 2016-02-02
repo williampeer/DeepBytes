@@ -1,5 +1,7 @@
-from Tools import *
-
+import theano
+import theano.tensor as T
+import numpy as np
+from Tools import binomial_f
 theano.config.floatX = 'float32'
 
 
@@ -94,8 +96,7 @@ class SimpleNeocorticalNetwork:
 
     def get_pseudopattern_I(self):
         # random input
-        rng = RandomStreams()
-        random_in_pattern = rng.binomial((1, self.dims[0]), 1, 0.5, dtype='float32')
+        random_in_pattern = binomial_f((1, self.dims[0]), 1, 0.5, dtype='float32')
         random_in_pattern = random_in_pattern * 2 - np.ones_like(random_in_pattern)
         print "random_in_pattern:", random_in_pattern
 

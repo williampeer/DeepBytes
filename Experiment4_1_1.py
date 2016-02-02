@@ -1,5 +1,9 @@
-from DNMM import *
-from HPC import *
+import numpy as np
+import time
+from data_capital import data_letters_capital
+from DNMM import hpc_learn_patterns_wrapper
+from HPC import HPC
+from Tools import show_image_from
 
 # ==================== TESTING CODE: ======================
 # Hippocampal module
