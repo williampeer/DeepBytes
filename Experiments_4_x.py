@@ -1,47 +1,21 @@
-import numpy as np
 import time
-from data_capital import data_letters_capital
-from DNMM import hpc_learn_patterns_wrapper, hpc_chaotic_recall_wrapper
+from DNMM import hpc_learn_patterns_wrapper, hpc_chaotic_recall_wrapper, generate_pseodupatterns_II
 from HPC import HPC
-from Tools import show_image_from, set_contains_pattern
-
-# ==================== TESTING CODE: ======================
-# Hippocampal module
-io_dim = 49
-# dims,
-# connection_rate_input_ec, perforant_path, mossy_fibers,
-#                  firing_rate_ec, firing_rate_dg, firing_rate_ca3,
-#                  _gamma, _epsilon, _nu, _turnover_rate, _k_m, _k_r, _a_i, _alpha):
-hpc = HPC([io_dim, 240, 1600, 480, io_dim],
-          0.67, 0.25, 0.04,  # connection rates: (in_ec, ec_dg, dg_ca3)
-          0.10, 0.01, 0.04,  # firing rates: (ec, dg, ca3)
-          0.7, 1.0, 0.1, 0.5,  # gamma, epsilon, nu, turnover rate
-          0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha, alpha is 2 in 4.1.1
+from Tools import show_image_from, set_contains_pattern, get_pattern_correlation
+from SimpleNeocorticalNetwork import SimpleNeocorticalNetwork
 
 # next experiment output image:
 next_experiment_im = [[-1, 1] * 24]
 next_experiment_im[0].append(-1)
 
 
-def experiment_4_1_1(training_set_size):
-    # All auto-associative pattern tests from the paper:
-    num_of_patterns_in_set = training_set_size
-    number_of_sets = 5
-
+def experiment_4_x_1(hpc, training_set_size, original_training_patterns):
     hippocampal_chaotic_recall_patterns = []
 
-    for i in range(number_of_sets):
-        training_set = []
+    for train_set_num in range(5):  # always five training sets
         # Setup current training patterns:
-        for pattern in data_letters_capital[i*num_of_patterns_in_set:num_of_patterns_in_set + i*num_of_patterns_in_set]:
-            io = [[]]
-            for row in pattern:
-                for el in row:
-                    io[0].append(el)
-            new_array = np.asarray(io, dtype=np.float32)
-            # print "Appending the following image..."
-            # show_image_from(new_array)
-            training_set.append([new_array, new_array])
+        training_set = original_training_patterns[training_set_size * train_set_num : training_set_size +
+                                                                               train_set_num*training_set_size]
 
         print "Performing neuronal turnover in DG for", hpc._turnover_rate * 100, "% of the neurons.."
         t0 = time.time()
@@ -75,6 +49,30 @@ def experiment_4_1_1(training_set_size):
     # show_image_from(np.asarray(next_experiment_im).astype(np.float32))
     return hippocampal_chaotic_recall_patterns
 
-hipp_chaotic_pats = experiment_4_1_1(2)
-for recalled_pat in hipp_chaotic_pats:
-    show_image_from(recalled_pat)
+
+def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
+    pseudopattern_set_size = 20
+
+    # Generate pseudopatterns:
+    pseudopatterns_I = []
+    for i in range(pseudopattern_set_size):
+        pseudopatterns_I.append(ann.get_pseudopattern_I())
+
+    chaotically_recalled_patterns = experiment_4_x_1(training_set_size, original_training_patterns)
+    pseudopatterns_II = generate_pseodupatterns_II(hpc.dims[0], chaotically_recalled_patterns, 0.5,
+                                                   pseudopattern_set_size)
+
+    # Train Neocortical network on them:
+    training_set = pseudopatterns_I + pseudopatterns_II
+    for training_pattern in training_set:
+        ann.train([training_pattern, training_pattern])  # learns the identity map.
+
+    # Attempt to recall using the entire DNMM:
+    sum_corr = 0.
+    for original_pattern in original_training_patterns:
+        ann.feed_forward(original_pattern)
+        sum_corr += get_pattern_correlation(original_pattern, ann._out.get_value())
+    g = sum_corr / len(sum_corr)
+    print "goodness of fit, g=", g
+
+    return [pseudopatterns_I, pseudopatterns_II, ann, hpc, g]
