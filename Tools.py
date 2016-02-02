@@ -33,6 +33,7 @@ columns = T.iscalar()
 uniform_f = theano.function([rows, columns], outputs=shared_random_generator.
                             uniform(size=(rows, columns), low=-0.5, high=0.5, dtype='float32'))
 
+
 def set_contains_pattern(set, pattern):
     for pat in set:
         for row_ind in range(len(pat)):
@@ -40,3 +41,11 @@ def set_contains_pattern(set, pattern):
                 if pat[row_ind][col_ind] != pattern[row_ind][col_ind]:
                     return False
     return True
+
+
+def get_pattern_correlation(pat1, pat2):
+    corr = 0
+    for row_ind in range(len(pat1)):
+        for col_ind in range(len(pat1[0])):
+            corr += pat1[row_ind][col_ind] * pat2[row_ind][col_ind]
+    return corr

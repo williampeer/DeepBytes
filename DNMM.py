@@ -81,9 +81,12 @@ def hpc_chaotic_recall_wrapper(hpc, display_images_of_stable_output, recall_iter
     return hpc_extracted_pseudopatterns
 
 
-def generate_pseodupatterns_II(dim, hpc_extracted_pseudopatterns, reverse_P):
+def generate_pseodupatterns_II(dim, hpc_extracted_pseudopatterns, reverse_P, set_size):
+    extracted_set_size = len(hpc_extracted_pseudopatterns)
     pseudopatterns_II = []
-    for pattern in hpc_extracted_pseudopatterns:
+    pseudopattern_ctr = 0
+    while pseudopattern_ctr < set_size:
+        pattern = hpc_extracted_pseudopatterns[pseudopattern_ctr % extracted_set_size]
         # q=1-p because we're flipping the sign of the ones that are not flipped.
         reverse_vector = binomial_f(1, dim, (1-reverse_P))
         reverse_vector = reverse_vector * 2 - np.ones_like(reverse_vector)

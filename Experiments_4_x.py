@@ -1,8 +1,6 @@
 import time
 from DNMM import hpc_learn_patterns_wrapper, hpc_chaotic_recall_wrapper, generate_pseodupatterns_II
-from HPC import HPC
 from Tools import show_image_from, set_contains_pattern, get_pattern_correlation
-from SimpleNeocorticalNetwork import SimpleNeocorticalNetwork
 
 # next experiment output image:
 next_experiment_im = [[-1, 1] * 24]

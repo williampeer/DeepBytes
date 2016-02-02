@@ -52,9 +52,9 @@ class HPC:
 
         ca3_values = uniform_f(1, dims[3])
         self.ca3_values = theano.shared(name='ca3_values', value=ca3_values.astype(theano.config.floatX), borrow=True)
-        prev_ca3_values = np.zeros_like(ca3_values, dtype=np.float32)
-        self.prev_ca3_values = theano.shared(name='prev_ca3_values', value=prev_ca3_values.astype(theano.config.floatX),
-                                             borrow=True)
+        # prev_ca3_values = np.zeros_like(ca3_values, dtype=np.float32)
+        # self.prev_ca3_values = theano.shared(name='prev_ca3_values', value=prev_ca3_values.astype(theano.config.floatX),
+        #                                      borrow=True)
 
         output_values = np.zeros((1, dims[4])).astype(np.float32)
         self.output_values = theano.shared(name='output_values', value=output_values.astype(theano.config.floatX),
@@ -144,15 +144,15 @@ class HPC:
         next_activation_values_ca3 = T.tanh((nu_ca3 + zeta_ca3) / self._epsilon)
         self.fire_all_to_ca3 = theano.function([c_ec_vals, c_ec_ca3_Ws, c_dg_vals, c_dg_ca3_Ws, c_ca3_vals,
                                                 c_ca3_ca3_Ws, c_nu_ca3, c_zeta_ca3],
-                                               updates=[(self.prev_ca3_values, c_ca3_vals),
+                                               updates=[  # (self.prev_ca3_values, c_ca3_vals),
                                                         (self.ca3_values, next_activation_values_ca3),
                                                         (self.nu_ca3, nu_ca3), (self.zeta_ca3, zeta_ca3)])
 
         # after kWTA:
-        self.wire_ec_to_ca3 = theano.function([u_prev_reshaped_transposed, u_next_reshaped, Ws_prev_next], updates=
-        [(self.ec_ca3_weights, next_Ws)])
-        self.wire_dg_to_ca3 = theano.function([u_prev_reshaped_transposed, u_next_reshaped, Ws_prev_next], updates=
-        [(self.dg_ca3_weights, next_Ws)])
+        self.wire_ec_to_ca3 = theano.function([u_prev_reshaped_transposed, u_next_reshaped, Ws_prev_next], updates=[
+            (self.ec_ca3_weights, next_Ws)])
+        self.wire_dg_to_ca3 = theano.function([u_prev_reshaped_transposed, u_next_reshaped, Ws_prev_next], updates=[
+            (self.dg_ca3_weights, next_Ws)])
 
         local_ca3_ca3_Ws = T.fmatrix()
         local_ca3_vals = T.fmatrix()
@@ -168,7 +168,7 @@ class HPC:
         no_learning_next_act_vals_ca3 = T.tanh((no_learning_nu_ca3 + no_learning_zeta_ca3) / self._epsilon)
         self.fire_to_ca3_no_learning = theano.function([c_ec_vals, c_ec_ca3_Ws, c_ca3_vals, c_ca3_ca3_Ws, c_nu_ca3,
                                                         c_zeta_ca3],
-                                                       updates=[(self.prev_ca3_values, c_ca3_vals),
+                                                       updates=[  # (self.prev_ca3_values, c_ca3_vals),
                                                                 (self.ca3_values, no_learning_next_act_vals_ca3),
                                                                 (self.nu_ca3, no_learning_nu_ca3),
                                                                 (self.zeta_ca3, no_learning_zeta_ca3)])
@@ -198,8 +198,8 @@ class HPC:
         self.set_ca3_values = theano.function([new_activation_values], outputs=None,
                                               updates=[(self.ca3_values, new_activation_values)])
 
-        self.set_prev_ca3_values = theano.function([new_activation_values], outputs=None,
-                                                   updates=[(self.prev_ca3_values, new_activation_values)])
+        # self.set_prev_ca3_values = theano.function([new_activation_values], outputs=None,
+        #                                            updates=[(self.prev_ca3_values, new_activation_values)])
 
         self.set_output = theano.function([new_activation_values], outputs=None,
                                           updates=[(self.output_values, new_activation_values)])
@@ -296,9 +296,9 @@ class HPC:
                 self.kWTA(self.dg_values.get_value(return_internal_type=True), self.firing_rate_dg))  # in-memory copy
 
         # wire EC to DG
-        n_rows_for_u_next = self.ec_values.get_value(return_internal_type=True).shape[1]
+        n_roWs_for_u_next = self.ec_values.get_value(return_internal_type=True).shape[1]
         n_cols_for_u_prev = self.dg_values.get_value(return_internal_type=True).shape[1]
-        u_next_for_elemwise_ops = [self.dg_values.get_value(return_internal_type=True)[0]] * n_rows_for_u_next
+        u_next_for_elemwise_ops = [self.dg_values.get_value(return_internal_type=True)[0]] * n_roWs_for_u_next
         u_prev_for_elemwise_ops_transposed = [self.ec_values.get_value(return_internal_type=True)[0]] * n_cols_for_u_prev
 
         self.wire_ec_dg(u_prev_for_elemwise_ops_transposed, u_next_for_elemwise_ops,
@@ -309,7 +309,7 @@ class HPC:
         l_ec_ca3_Ws = self.ec_ca3_weights.get_value(return_internal_type=True)
         l_dg_vals = self.dg_values.get_value(return_internal_type=True)
         l_dg_ca3_Ws = self.dg_ca3_weights.get_value(return_internal_type=True)
-        l_ca3_vals = self.ca3_values.get_value(return_internal_type=True)
+        l_ca3_vals = self.ca3_values.get_value(borrow=False)
         l_ca3_ca3_Ws = self.ca3_ca3_weights.get_value(return_internal_type=True)
         l_nu_ca3 = self.nu_ca3.get_value(return_internal_type=True)
         l_zeta_ca3 = self.zeta_ca3.get_value(return_internal_type=True)
@@ -335,7 +335,7 @@ class HPC:
 
         # wire CA3 to CA3
         self.wire_ca3_to_ca3(self.ca3_values.get_value(return_internal_type=True),
-                             self.prev_ca3_values.get_value(return_internal_type=True),
+                             l_ca3_vals,
                              self.ca3_ca3_weights.get_value(return_internal_type=True))
         self.wire_ca3_out(self.ca3_values.get_value(return_internal_type=True),
                           self.ca3_out_weights.get_value(return_internal_type=True),
