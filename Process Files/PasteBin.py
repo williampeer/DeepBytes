@@ -82,3 +82,39 @@ for index in xrange(rand_I.shape[1]):
         # _, updates_dg_ca3 = theano.scan(self.neuronal_turnover_helper_dg_ca3, outputs_info=ctr,
         #                                 sequences=[dg_res, T.arange(dg_num)])
         # neuronal_turnover_dg_ca3 = theano.function([dg_res, dg_num, ctr], outputs=None, updates=updates_dg_ca3)
+
+# def kWTA(self, values, firing_rate):
+#         print "values:", values
+#         # tuples = []
+#         # index_ctr = 0
+#         # for value in values[0]:
+#         #     tuples.append((value, index_ctr))
+#         #     index_ctr += 1
+#
+#         # kWTA EC:
+#         k_neurons = np.floor(len(values[0]) * firing_rate).astype(np.int32)  # k determined by the firing rate
+#         # k_neurons = int(len(values[0]) * firing_rate)  # k determined by the firing rate
+#
+#         sort_act_vals = theano.function([], outputs=T.sort(tuples))
+#         act_vals_sorted = sort_act_vals()
+#         k_th_largest_act_val = act_vals_sorted[len(values[0])-1 - k_neurons]  # TODO: Check that it is sorted in an ascending order.
+#         print "act_vals_sorted:", act_vals_sorted
+#         print "k_th_largest_act_val:", k_th_largest_act_val
+#
+#
+#
+#         # # TODO: Build hash-map. Draw random for same value 'til k nodes drawn.
+#         # # TODO: Check if source for this bug stems from weights. Perhaps execute equations on paper?
+#         #
+#         # new_values = np.zeros_like(values, dtype=np.float32)
+#         #
+#         # for act_val_index in range(len(values[0])):
+#         #     if values[0][act_val_index] > k_th_largest_act_val:
+#         #         new_values[0][act_val_index] = 1
+#         #     elif values[0][act_val_index] == k_th_largest_act_val:
+#         #         if np.sum(new_values[0]) < k_neurons:
+#         #             new_values[0][act_val_index] = 1
+#         #         else:
+#         #             return new_values
+#         #
+#         # return new_values

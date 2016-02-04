@@ -261,28 +261,38 @@ class HPC:
         self.update_input_ec_weights(input_ec_weights)
 
     # Returns a vector with the corresponding output, i.e. the k largest values as 1, the rest 0.
-    def kWTA(self, values, firing_rate):
-        # kWTA EC:
-        k_neurons = np.floor(len(values[0]) * firing_rate).astype(np.int32)  # k determined by the firing rate
-        # k_neurons = int(len(values[0]) * firing_rate)  # k determined by the firing rate
+    def kWTA(self, values, f_r):
+        # print "values[0]", values[0]
+        values_length = len(values[0])
+        k = np.round(values_length * f_r).astype(np.int32)
+        values_sum = np.sum(values[0])
+        print "values_sum:", values_sum, "k:", k
+        # print "values_length:", values_length
+        # edge cases. note that the sum may be 0 or the length sometimes too without the edge case.
+        if values_sum == values_length or values_sum == 0:
+            print "equal sum to length or 0"
+            all_zero_or_one = True
+            for el in values[0]:
+                if el != 0 and el != 1:
+                    # print "this el voiasdoipasd:", el
+                    all_zero_or_one = False
+                    print "all zero or one false"
+                    break
+            if all_zero_or_one:  # return random indices as on (1)
+                return binomial_f(1, values_length, f_r)
 
-        sort_act_vals = theano.function([], outputs=T.sort(values))
-        act_vals_sorted = sort_act_vals()
-        k_th_largest_act_val = act_vals_sorted[0, len(values[0])-1 - k_neurons]  # TODO: Check that it is sorted in an ascending order.
+        sort_values = theano.function([], outputs=T.sort(values))
+        sorted_values = sort_values()
+        k_th_largest_value = sorted_values[0, values_length-k-1]
 
-        # TODO: Build hash-map. Draw random for same value 'til k nodes drawn.
-        # TODO: Check if source for this bug stems from weights. Perhaps execute equations on paper?
-
-        new_values = np.zeros_like(values, dtype=np.float32)
-
-        for act_val_index in range(len(values[0])):
-            if values[0, act_val_index] > k_th_largest_act_val:
-                new_values[0, act_val_index] = 1
-            elif values[0, act_val_index] == k_th_largest_act_val:
-                if np.sum(new_values[0]) < k_neurons:
-                    new_values[0, act_val_index] = 1
-                else:
-                    return new_values
+        new_values = np.zeros_like(values)
+        k_ctr = 0
+        ind_ctr = 0
+        for el in values[0]:
+            if el > k_th_largest_value:
+                new_values[ind_ctr] = 1
+            k_ctr += 1
+            ind_ctr += 1
 
         return new_values
 
