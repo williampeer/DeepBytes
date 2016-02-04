@@ -118,3 +118,47 @@ for index in xrange(rand_I.shape[1]):
 #         #             return new_values
 #         #
 #         # return new_values
+
+
+# def kWTA(self, values, f_r):
+#         # print "values[0]", values[0]
+#         values_length = len(values[0])
+#         k = np.round(values_length * f_r).astype(np.int32)
+#         values_sum = np.sum(values[0])
+#         print "values_sum:", values_sum, "k:", k
+#         # print "values_length:", values_length
+#         # edge cases. note that the sum may be 0 or the length sometimes too without the edge case.
+#         if values_sum == values_length or values_sum == 0:
+#             print "equal sum to length or 0"
+#             all_zero_or_one = True
+#             for el in values[0]:
+#                 if el != 0 and el != 1:
+#                     # print "this el voiasdoipasd:", el
+#                     all_zero_or_one = False
+#                     print "all zero or one false"
+#                     break
+#             if all_zero_or_one:  # return random indices as on (1)
+#                 return binomial_f(1, values_length, f_r)
+#
+#         sort_values = theano.function([], outputs=T.sort(values))
+#         sorted_values = sort_values()
+#         k_th_largest_value = sorted_values[0, values_length-k-1]
+#
+#         new_values = np.zeros_like(values)
+#         k_ctr = 0
+#         ind_ctr = 0
+#         for el in values[0]:
+#             if el > k_th_largest_value:
+#                 new_values[0][ind_ctr] = 1
+#                 k_ctr += 1
+#             elif el == k_th_largest_value:
+#                 if k_ctr < k:
+#                     new_values[0][ind_ctr] = 1
+#                     k_ctr += 1
+#                 else:
+#                     break
+#             ind_ctr += 1
+#
+#         print "new_values:", new_values
+#         print "np.sum(new_values):", np.sum(new_values)
+#         return new_values

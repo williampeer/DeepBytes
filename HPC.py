@@ -265,36 +265,21 @@ class HPC:
         # print "values[0]", values[0]
         values_length = len(values[0])
         k = np.round(values_length * f_r).astype(np.int32)
-        values_sum = np.sum(values[0])
-        print "values_sum:", values_sum, "k:", k
-        # print "values_length:", values_length
-        # edge cases. note that the sum may be 0 or the length sometimes too without the edge case.
-        if values_sum == values_length or values_sum == 0:
-            print "equal sum to length or 0"
-            all_zero_or_one = True
-            for el in values[0]:
-                if el != 0 and el != 1:
-                    # print "this el voiasdoipasd:", el
-                    all_zero_or_one = False
-                    print "all zero or one false"
-                    break
-            if all_zero_or_one:  # return random indices as on (1)
-                return binomial_f(1, values_length, f_r)
 
-        sort_values = theano.function([], outputs=T.sort(values))
-        sorted_values = sort_values()
-        k_th_largest_value = sorted_values[0, values_length-k-1]
+        sort_values_f = theano.function([], outputs=T.sort(values))
+        sorted_values = sort_values_f()
+        k_th_largest_value = sorted_values[0][values_length-k-1]
+        if k_th_largest_value == 1.0 or k_th_largest_value == -1:  # as this occur, it seems that weights converge
+            # towards weights/elements all -1, or all 1. TODO: Fix this.
+            return binomial_f(1, values_length, f_r)
+        print "sorted_values:", sorted_values
+        print "k_th_largest_value:", k_th_largest_value
 
-        new_values = np.zeros_like(values)
-        k_ctr = 0
-        ind_ctr = 0
-        for el in values[0]:
-            if el > k_th_largest_value:
-                new_values[ind_ctr] = 1
-            k_ctr += 1
-            ind_ctr += 1
+        mask_vector = k_th_largest_value * np.ones_like(values)
+        result = (values >= mask_vector).astype(np.float32)
+        print result
 
-        return new_values
+        return result
 
     # TODO: Check parallelism. Check further decentralization possibilities.
     def learn(self):
