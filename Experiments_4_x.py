@@ -22,28 +22,29 @@ def experiment_4_x_1(hpc, training_set_size, original_training_patterns):
         print "Neuronal turnover completed in", "{:7.3f}".format(t1-t0), "seconds."
         print "Learning patterns in training set..."
         hpc.re_wire_fixed_input_to_ec_weights()
-        hpc_learn_patterns_wrapper(hpc, patterns=training_set, max_training_iterations=5)
+        hpc_learn_patterns_wrapper(hpc, patterns=training_set, max_training_iterations=15)
 
         # extract by chaotic recall:
-        # print "Recalling patterns for 300 time-steps by chaotic recall..."
-        # t2 = time.time()
-        # patterns_extracted_for_current_set = \
-        #     hpc_chaotic_recall_wrapper(hpc, display_images_of_stable_output=False, recall_iterations=300)
-        # for pat in patterns_extracted_for_current_set:
-        #     if not set_contains_pattern(hippocampal_chaotic_recall_patterns, pat):
-        #         hippocampal_chaotic_recall_patterns.append(pat)  # append unique pattern
-        # t3 = time.time()
-        # print "Chaotic recall completed in", "{:8.3f}".format(t3-t2), "seconds, for t=300."
+        print "Recalling patterns for 300 time-steps by chaotic recall..."
+        t2 = time.time()
+        patterns_extracted_for_current_set = \
+            hpc_chaotic_recall_wrapper(hpc, display_images_of_stable_output=False, recall_iterations=300)
+        for pat in patterns_extracted_for_current_set:
+            if not set_contains_pattern(hippocampal_chaotic_recall_patterns, pat):
+                hippocampal_chaotic_recall_patterns.append(pat)  # append unique pattern
+        t3 = time.time()
+        print "Set size for hippocampal_chaotic_recall_patterns:", len(hippocampal_chaotic_recall_patterns)
+        print "Chaotic recall completed in", "{:8.3f}".format(t3-t2), "seconds, for t=300."
 
         # Use this to debug the current model:
-        learned_ctr = 0
-        for pat in training_set:
-            hpc.setup_input(pat[0])
-            print "Recalling pattern #", learned_ctr
-            # show_image_from(np.asarray(next_experiment_im).astype(np.float32))
-            hpc.recall()
-            show_image_from(hpc.output_values.get_value())
-            learned_ctr += 1
+        # learned_ctr = 0
+        # for pat in training_set:
+        #     hpc.setup_input(pat[0])
+        #     print "Recalling pattern #", learned_ctr
+        #     # show_image_from(np.asarray(next_experiment_im).astype(np.float32))
+        #     hpc.recall()
+        #     show_image_from(hpc.output_values.get_value())
+        #     learned_ctr += 1
 
     # show_image_from(np.asarray(next_experiment_im).astype(np.float32))
     return hippocampal_chaotic_recall_patterns

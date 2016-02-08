@@ -17,7 +17,7 @@ hpc = HPC([io_dim, 240, 1600, 480, io_dim],
           0.67, 0.25, 0.04,  # connection rates: (in_ec, ec_dg, dg_ca3)
           0.10, 0.01, 0.04,  # firing rates: (ec, dg, ca3)
           0.7, 1.0, 0.1, 0.5,  # gamma, epsilon, nu, turnover rate
-          0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha, alpha is 2 in 4.1.1
+          0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
 
 ann = SimpleNeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
 
@@ -43,8 +43,9 @@ for letter_data in data_letters_lowercase:
     training_patterns_heterogeneous.append([uppercase_letter, lowercase_letter])
 
 
-hipp_chaotic_pats = experiment_4_x_1(hpc, 2, training_patterns_associative[4:])
+hipp_chaotic_pats = experiment_4_x_1(hpc, 2, training_patterns_associative)
 for recalled_pat in hipp_chaotic_pats:
+    print "Displayed chaotically recalled image!"
     show_image_from(recalled_pat)
 
 # information_vector = experiment_4_x_2(hpc, ann, 2, training_patterns_associative)
