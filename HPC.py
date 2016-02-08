@@ -73,7 +73,7 @@ class HPC:
                                            borrow=True)
 
         # randomly assign about 25 % of the weights to a random connection weight
-        ec_dg_weights = binomial_f(dims[1], dims[2], self.PP)
+        ec_dg_weights = binomial_f(dims[1], dims[2], self.PP) * uniform_f(dims[1], dims[2])
         self.ec_dg_weights = theano.shared(name='ec_dg_weights', value=ec_dg_weights.astype(theano.config.floatX),
                                            borrow=True)
 
@@ -269,15 +269,27 @@ class HPC:
         sort_values_f = theano.function([], outputs=T.sort(values))
         sorted_values = sort_values_f()
         k_th_largest_value = sorted_values[0][values_length-k-1]
-        if k_th_largest_value == 1.0 or k_th_largest_value == -1:  # as this occur, it seems that weights converge
-            # towards weights/elements all -1, or all 1. TODO: Fix this.
-            return binomial_f(1, values_length, f_r)
-        print "sorted_values:", sorted_values
-        print "k_th_largest_value:", k_th_largest_value
 
         mask_vector = k_th_largest_value * np.ones_like(values)
         result = (values >= mask_vector).astype(np.float32)
-        print result
+
+        sum_result = np.sum(result)
+        if sum_result > k:
+            # iterate through result vector
+            excess_elements_count = (sum_result - k).astype(np.int32)
+            ind_map = []
+            ind_ctr = 0
+            for el in result[0]:
+                if el == 1:
+                    ind_map.append(ind_ctr)
+                ind_ctr += 1
+            map_len = len(ind_map)-1
+            for i in range(excess_elements_count):
+                random_ind = np.round(map_len * np.random.random()).astype(np.int32)
+                flip_ind = ind_map[random_ind]
+                result[0][flip_ind] = 0
+                ind_map.remove(flip_ind)
+                map_len -= 1
 
         return result
 
@@ -294,9 +306,9 @@ class HPC:
                 self.kWTA(self.dg_values.get_value(return_internal_type=True), self.firing_rate_dg))  # in-memory copy
 
         # wire EC to DG
-        n_roWs_for_u_next = self.ec_values.get_value(return_internal_type=True).shape[1]
+        n_rows_for_u_next = self.ec_values.get_value(return_internal_type=True).shape[1]
         n_cols_for_u_prev = self.dg_values.get_value(return_internal_type=True).shape[1]
-        u_next_for_elemwise_ops = [self.dg_values.get_value(return_internal_type=True)[0]] * n_roWs_for_u_next
+        u_next_for_elemwise_ops = [self.dg_values.get_value(return_internal_type=True)[0]] * n_rows_for_u_next
         u_prev_for_elemwise_ops_transposed = [self.ec_values.get_value(return_internal_type=True)[0]] * n_cols_for_u_prev
 
         self.wire_ec_dg(u_prev_for_elemwise_ops_transposed, u_next_for_elemwise_ops,
@@ -338,6 +350,10 @@ class HPC:
         self.wire_ca3_out(self.ca3_values.get_value(return_internal_type=True),
                           self.ca3_out_weights.get_value(return_internal_type=True),
                           self.output_values.get_value(return_internal_type=True))
+
+        # self.print_activation_values_and_weights()
+        self.print_activation_values_sum()
+        self.print_min_max_weights()
 
     def setup_input(self, input_pattern):
         # self.re_wire_fixed_input_to_ec_weights()
@@ -478,6 +494,16 @@ class HPC:
         print "dg-ca3:", self.dg_ca3_weights.get_value()
         print "CA3-CA3:", self.ca3_ca3_weights.get_value()
         print "ca3-out:", self.ca3_out_weights.get_value()
+
+    def print_min_max_weights(self):
+        print "min-max weights in ca3-ca3 and ca3-out"
+        min_ca3_ca3 = np.min(self.ca3_ca3_weights.get_value())
+        max_ca3_ca3 = np.max(self.ca3_ca3_weights.get_value())
+        min_ca3_out = np.min(self.ca3_out_weights.get_value())
+        max_ca3_out = np.max(self.ca3_out_weights.get_value())
+        print "min, max ca3-ca3:", min_ca3_ca3, max_ca3_ca3
+        print "min, max ca3-out:", min_ca3_out, max_ca3_out
+
 
     def print_ca3_info(self):
         print "ca3:", self.ca3_values.get_value()
