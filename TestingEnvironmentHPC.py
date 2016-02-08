@@ -19,22 +19,38 @@ def kWTA(values, f_r):
     sort_values_f = theano.function([], outputs=T.sort(values))
     sorted_values = sort_values_f()
     k_th_largest_value = sorted_values[0][values_length-k-1]
-    print "sorted_values:", sorted_values
-    print "k_th_largest_value:", k_th_largest_value
 
     mask_vector = k_th_largest_value * np.ones_like(values)
     result = (values >= mask_vector).astype(np.float32)
     print result
+    sum_result = np.sum(result)
+    if sum_result > k:
+        # iterate through result vector
+        excess_elements_count = (sum_result - k).astype(np.int32)
+        ind_map = []
+        ind_ctr = 0
+        for el in result[0]:
+            if el == 1:
+                ind_map.append(ind_ctr)
+            ind_ctr += 1
+        map_len = len(ind_map)-1
+        for i in range(excess_elements_count):
+            random_ind = np.round(map_len * np.random.random()).astype(np.int32)
+            flip_ind = ind_map[random_ind]
+            result[0][flip_ind] = 0
+            ind_map.remove(flip_ind)
+            map_len -= 1
 
     return result
 
 
-test_vals = np.random.random((1, 100)).astype(np.float32)
+# test_vals = np.random.random((1, 100)).astype(np.float32)
+test_vals = 0.312987 * np.ones((1, 100), dtype=np.float32)
 t0 = time.time()
 result = kWTA(test_vals, 0.20)
-# print result
-print "np.sum(result[0]):", np.sum(result[0])
 t1 = time.time()
+print result
+print "np.sum(result[0]):", np.sum(result[0])
 print "kWTA in", "{:7.3f}".format(t1-t0), "seconds."
 
 # t0 = time.time()
