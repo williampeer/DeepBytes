@@ -3,6 +3,7 @@ import theano.tensor as T
 from theano.tensor.shared_randomstreams import RandomStreams
 from PIL import Image
 import numpy as np
+import cPickle
 
 
 def show_image_from(out_now):
@@ -51,3 +52,36 @@ def get_pattern_correlation_slow(pat1, pat2):
         for col_ind in range(len(pat1[0])):
             corr += pat1[row_ind][col_ind] * pat2[row_ind][col_ind]
     return corr
+
+
+def save_experiment_4_1_results(hpc, chaotically_recalled_patterns, custom_name):
+    ctr_f = file('saved_data/ctr.save', 'rb')
+    storage_counter = cPickle.load(ctr_f)
+    ctr_f.close()
+
+    storage_counter += 1
+    f = file('saved_data/'+custom_name+'hpc-object#'+chr(storage_counter)+'.save', 'wb')
+    cPickle.dump(hpc, f, protocol=cPickle.HIGHEST_PROTOCOL)
+    f.close()
+    f2 = file('saved_data/'+custom_name+'chaotically_recalled_patterns#'+chr(storage_counter)+'.save', 'wb')
+    cPickle.dump(chaotically_recalled_patterns, f2, protocol=cPickle.HIGHEST_PROTOCOL)
+    f2.close()
+
+    ctr_f = file('saved_data/ctr.save', 'wb')
+    cPickle.dump(storage_counter, ctr_f, protocol=cPickle.HIGHEST_PROTOCOL)
+    ctr_f.close()
+
+
+def save_experiment_4_2_results(information_vector, custom_name):
+    ctr_f = file('saved_data/information-ctr.save', 'rb')
+    info_counter = cPickle.load(ctr_f)
+    ctr_f.close()
+
+    info_counter += 1
+    f = file('saved_data/'+custom_name+'information_vector.save', 'wb')
+    cPickle.dump(information_vector, f, protocol=cPickle.HIGHEST_PROTOCOL)
+    f.close()
+
+    ctr_f = file('saved_data/information-ctr.save', 'wb')
+    cPickle.dump(info_counter, ctr_f, protocol=cPickle.HIGHEST_PROTOCOL)
+    ctr_f.close()

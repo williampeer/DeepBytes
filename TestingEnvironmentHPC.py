@@ -1,6 +1,5 @@
 from HPC import *
-from data_capital import *
-import time
+import cPickle
 
 io_dim = 49
 
@@ -10,48 +9,19 @@ hpc = HPC([io_dim, 240, 1600, 480, io_dim],
           0.7, 1, 0.1, 0.5,  # gamma, epsilon, nu, turnover rate
           0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha
 
-
-def kWTA(values, f_r):
-    # print "values[0]", values[0]
-    values_length = len(values[0])
-    k = np.round(values_length * f_r).astype(np.int32)
-
-    sort_values_f = theano.function([], outputs=T.sort(values))
-    sorted_values = sort_values_f()
-    k_th_largest_value = sorted_values[0][values_length-k-1]
-
-    mask_vector = k_th_largest_value * np.ones_like(values)
-    result = (values >= mask_vector).astype(np.float32)
-    print result
-    sum_result = np.sum(result)
-    if sum_result > k:
-        # iterate through result vector
-        excess_elements_count = (sum_result - k).astype(np.int32)
-        ind_map = []
-        ind_ctr = 0
-        for el in result[0]:
-            if el == 1:
-                ind_map.append(ind_ctr)
-            ind_ctr += 1
-        map_len = len(ind_map)-1
-        for i in range(excess_elements_count):
-            random_ind = np.round(map_len * np.random.random()).astype(np.int32)
-            flip_ind = ind_map[random_ind]
-            result[0][flip_ind] = 0
-            ind_map.remove(flip_ind)
-            map_len -= 1
-
-    return result
-
+ctr = 0
+f = file('saved_data/information-ctr.save', 'wb')  # read binary
+cPickle.dump(ctr, f, protocol=cPickle.HIGHEST_PROTOCOL)
+f.close()
 
 # test_vals = np.random.random((1, 100)).astype(np.float32)
-test_vals = 0.312987 * np.ones((1, 100), dtype=np.float32)
-t0 = time.time()
-result = kWTA(test_vals, 0.20)
-t1 = time.time()
-print result
-print "np.sum(result[0]):", np.sum(result[0])
-print "kWTA in", "{:7.3f}".format(t1-t0), "seconds."
+# test_vals = 0.312987 * np.ones((1, 100), dtype=np.float32)
+# t0 = time.time()
+# result = kWTA(test_vals, 0.20)
+# t1 = time.time()
+# print result
+# print "np.sum(result[0]):", np.sum(result[0])
+# print "kWTA in", "{:7.3f}".format(t1-t0), "seconds."
 
 # t0 = time.time()
 # hpc.neuronal_turnover_dg()
