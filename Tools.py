@@ -31,19 +31,21 @@ binomial_f = theano.function([x_r, y_r, p_scalar], outputs=shared_random_generat
 rows = T.iscalar()
 columns = T.iscalar()
 uniform_f = theano.function([rows, columns], outputs=shared_random_generator.
-                            uniform(size=(rows, columns), low=-0.5, high=0.5, dtype='float32'))
+                            uniform(size=(rows, columns), low=-0.1, high=0.1, dtype='float32'))
 
 
 def set_contains_pattern(set, pattern):
     for pat in set:
-        for row_ind in range(len(pat)):
-            for col_ind in range(len(pat[0])):
-                if pat[row_ind][col_ind] != pattern[row_ind][col_ind]:
-                    return False
-    return True
+        if get_pattern_correlation(pat, pattern) == 1:
+            return True
+    return False
+
+pat1 = T.fmatrix()
+pat2 = T.fmatrix()
+get_pattern_correlation = theano.function([pat1, pat2], outputs=T.sum(pat1 * pat2)/(pat1.shape[0] * pat1.shape[1]))
 
 
-def get_pattern_correlation(pat1, pat2):
+def get_pattern_correlation_slow(pat1, pat2):
     corr = 0
     for row_ind in range(len(pat1)):
         for col_ind in range(len(pat1[0])):
