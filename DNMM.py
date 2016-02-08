@@ -1,9 +1,14 @@
 import time
 import numpy as np
 from Tools import binomial_f, uniform_f, show_image_from
-
+from HPC import HPC
 
 def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
+    test_hpc = HPC([49, 240, 1600, 480, 49],
+          0.67, 0.25, 0.04,  # connection rates: (in_ec, ec_dg, dg_ca3)
+          0.10, 0.01, 0.04,  # firing rates: (ec, dg, ca3)
+          0.7, 1.0, 0.1, 0.5,  # gamma, epsilon, nu, turnover rate
+          0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
     print "Commencing learning of", len(patterns), "I/O patterns."
     time_start_overall = time.time()
     iter_ctr = 0
@@ -16,12 +21,6 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
             hpc.setup_pattern(input_pattern, output_pattern)
             setup_end = time.time()
             print "Setup took:", "{:6.3f}".format(setup_end-setup_start), "seconds."
-            # if setup_end-setup_start < 0.120:
-                # hpc.print_activation_values()
-                # hpc.print_ca3_info()
-                # hpc.print_activation_values_and_weights()
-            hpc.print_last_halves_of_activation_values_sums()
-            hpc.print_activation_values_sum()
 
             # one iteration of learning using Hebbian learning
             time_before = time.time()
@@ -36,11 +35,18 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
         print "Attempting to recall patterns..."
         for pattern_index in range(len(patterns)):
             print "Recalling pattern #", pattern_index
-            hpc.setup_input(patterns[pattern_index][0])
-            hpc.recall()
-            hpc.recall()
-            hpc.recall()
-            out_values_row = hpc.output_values.get_value()[0]
+            test_hpc.in_ec_weights = hpc.in_ec_weights
+            test_hpc.ec_dg_weights = hpc.ec_dg_weights
+            test_hpc.ec_ca3_weights = hpc.ec_ca3_weights
+            test_hpc.dg_ca3_weights = hpc.dg_ca3_weights
+            test_hpc.ca3_ca3_weights = hpc.ca3_ca3_weights
+            test_hpc.ca3_out_weights = hpc.ca3_out_weights
+            test_hpc.setup_input(patterns[pattern_index][0])
+
+            test_hpc.recall()
+            # test_hpc.recall()
+
+            out_values_row = test_hpc.output_values.get_value()[0]
             cur_p_row = patterns[pattern_index][1][0]
             # print "outvals:", out_values
             # print "curp", cur_p
