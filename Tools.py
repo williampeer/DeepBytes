@@ -7,18 +7,48 @@ import cPickle
 
 
 def show_image_from(out_now):
+    im = create_image_helper(out_now)
+    im.show()
+    # print "Output image"
+
+
+def save_images_from(patterns):
+    ctr_f = file('saved_data/ctr.save', 'rb')
+    ctr_exp_1 = cPickle.load(ctr_f)
+    ctr_f.close()
+
+    info_f = file('saved_data/information-ctr.save', 'rb')
+    ctr_exp_2 = cPickle.load(info_f)
+    info_f.close()
+
+    experiment_ctr = chr(ctr_exp_1) + chr(ctr_exp_2)
+
+    img_f = file('saved_data/image-ctr.save', 'rb')
+    img_ctr = cPickle.load(img_f)
+    img_f.close()
+
+    for pattern in patterns:
+        img = create_image_helper(pattern)
+        img.save('saved_data/images/experiment#'+experiment_ctr+'image#'+chr(img_ctr), 'BMP')
+        img_ctr += 1
+
+    img_f = file('saved_data/image-ctr.save', 'wb')
+    cPickle.dump(img_ctr, img_f, protocol=cPickle.HIGHEST_PROTOCOL)
+    img_f.close()
+
+
+def create_image_helper(pattern):
     width = 7
     height = 7
     pixel_scaling_factor = 2 ** 3  # Exponent of two for symmetry.
     im = Image.new('1', (width*pixel_scaling_factor, height*pixel_scaling_factor))
-    for element in range(out_now.shape[1]):
+    for element in range(pattern.shape[1]):
         for i in range(pixel_scaling_factor):
             for j in range(pixel_scaling_factor):
                 im.putpixel(((element % width)*pixel_scaling_factor + j,
                              np.floor(element/height).astype(np.int8) * pixel_scaling_factor + i),
-                            out_now[0][element]*255)
-    im.show()
-    # print "Output image"
+                            pattern[0][element] * 255)
+    return im
 
 
 shared_random_generator = RandomStreams()

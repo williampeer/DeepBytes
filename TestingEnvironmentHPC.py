@@ -9,10 +9,8 @@ hpc = HPC([io_dim, 240, 1600, 480, io_dim],
           0.7, 1, 0.1, 0.5,  # gamma, epsilon, nu, turnover rate
           0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha
 
-ctr = 0
-f = file('saved_data/information-ctr.save', 'wb')  # read binary
-cPickle.dump(ctr, f, protocol=cPickle.HIGHEST_PROTOCOL)
-f.close()
+I = np.asarray([[1, -1, 1, -1, 1, -1, 1] * 7], dtype=np.float32)
+store_image_from(I)
 
 # test_vals = np.random.random((1, 100)).astype(np.float32)
 # test_vals = 0.312987 * np.ones((1, 100), dtype=np.float32)

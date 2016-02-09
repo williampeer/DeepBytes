@@ -5,7 +5,7 @@ from SimpleNeocorticalNetwork import SimpleNeocorticalNetwork
 from Experiments_4_x import experiment_4_x_1, experiment_4_x_2
 from data_capital import data_letters_capital
 from data_lowercase import data_letters_lowercase
-from Tools import show_image_from, save_experiment_4_1_results, save_experiment_4_2_results
+from Tools import show_image_from, save_experiment_4_1_results, save_experiment_4_2_results, save_images_from
 
 # Hippocampal module
 io_dim = 49
@@ -46,6 +46,7 @@ for i in range(2, 6):
               0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
     hipp_chaotic_pats = experiment_4_x_1(hpc, i, training_patterns_associative)
     save_experiment_4_1_results(hpc, hipp_chaotic_pats, "test_"+chr(i)+"_patterns")
+    save_images_from(hipp_chaotic_pats)
 
     # for recalled_pat in hipp_chaotic_pats:
     #     print "Displayed chaotically recalled image!"
@@ -53,3 +54,4 @@ for i in range(2, 6):
 
     information_vector = experiment_4_x_2(hpc, ann, i, training_patterns_associative)
     save_experiment_4_2_results(information_vector, "test_"+chr(i)+"_4_2")
+    save_images_from(information_vector[0]+information_vector[1])
