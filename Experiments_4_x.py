@@ -1,6 +1,6 @@
 import time
 from DNMM import hpc_learn_patterns_wrapper, hpc_chaotic_recall_wrapper, generate_pseodupatterns_II
-from Tools import show_image_from, set_contains_pattern, get_pattern_correlation
+from Tools import set_contains_pattern, get_pattern_correlation, save_experiment_4_1_results, save_images_from
 
 # next experiment output image:
 next_experiment_im = [[-1, 1] * 24]
@@ -51,28 +51,35 @@ def experiment_4_x_1(hpc, training_set_size, original_training_patterns):
 
 
 def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
-    pseudopattern_set_size = 20
+    pseudopattern_set_size = 2
 
     # Generate pseudopatterns:
     pseudopatterns_I = []
     for i in range(pseudopattern_set_size):
         pseudopatterns_I.append(ann.get_pseudopattern_I())
 
-    chaotically_recalled_patterns = experiment_4_x_1(training_set_size, original_training_patterns)
-    pseudopatterns_II = generate_pseodupatterns_II(hpc.dims[0], chaotically_recalled_patterns, 0.5,
+    chaotically_recalled_patterns = experiment_4_x_1(hpc, training_set_size, original_training_patterns)
+    save_experiment_4_1_results(hpc, chaotically_recalled_patterns, "test_"+str(i)+"_patterns_")
+    save_images_from(chaotically_recalled_patterns)
+
+    pseudopatterns_II_in = generate_pseodupatterns_II(hpc.dims[0], chaotically_recalled_patterns, 0.5,
                                                    pseudopattern_set_size)
+    pseudopatterns_II = []
+    for pat in pseudopatterns_II_in:
+        pseudopatterns_II.append(ann.get_IO(pat))  # get IO for pseudo-in from HPC after FF.
 
     # Train Neocortical network on them:
-    training_set = pseudopatterns_I + pseudopatterns_II
-    for training_pattern in training_set:
-        ann.train([training_pattern, training_pattern])  # learns the identity map.
+    ann.train(pseudopatterns_I)
+    ann.train(pseudopatterns_II)
 
     # Attempt to recall using the entire DNMM:
     sum_corr = 0.
-    for original_pattern in original_training_patterns:
-        ann.feed_forward(original_pattern)
-        sum_corr += get_pattern_correlation(original_pattern, ann._out.get_value())
-    g = sum_corr / len(sum_corr)
+    corr_ctr = 0.
+    for [target_in, target_out] in original_training_patterns:
+        _, obtained_out = ann.get_IO(target_in)
+        sum_corr += get_pattern_correlation(target_out, obtained_out)
+        corr_ctr += 1
+    g = sum_corr / corr_ctr
     print "goodness of fit, g=", g
 
-    return [pseudopatterns_I, pseudopatterns_II, ann, hpc, g]
+    return [pseudopatterns_I, pseudopatterns_II, ann, g]

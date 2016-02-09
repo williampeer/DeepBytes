@@ -33,7 +33,6 @@ for letter_data in data_letters_lowercase:
     uppercase_letter = training_patterns_associative[letter_ctr][0]
     training_patterns_heterogeneous.append([uppercase_letter, lowercase_letter])
 
-
 for i in range(2, 6):
     # dims,
     # connection_rate_input_ec, perforant_path, mossy_fibers,
@@ -48,10 +47,13 @@ for i in range(2, 6):
     save_experiment_4_1_results(hpc, hipp_chaotic_pats, "test_"+str(i)+"_patterns_")
     save_images_from(hipp_chaotic_pats)
 
-    # for recalled_pat in hipp_chaotic_pats:
-    #     print "Displayed chaotically recalled image!"
-    #     show_image_from(recalled_pat)
+    for recalled_pat in hipp_chaotic_pats:
+        print "Displayed chaotically recalled image!"
+        show_image_from(recalled_pat)
 
-    information_vector = experiment_4_x_2(hpc, ann, i, training_patterns_associative)
-    save_experiment_4_2_results(information_vector, "test_"+str(i)+"_4_2_")
-    save_images_from(information_vector[0]+information_vector[1])
+    # print "Starting experiment 4_2..."
+    # information_vector = experiment_4_x_2(hpc, ann, i, training_patterns_associative)
+    # print "Saving the results."
+    # save_experiment_4_2_results(information_vector, "test_"+str(i)+"_4_2_")
+    # print "Saving the images..."
+    # save_images_from(information_vector[0]+information_vector[1])

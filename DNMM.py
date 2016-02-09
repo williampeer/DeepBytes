@@ -104,4 +104,5 @@ def generate_pseodupatterns_II(dim, hpc_extracted_pseudopatterns, reverse_P, set
         reverse_vector = binomial_f(1, dim, (1-reverse_P))
         reverse_vector = reverse_vector * 2 - np.ones_like(reverse_vector)
         pseudopatterns_II.append(pattern * reverse_vector)
+        pseudopattern_ctr += 1
     return pseudopatterns_II

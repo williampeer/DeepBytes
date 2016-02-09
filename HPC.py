@@ -436,6 +436,30 @@ class HPC:
                 new_values[0][value_index] = -1
         return new_values
 
+    def serialize_hpc(self):
+        weights_array = [self.in_ec_weights.get_value(),
+                             self.ec_dg_weights.get_value(),
+                             self.ec_ca3_weights.get_value(),
+                             self.dg_ca3_weights.get_value(),
+                             self.ca3_ca3_weights.get_value(),
+                             self.ca3_out_weights.get_value()]
+        return weights_array
+
+    def de_serialize_hpc(self, information_array):
+        self.update_input_ec_weights(information_array[0])
+
+        set_ec_dg_weights = theano.function([], updates=[(self.ec_dg_weights, information_array[1])])
+        set_ec_ca3_weights = theano.function([], updates=[(self.ec_ca3_weights, information_array[2])])
+        set_dg_ca3_weights = theano.function([], updates=[(self.dg_ca3_weights, information_array[3])])
+        set_ca3_ca3_weights = theano.function([], updates=[(self.ca3_ca3_weights, information_array[4])])
+        set_ca3_out_weights = theano.function([], updates=[(self.ca3_out_weights, information_array[5])])
+
+        set_ec_dg_weights()
+        set_ec_ca3_weights()
+        set_dg_ca3_weights()
+        set_ca3_ca3_weights()
+        set_ca3_out_weights()
+
     # ================================================ DEBUG ===============================================
     def print_activation_values_sum(self):
         print

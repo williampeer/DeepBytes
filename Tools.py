@@ -5,6 +5,8 @@ from PIL import Image
 import numpy as np
 import cPickle
 
+theano.config.floatX = 'float32'
+
 
 def show_image_from(out_now):
     im = create_image_helper(out_now)
@@ -37,7 +39,8 @@ def save_images_from(patterns):
     img_f.close()
 
 
-def create_image_helper(pattern):
+def create_image_helper(in_values):
+    pattern = np.asarray(in_values, dtype=np.float32)
     width = 7
     height = 7
     pixel_scaling_factor = 2 ** 3  # Exponent of two for symmetry.
@@ -90,10 +93,10 @@ def save_experiment_4_1_results(hpc, chaotically_recalled_patterns, custom_name)
     ctr_f.close()
 
     storage_counter += 1
-    f = file('saved_data/'+custom_name+'hpc-object#'+chr(storage_counter)+'.save', 'wb')
-    cPickle.dump(hpc, f, protocol=cPickle.HIGHEST_PROTOCOL)
+    f = file('saved_data/'+custom_name+'hpc-serialized#'+str(storage_counter)+'.save', 'wb')
+    cPickle.dump(hpc.serialize_hpc(), f, protocol=cPickle.HIGHEST_PROTOCOL)
     f.close()
-    f2 = file('saved_data/'+custom_name+'chaotically_recalled_patterns#'+chr(storage_counter)+'.save', 'wb')
+    f2 = file('saved_data/'+custom_name+'chaotically_recalled_patterns#'+str(storage_counter)+'.save', 'wb')
     cPickle.dump(chaotically_recalled_patterns, f2, protocol=cPickle.HIGHEST_PROTOCOL)
     f2.close()
 

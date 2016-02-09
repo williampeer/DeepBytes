@@ -80,9 +80,7 @@ class SimpleNeocorticalNetwork:
         # self.set_input = theano.function([new_input], updates=[(self._in, new_input)])
 
     def train(self, IOPairs):
-        for pair in IOPairs:
-            input_pattern = pair[0]
-            output_pattern = pair[1]
+        for input_pattern, output_pattern in IOPairs:
 
             # no learning criteria, only propagate once?
             self.feed_forward(input_pattern, self.in_h_Ws.get_value(return_internal_type=True),
@@ -97,14 +95,14 @@ class SimpleNeocorticalNetwork:
 
     def get_pseudopattern_I(self):
         # random input
-        random_in_pattern = binomial_f((1, self.dims[0]), 1, 0.5, dtype='float32')
+        random_in_pattern = binomial_f(1, self.dims[0], 0.5)
         random_in_pattern = random_in_pattern * 2 - np.ones_like(random_in_pattern)
-        print "random_in_pattern:", random_in_pattern
+        # print "random_in_pattern:", random_in_pattern
 
         return self.get_IO(random_in_pattern)
 
     def get_IO(self, input_pattern):
-        self.feed_forward(input_pattern, self.in_h_Ws, self.h_out_Ws)
+        self.feed_forward(input_pattern, self.in_h_Ws.get_value(), self.h_out_Ws.get_value())
 
         corresponding_output = self._out.get_value()
         return [input_pattern, corresponding_output]
