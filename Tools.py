@@ -21,7 +21,7 @@ def save_images_from(patterns):
     ctr_exp_2 = cPickle.load(info_f)
     info_f.close()
 
-    experiment_ctr = chr(ctr_exp_1) + chr(ctr_exp_2)
+    experiment_ctr = str(ctr_exp_1) + str(ctr_exp_2)
 
     img_f = file('saved_data/image-ctr.save', 'rb')
     img_ctr = cPickle.load(img_f)
@@ -29,7 +29,7 @@ def save_images_from(patterns):
 
     for pattern in patterns:
         img = create_image_helper(pattern)
-        img.save('saved_data/images/experiment#'+experiment_ctr+'image#'+chr(img_ctr), 'BMP')
+        img.save('saved_data/images/experiment#'+experiment_ctr+'image#'+str(img_ctr), 'BMP')
         img_ctr += 1
 
     img_f = file('saved_data/image-ctr.save', 'wb')

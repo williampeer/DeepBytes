@@ -45,7 +45,7 @@ for i in range(2, 6):
               0.7, 1.0, 0.1, 0.5,  # gamma, epsilon, nu, turnover rate
               0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
     hipp_chaotic_pats = experiment_4_x_1(hpc, i, training_patterns_associative)
-    save_experiment_4_1_results(hpc, hipp_chaotic_pats, "test_"+chr(i)+"_patterns")
+    save_experiment_4_1_results(hpc, hipp_chaotic_pats, "test_"+str(i)+"_patterns_")
     save_images_from(hipp_chaotic_pats)
 
     # for recalled_pat in hipp_chaotic_pats:
@@ -53,5 +53,5 @@ for i in range(2, 6):
     #     show_image_from(recalled_pat)
 
     information_vector = experiment_4_x_2(hpc, ann, i, training_patterns_associative)
-    save_experiment_4_2_results(information_vector, "test_"+chr(i)+"_4_2")
+    save_experiment_4_2_results(information_vector, "test_"+str(i)+"_4_2_")
     save_images_from(information_vector[0]+information_vector[1])
