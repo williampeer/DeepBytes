@@ -1,9 +1,14 @@
 import time
-from HPC import *
-from SimpleNeocorticalNetwork import *
-from data_capital import *
+import numpy as np
+from Tools import binomial_f, uniform_f, show_image_from
+from HPC import HPC
 
 def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
+    test_hpc = HPC([49, 240, 1600, 480, 49],
+          0.67, 0.25, 0.04,  # connection rates: (in_ec, ec_dg, dg_ca3)
+          0.10, 0.01, 0.04,  # firing rates: (ec, dg, ca3)
+          0.7, 1.0, 0.1, 0.5,  # gamma, epsilon, nu, turnover rate
+          0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
     print "Commencing learning of", len(patterns), "I/O patterns."
     time_start_overall = time.time()
     iter_ctr = 0
@@ -23,15 +28,25 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
             time_after = time.time()
             print "Iterated over pattern", p_ctr, "in", \
                 "{:7.3f}".format(time_after - time_before), "seconds."
+            # hpc.print_activation_values_sum()
             p_ctr += 1
 
         learned_all = True
         print "Attempting to recall patterns..."
         for pattern_index in range(len(patterns)):
             print "Recalling pattern #", pattern_index
-            hpc.setup_input(patterns[pattern_index][0])
-            hpc.recall()
-            out_values_row = hpc.output_values.get_value()[0]
+            test_hpc.in_ec_weights = hpc.in_ec_weights
+            test_hpc.ec_dg_weights = hpc.ec_dg_weights
+            test_hpc.ec_ca3_weights = hpc.ec_ca3_weights
+            test_hpc.dg_ca3_weights = hpc.dg_ca3_weights
+            test_hpc.ca3_ca3_weights = hpc.ca3_ca3_weights
+            test_hpc.ca3_out_weights = hpc.ca3_out_weights
+            test_hpc.setup_input(patterns[pattern_index][0])
+
+            test_hpc.recall()
+            # test_hpc.recall()
+
+            out_values_row = test_hpc.output_values.get_value()[0]
             cur_p_row = patterns[pattern_index][1][0]
             # print "outvals:", out_values
             # print "curp", cur_p
@@ -39,9 +54,10 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
                 if out_values_row[el_index] != cur_p_row[el_index]:
                     learned_all = False
                     print "Patterns are not yet successfully learned. Learning more..."
-                    print "Displaying intermediary results... (output, target)"
-                    hpc.show_image_from(np.asarray([out_values_row], dtype=np.float32))
-                    hpc.show_image_from(np.asarray([cur_p_row], dtype=np.float32))
+                    # print "Displaying intermediary results... (output, target)"
+                    # show_image_from(np.asarray([out_values_row], dtype=np.float32))
+                    # show_image_from(np.asarray([cur_p_row], dtype=np.float32))
+                    print "iter:", iter_ctr
                     break
             if not learned_all:
                 break
@@ -52,15 +68,22 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
     print "Learned", len(patterns), "pattern-associations in ", iter_ctr, "iterations, which took" "{:7.3f}". \
         format(time_stop_overall-time_start_overall), "seconds."
 
-def hpc_chaotic_recall_wrapper(hpc, display_images_of_intermediate_output, recall_iterations):
+
+def hpc_chaotic_recall_wrapper(hpc, display_images_of_stable_output, recall_iterations):
     time_the_beginning_of_time = time.time()
     time_before = time.time()
     cur_iters = 0
-    random_input = hpc.uniform_f(1, hpc.dims[0]) * 2 - np.ones_like(hpc.input_values, dtype=np.float32)
+    random_input = uniform_f(1, hpc.dims[0]) * 2 - np.ones_like(hpc.input_values, dtype=np.float32)
     hpc.setup_input(random_input)
+    hpc_extracted_pseudopatterns = []
     while cur_iters < recall_iterations:
-        cur_iters += hpc.recall_until_stability_criteria(should_display_image=display_images_of_intermediate_output,
-                                                         max_iterations=recall_iterations-cur_iters)
+        [cur_iters_term, found_stable_output, output] = hpc.recall_until_stability_criteria(
+                should_display_image=display_images_of_stable_output, max_iterations=recall_iterations-cur_iters)
+        cur_iters += cur_iters_term
+
+        if found_stable_output:
+            hpc_extracted_pseudopatterns.append(output)
+
         time_after = time.time()
         prop_time_until_stable = time_after - time_before
 
@@ -68,21 +91,17 @@ def hpc_chaotic_recall_wrapper(hpc, display_images_of_intermediate_output, recal
         print "t =", cur_iters
         time_before = time.time()
     print "Total chaotic recall time:", "{:6.3f}".format(time.time()-time_the_beginning_of_time), "seconds."
+    return hpc_extracted_pseudopatterns
 
 
-# Neocortical module:
-# ann = SimpleNeocorticalNetwork(32, 50, 32, 0.85, 0.01)
-#
-# # a = np.random.random((1, 32)).astype(np.float32)
-# # b = -1 * np.random.random((1, 32)).astype(np.float32)
-# a = np.asarray([[0.1, 0.2] * 16], dtype=np.float32)
-# b = np.asarray([[-0.2, -0.4] * 16], dtype=np.float32)
-#
-# iopair = [a, b]
-#
-# print "target output:", b
-# for i in range(20000):
-#     ann.train([iopair])
-# print ann.in_h_Ws.get_value()
-# print ann.h_out_Ws.get_value()
-# ann.print_layers()
+def generate_pseodupatterns_II(dim, hpc_extracted_pseudopatterns, reverse_P, set_size):
+    extracted_set_size = len(hpc_extracted_pseudopatterns)
+    pseudopatterns_II = []
+    pseudopattern_ctr = 0
+    while pseudopattern_ctr < set_size:
+        pattern = hpc_extracted_pseudopatterns[pseudopattern_ctr % extracted_set_size]
+        # q=1-p because we're flipping the sign of the ones that are not flipped.
+        reverse_vector = binomial_f(1, dim, (1-reverse_P))
+        reverse_vector = reverse_vector * 2 - np.ones_like(reverse_vector)
+        pseudopatterns_II.append(pattern * reverse_vector)
+    return pseudopatterns_II

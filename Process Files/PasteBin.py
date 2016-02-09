@@ -68,3 +68,18 @@ for index in xrange(rand_I.shape[1]):
 #
 #     print "Learned", len(patterns), "pattern-associations in ", iter_ctr, "iterations, which took" "{:7.3f}". \
 #         format(time_stop_overall-time_start_overall), "seconds."
+
+
+# NEURONAL TURNOVER SNIPPET:
+# # Symbolically: DOESN'T WORK. WTF.
+        # dg_res = T.fvector()
+        # dg_num = T.iscalar()
+        # ctr = T.iscalar()
+        # _, updates_ec_dg = theano.scan(fn=self.neuronal_turnover_helper_ec_dg, outputs_info=ctr,
+        #                                sequences=[dg_res, T.arange(dg_num)])
+        # neuronal_turnover_ec_dg = theano.function([dg_res, dg_num, ctr], outputs=None, updates=updates_ec_dg)
+        #
+        # _, updates_dg_ca3 = theano.scan(self.neuronal_turnover_helper_dg_ca3, outputs_info=ctr,
+        #                                 sequences=[dg_res, T.arange(dg_num)])
+        # neuronal_turnover_dg_ca3 = theano.function([dg_res, dg_num, ctr], outputs=None, updates=updates_dg_ca3)
+
