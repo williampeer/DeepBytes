@@ -144,8 +144,7 @@ class HPC:
         next_activation_values_ca3 = T.tanh((nu_ca3 + zeta_ca3) / self._epsilon)
         self.fire_all_to_ca3 = theano.function([c_ec_vals, c_ec_ca3_Ws, c_dg_vals, c_dg_ca3_Ws, c_ca3_vals,
                                                 c_ca3_ca3_Ws, c_nu_ca3, c_zeta_ca3],
-                                               updates=[  # (self.prev_ca3_values, c_ca3_vals),
-                                                        (self.ca3_values, next_activation_values_ca3),
+                                               updates=[(self.ca3_values, next_activation_values_ca3),
                                                         (self.nu_ca3, nu_ca3), (self.zeta_ca3, zeta_ca3)])
 
         # after kWTA:
@@ -168,8 +167,7 @@ class HPC:
         no_learning_next_act_vals_ca3 = T.tanh((no_learning_nu_ca3 + no_learning_zeta_ca3) / self._epsilon)
         self.fire_to_ca3_no_learning = theano.function([c_ec_vals, c_ec_ca3_Ws, c_ca3_vals, c_ca3_ca3_Ws, c_nu_ca3,
                                                         c_zeta_ca3],
-                                                       updates=[  # (self.prev_ca3_values, c_ca3_vals),
-                                                                (self.ca3_values, no_learning_next_act_vals_ca3),
+                                                       updates=[(self.ca3_values, no_learning_next_act_vals_ca3),
                                                                 (self.nu_ca3, no_learning_nu_ca3),
                                                                 (self.zeta_ca3, no_learning_zeta_ca3)])
 
@@ -352,8 +350,10 @@ class HPC:
                           self.output_values.get_value(return_internal_type=True))
 
         # self.print_activation_values_and_weights()
-        self.print_activation_values_sum()
-        self.print_min_max_weights()
+        # self.print_activation_values_sum()
+        # self.print_min_max_weights()
+        print "self.nu_ca3.get_value():", self.nu_ca3.get_value()
+        print "self.zeta_ca3.get_value():", self.zeta_ca3.get_value()
 
     def setup_input(self, input_pattern):
         # self.re_wire_fixed_input_to_ec_weights()
@@ -527,7 +527,6 @@ class HPC:
         max_ca3_out = np.max(self.ca3_out_weights.get_value())
         print "min, max ca3-ca3:", min_ca3_ca3, max_ca3_ca3
         print "min, max ca3-out:", min_ca3_out, max_ca3_out
-
 
     def print_ca3_info(self):
         print "ca3:", self.ca3_values.get_value()

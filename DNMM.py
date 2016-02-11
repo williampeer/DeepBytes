@@ -13,6 +13,7 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
     time_start_overall = time.time()
     iter_ctr = 0
     learned_all = False
+    # while iter_ctr < 3:
     while not learned_all and iter_ctr < max_training_iterations:
         p_ctr = 0
         for [input_pattern, output_pattern] in patterns:
