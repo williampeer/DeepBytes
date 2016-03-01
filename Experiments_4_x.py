@@ -1,6 +1,7 @@
 import time
 from DNMM import hpc_learn_patterns_wrapper, hpc_chaotic_recall_wrapper, generate_pseodupatterns_II
 from Tools import set_contains_pattern, get_pattern_correlation, save_experiment_4_1_results, save_images_from
+import Tools
 
 # next experiment output image:
 next_experiment_im = [[-1, 1] * 24]
@@ -51,7 +52,7 @@ def experiment_4_x_1(hpc, training_set_size, original_training_patterns):
 
 
 def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
-    pseudopattern_set_size = 2
+    pseudopattern_set_size = 20  # this should be set to 20. debugging mode: small value.
 
     # Generate pseudopatterns:
     pseudopatterns_I = []
@@ -59,8 +60,7 @@ def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
         pseudopatterns_I.append(ann.get_pseudopattern_I())
 
     chaotically_recalled_patterns = experiment_4_x_1(hpc, training_set_size, original_training_patterns)
-    save_experiment_4_1_results(hpc, chaotically_recalled_patterns, "test_"+str(i)+"_patterns_")
-    save_images_from(chaotically_recalled_patterns)
+    save_experiment_4_1_results(hpc, chaotically_recalled_patterns, "co_sync")
 
     pseudopatterns_II_in = generate_pseodupatterns_II(hpc.dims[0], chaotically_recalled_patterns, 0.5,
                                                    pseudopattern_set_size)
@@ -72,14 +72,21 @@ def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
     ann.train(pseudopatterns_I)
     ann.train(pseudopatterns_II)
 
+    # Alternatively, alternate between the sets when training:
+    # for i in range(20):
+    #     ann.train(pseudopatterns_I[i])
+    #     ann.train(pseudopatterns_II[i])
+
     # Attempt to recall using the entire DNMM:
     sum_corr = 0.
     corr_ctr = 0.
+    neocortically_recalled_pairs = []
     for [target_in, target_out] in original_training_patterns:
-        _, obtained_out = ann.get_IO(target_in)
+        obtained_in, obtained_out = ann.get_IO(target_in)
         sum_corr += get_pattern_correlation(target_out, obtained_out)
         corr_ctr += 1
+        neocortically_recalled_pairs.append([obtained_in, obtained_out])
     g = sum_corr / corr_ctr
     print "goodness of fit, g=", g
 
-    return [pseudopatterns_I, pseudopatterns_II, ann, g]
+    return [pseudopatterns_I, pseudopatterns_II, neocortically_recalled_pairs, ann, g]

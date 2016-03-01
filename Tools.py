@@ -4,6 +4,7 @@ from theano.tensor.shared_randomstreams import RandomStreams
 from PIL import Image
 import numpy as np
 import cPickle
+import os
 
 theano.config.floatX = 'float32'
 
@@ -14,29 +15,34 @@ def show_image_from(out_now):
     # print "Output image"
 
 
-def save_images_from(patterns):
-    ctr_f = file('saved_data/ctr.save', 'rb')
-    ctr_exp_1 = cPickle.load(ctr_f)
-    ctr_f.close()
+def save_images_from(single_patterns, img_path):
+    img_ctr = 0
 
-    info_f = file('saved_data/information-ctr.save', 'rb')
-    ctr_exp_2 = cPickle.load(info_f)
-    info_f.close()
+    if not os.path.exists(img_path):
+        os.mkdir(img_path)
+    else:
+        print "Error: Img-path already exists."
 
-    experiment_ctr = str(ctr_exp_1) + str(ctr_exp_2)
-
-    img_f = file('saved_data/image-ctr.save', 'rb')
-    img_ctr = cPickle.load(img_f)
-    img_f.close()
-
-    for pattern in patterns:
+    for pattern in single_patterns:
         img = create_image_helper(pattern)
-        img.save('saved_data/images/experiment#'+experiment_ctr+'image#'+str(img_ctr), 'BMP')
+        img.save(img_path+'/image#'+str(img_ctr), 'BMP')
         img_ctr += 1
 
-    img_f = file('saved_data/image-ctr.save', 'wb')
-    cPickle.dump(img_ctr, img_f, protocol=cPickle.HIGHEST_PROTOCOL)
-    img_f.close()
+
+def save_images_from_pairs(pattern_pairs, img_path):
+    img_ctr = 0
+
+    if not os.path.exists(img_path):
+        os.mkdir(img_path)
+    else:
+        print "Error: Img-path already exists."
+
+    for pattern in pattern_pairs:
+        img_in = create_image_helper(pattern[0])
+        img_out = create_image_helper(pattern[1])
+        img_in.save(img_path+'/image#'+str(img_ctr)+'_input', 'BMP')
+        img_out.save(img_path+'/image#'+str(img_ctr)+'_output', 'BMP')
+        img_ctr += 1
 
 
 def create_image_helper(in_values):
@@ -88,33 +94,61 @@ def get_pattern_correlation_slow(pat1, pat2):
 
 
 def save_experiment_4_1_results(hpc, chaotically_recalled_patterns, custom_name):
-    ctr_f = file('saved_data/ctr.save', 'rb')
-    storage_counter = cPickle.load(ctr_f)
-    ctr_f.close()
+    experiment_dir = get_experiment_dir()
 
-    storage_counter += 1
-    f = file('saved_data/'+custom_name+'hpc-serialized#'+str(storage_counter)+'.save', 'wb')
-    cPickle.dump(hpc.serialize_hpc(), f, protocol=cPickle.HIGHEST_PROTOCOL)
-    f.close()
-    f2 = file('saved_data/'+custom_name+'chaotically_recalled_patterns#'+str(storage_counter)+'.save', 'wb')
+    hpc_f = file(experiment_dir+'/hpc_'+custom_name+'.save', 'wb')
+    cPickle.dump(hpc, hpc_f, protocol=cPickle.HIGHEST_PROTOCOL)
+    hpc_f.close()
+
+    save_images_from(chaotically_recalled_patterns, experiment_dir+'/images')
+
+    f2 = file(experiment_dir+'/_chaotically_recalled_patterns.save', 'wb')
     cPickle.dump(chaotically_recalled_patterns, f2, protocol=cPickle.HIGHEST_PROTOCOL)
     f2.close()
 
-    ctr_f = file('saved_data/ctr.save', 'wb')
-    cPickle.dump(storage_counter, ctr_f, protocol=cPickle.HIGHEST_PROTOCOL)
-    ctr_f.close()
-
 
 def save_experiment_4_2_results(information_vector, custom_name):
-    ctr_f = file('saved_data/information-ctr.save', 'rb')
-    info_counter = cPickle.load(ctr_f)
-    ctr_f.close()
+    experiment_dir = get_experiment_dir()
 
-    info_counter += 1
-    f = file('saved_data/'+custom_name+'information_vector.save', 'wb')
+    pseudopatterns_I = information_vector[0]
+    pseudopatterns_II = information_vector[1]
+    save_images_from_pairs(pseudopatterns_I, experiment_dir+'/pseudopatterns_I')
+    save_images_from_pairs(pseudopatterns_II, experiment_dir+'/pseudopatterns_II')
+
+    neocortically_recalled_IOs = information_vector[2]
+    save_images_from_pairs(neocortically_recalled_IOs, experiment_dir+'/neocortical_recall')
+
+    f = file(experiment_dir+'/information_vector'+custom_name+'.save', 'wb')
     cPickle.dump(information_vector, f, protocol=cPickle.HIGHEST_PROTOCOL)
     f.close()
 
-    ctr_f = file('saved_data/information-ctr.save', 'wb')
-    cPickle.dump(info_counter, ctr_f, protocol=cPickle.HIGHEST_PROTOCOL)
-    ctr_f.close()
+
+def get_experiment_counter():
+    experiment_ctr_f = file('saved_data/ctr.save', 'rb')
+    experiment_ctr = cPickle.load(experiment_ctr_f)
+    experiment_ctr_f.close()
+
+    return experiment_ctr
+
+
+def increment_experiment_counter():
+    experiment_ctr_f = file('saved_data/ctr.save', 'rb')
+    experiment_ctr = cPickle.load(experiment_ctr_f)
+    experiment_ctr_f.close()
+
+    experiment_ctr += 1
+
+    experiment_ctr_f = file('saved_data/ctr.save', 'wb')
+    cPickle.dump(experiment_ctr, experiment_ctr_f, protocol=cPickle.HIGHEST_PROTOCOL)
+    experiment_ctr_f.close()
+
+
+def get_experiment_dir():
+    experiment_counter = get_experiment_counter()
+    experiment_dir = 'saved_data/experiment#'+str(experiment_counter)
+    if not os.path.exists(experiment_dir):
+        os.mkdir(experiment_dir)
+    else:
+        print "Info.: OS path already exists."
+
+    return experiment_dir
