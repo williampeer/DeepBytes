@@ -33,7 +33,7 @@ for letter_data in data_letters_lowercase:
     uppercase_letter = training_patterns_associative[letter_ctr][0]
     training_patterns_heterogeneous.append([uppercase_letter, lowercase_letter])
 
-for i in range(2, 6):
+for i in range(1, 6):
     # dims,
     # connection_rate_input_ec, perforant_path, mossy_fibers,
     #                  firing_rate_ec, firing_rate_dg, firing_rate_ca3,
