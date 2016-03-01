@@ -66,7 +66,9 @@ def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
                                                    pseudopattern_set_size)
     pseudopatterns_II = []
     for pat in pseudopatterns_II_in:
-        pseudopatterns_II.append(ann.get_IO(pat))  # get IO for pseudo-in from HPC after FF.
+        in_pat, out_pat = ann.get_IO(pat)
+        # pseudopatterns_II.append([in_pat, out_pat])  # get IO for pseudo-in from HPC after FF.
+        pseudopatterns_II.append([out_pat, in_pat])  # alternative implementation
 
     # Train Neocortical network on them:
     ann.train(pseudopatterns_I)
