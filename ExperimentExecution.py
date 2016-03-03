@@ -30,8 +30,8 @@ for letter_data in data_letters_lowercase:
     uppercase_letter = training_patterns_associative[letter_ctr][0]
     training_patterns_heterogeneous.append([uppercase_letter, lowercase_letter])
 
-for trial in range(20):
-    for i in range(2, 6):
+for trial in range(1):
+    for train_set_size_ctr in range(2, 3):
         # dims,
         # connection_rate_input_ec, perforant_path, mossy_fibers,
         #                  firing_rate_ec, firing_rate_dg, firing_rate_ca3,
@@ -42,16 +42,17 @@ for trial in range(20):
                   0.7, 1.0, 0.1, 0.5,  # gamma, epsilon, nu, turnover rate
                   0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
 
-        hipp_chaotic_pats = experiment_4_x_1(hpc, i, training_patterns_associative)
-        Tools.save_experiment_4_1_results(hpc, hipp_chaotic_pats, "test_"+str(i)+"_patterns_")
+        # hipp_chaotic_pats, _ = experiment_4_x_1(hpc, i, training_patterns_associative)
+        # Tools.save_experiment_4_1_results(hpc, hipp_chaotic_pats, "test_"+str(i)+"_patterns_")
 
         ann = SimpleNeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
 
-        # print "Starting experiment 4_2..."
-        # # This also saved the experiment_4_x_1 results!
-        # information_vector = experiment_4_x_2(hpc, ann, i, training_patterns_associative[:5*i])
-        # print "Saving the results."
-        # Tools.save_experiment_4_2_results(information_vector, "test_"+str(i)+"_4_2_")
+        print "Starting experiment 4_2..."
+        # This also saved the experiment_4_x_1 results!
+        information_vector = experiment_4_x_2(hpc, ann, train_set_size_ctr,
+                                              training_patterns_associative[:5 * train_set_size_ctr])
+        print "Saving the results."
+        Tools.save_experiment_4_2_results(information_vector, "test_" + str(train_set_size_ctr) + "_4_2_")
 
         # For now, this is the ONLY place where the counter is incremented.
         Tools.increment_experiment_counter()

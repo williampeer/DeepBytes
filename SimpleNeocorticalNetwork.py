@@ -93,7 +93,7 @@ class SimpleNeocorticalNetwork:
                                 self.prev_delta_W_in_h.get_value(return_internal_type=True),
                                 self.prev_delta_W_h_out.get_value(return_internal_type=True))
 
-    def get_pseudopattern_I(self):
+    def get_random_IO(self):
         # random input
         random_in_pattern = binomial_f(1, self.dims[0], 0.5)
         random_in_pattern = random_in_pattern * 2 - np.ones_like(random_in_pattern)

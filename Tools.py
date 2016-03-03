@@ -118,6 +118,10 @@ def save_experiment_4_2_results(information_vector, custom_name):
     neocortically_recalled_IOs = information_vector[2]
     save_images_from_pairs(neocortically_recalled_IOs, experiment_dir+'/neocortical_recall')
 
+    f_goodness = file(experiment_dir+'/goodness_of_fit.txt', 'w')
+    f_goodness.write(str(information_vector[4]) + ' <-- goodness of fit')  # goodness of fit
+    f_goodness.close()
+
     f = file(experiment_dir+'/information_vector'+custom_name+'.save', 'wb')
     cPickle.dump(information_vector, f, protocol=cPickle.HIGHEST_PROTOCOL)
     f.close()
