@@ -13,6 +13,7 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
     time_start_overall = time.time()
     iter_ctr = 0
     learned_all = False
+    # while iter_ctr < 3:
     while not learned_all and iter_ctr < max_training_iterations:
         p_ctr = 0
         for [input_pattern, output_pattern] in patterns:
@@ -73,7 +74,8 @@ def hpc_chaotic_recall_wrapper(hpc, display_images_of_stable_output, recall_iter
     time_the_beginning_of_time = time.time()
     time_before = time.time()
     cur_iters = 0
-    random_input = uniform_f(1, hpc.dims[0]) * 2 - np.ones_like(hpc.input_values, dtype=np.float32)
+    # random_input = uniform_f(1, hpc.dims[0]) * 2 - np.ones_like(hpc.input_values, dtype=np.float32)
+    random_input = binomial_f(1, hpc.dims[0], 0.5) * 2 - np.ones_like(hpc.input_values, dtype=np.float32)
     hpc.setup_input(random_input)
     hpc_extracted_pseudopatterns = []
     while cur_iters < recall_iterations:
@@ -91,10 +93,10 @@ def hpc_chaotic_recall_wrapper(hpc, display_images_of_stable_output, recall_iter
         print "t =", cur_iters
         time_before = time.time()
     print "Total chaotic recall time:", "{:6.3f}".format(time.time()-time_the_beginning_of_time), "seconds."
-    return hpc_extracted_pseudopatterns
+    return [hpc_extracted_pseudopatterns, random_input]
 
 
-def generate_pseodupatterns_II(dim, hpc_extracted_pseudopatterns, reverse_P, set_size):
+def generate_pseudopattern_II_hpc_outputs(dim, hpc_extracted_pseudopatterns, reverse_P, set_size):
     extracted_set_size = len(hpc_extracted_pseudopatterns)
     pseudopatterns_II = []
     pseudopattern_ctr = 0
@@ -104,4 +106,5 @@ def generate_pseodupatterns_II(dim, hpc_extracted_pseudopatterns, reverse_P, set
         reverse_vector = binomial_f(1, dim, (1-reverse_P))
         reverse_vector = reverse_vector * 2 - np.ones_like(reverse_vector)
         pseudopatterns_II.append(pattern * reverse_vector)
+        pseudopattern_ctr += 1
     return pseudopatterns_II

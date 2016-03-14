@@ -1,4 +1,5 @@
 from SimpleNeocorticalNetwork import *
+from Tools import *
 
 # def __init__(self, in_dim, h_dim, out_dim, alpha, momentum):
 # Neocortical module:
