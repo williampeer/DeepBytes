@@ -38,21 +38,28 @@ l2_kWTA(hpc.kWTA(l2.get_value(), l2_firing_rate))
 print("l2:", l2.get_value())
 print "l2 sum:", np.sum(l2.get_value())
 
-column_index = T.iscalar()
-new_Ws_column = T.fmatrix()
+column_index = T.iscalar("column_index")
+new_Ws_column = T.fvector()
 update_Ws_col = theano.function([new_Ws_column, column_index], updates={Ws: T.set_subtensor(Ws[:, column_index], new_Ws_column)})
+
 
 def equation(index):
     _gamma = 0.9
-    return _gamma * Ws[:, index].get_value() + l2.get_value()[index] * l1.get_value()
+    res = _gamma * Ws.get_value()[:, index] + l2.get_value()[0][index] * l1.get_value()
+    return res[0]
 
 # realistic scenario for after kWTA has been performed:
 # weight updates for the winners only:
 l2_vals = l2.get_value()
-for val_index in l2_vals.shape[1]:
-    if l2_vals[val_index]==1:
+# print "l2_vals:", l2_vals
+# print "equation(0):", equation(0)
+# print "Ws before update:", Ws.get_value()
+for val_index in range(l2_vals.shape[1]):
+    if l2_vals[0][val_index]==1:
         # weights update: update column i
         update_Ws_col(equation(val_index), column_index=val_index)
+
+# print "Ws after update:", Ws.get_value()
 
 # test_vals = np.random.random((1, 100)).astype(np.float32)
 # test_vals = 0.312987 * np.ones((1, 100), dtype=np.float32)
