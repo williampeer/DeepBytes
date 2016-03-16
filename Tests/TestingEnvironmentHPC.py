@@ -15,11 +15,13 @@ hpc = HPC([io_dim, 240, 1600, 480, io_dim],
 # I = np.asarray([[1, -1, 1, -1, 1, -1, 1] * 7], dtype=np.float32)
 # save_images_from([I])
 
-l1 = theano.shared(value=Tools.binomial_f(1, 49, 0.5).astype('float32'), borrow=True)
-l2 = theano.shared(value=np.zeros_like(l1, dtype=np.float32).astype('float32'), borrow=True)
+rand_vals = Tools.binomial_f(1, 49, 0.5)
+l1 = theano.shared(value=rand_vals.astype('float32'), borrow=True)
+l2 = theano.shared(value=np.zeros_like(rand_vals, dtype=np.float32).astype('float32'), borrow=True)
 n_dim = l1.get_value().shape[1]
 print("n_dim:", n_dim)  # ->49
-Ws = theano.shared(value=Tools.binomial_f(n_dim, n_dim, 0.5).astype('float32'), borrow=True)
+Ws = theano.shared(value=(Tools.uniform_f(n_dim, n_dim) * Tools.binomial_f(n_dim, n_dim, p_scalar=0.5)).  # 50 % conn.
+                   astype('float32'), borrow=True)
 l2_firing_rate = 0.1023
 
 l1_in = T.fmatrix()
@@ -27,11 +29,30 @@ Ws_in = T.fmatrix()
 next_l2_vals = l1_in.dot(Ws_in)
 fire_to_l2 = theano.function([l1_in, Ws_in], updates=[(l2, next_l2_vals)])
 
-# fire_to_l2(l1.get_value(), Ws.get_value())
+fire_to_l2(l1.get_value(), Ws.get_value())
 print("l2 vals before kWTA:", l2.get_value())
-# l2 = hpc.kWTA(l2.get_value(), l2_firing_rate)
-# print("l2:", l2.get_value())
 
+new_values = T.fmatrix()
+l2_kWTA = theano.function([new_values], updates=[(l2, new_values)])
+l2_kWTA(hpc.kWTA(l2.get_value(), l2_firing_rate))
+print("l2:", l2.get_value())
+print "l2 sum:", np.sum(l2.get_value())
+
+column_index = T.iscalar()
+new_Ws_column = T.fmatrix()
+update_Ws_col = theano.function([new_Ws_column, column_index], updates={Ws: T.set_subtensor(Ws[:, column_index], new_Ws_column)})
+
+def equation(index):
+    _gamma = 0.9
+    return _gamma * Ws[:, index].get_value() + l2.get_value()[index] * l1.get_value()
+
+# realistic scenario for after kWTA has been performed:
+# weight updates for the winners only:
+l2_vals = l2.get_value()
+for val_index in l2_vals.shape[1]:
+    if l2_vals[val_index]==1:
+        # weights update: update column i
+        update_Ws_col(equation(val_index), column_index=val_index)
 
 # test_vals = np.random.random((1, 100)).astype(np.float32)
 # test_vals = 0.312987 * np.ones((1, 100), dtype=np.float32)
