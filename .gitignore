@@ -6,4 +6,5 @@ Workbench.py
 saved_data/*
 
 !.gitignore
-!saved_data/counters_reset_copy.py
+!saved_data/counters_reset.py
+!saved_data/read_test.py
