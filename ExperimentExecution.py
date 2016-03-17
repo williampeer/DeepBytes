@@ -42,17 +42,17 @@ for trial in range(1):
                   0.7, 1.0, 0.1, 0.5,  # gamma, epsilon, nu, turnover rate
                   0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
 
-        # hipp_chaotic_pats, _ = experiment_4_x_1(hpc, i, training_patterns_associative)
-        # Tools.save_experiment_4_1_results(hpc, hipp_chaotic_pats, "test_"+str(i)+"_patterns_")
+        hipp_chaotic_pats, _ = experiment_4_x_1(hpc, i, training_patterns_associative)
+        Tools.save_experiment_4_1_results(hpc, hipp_chaotic_pats, "test_"+str(i)+"_patterns_")
 
-        ann = SimpleNeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
+        # ann = SimpleNeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
 
-        print "Starting experiment 4_2..."
+        # print "Starting experiment 4_2..."
         # This also saved the experiment_4_x_1 results!
-        information_vector = experiment_4_x_2(hpc, ann, train_set_size_ctr,
-                                              training_patterns_associative[:5 * train_set_size_ctr])
-        print "Saving the results."
-        Tools.save_experiment_4_2_results(information_vector, "test_" + str(train_set_size_ctr) + "_4_2_")
+        # information_vector = experiment_4_x_2(hpc, ann, train_set_size_ctr,
+        #                                       training_patterns_associative[:5 * train_set_size_ctr])
+        # print "Saving the results."
+        # Tools.save_experiment_4_2_results(information_vector, "test_" + str(train_set_size_ctr) + "_4_2_")
 
         # For now, this is the ONLY place where the counter is incremented.
         Tools.increment_experiment_counter()
