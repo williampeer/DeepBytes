@@ -42,8 +42,8 @@ for trial in range(1):
                   0.7, 1.0, 0.1, 0.5,  # gamma, epsilon, nu, turnover rate
                   0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
 
-        hipp_chaotic_pats, _ = experiment_4_x_1(hpc, i, training_patterns_associative)
-        Tools.save_experiment_4_1_results(hpc, hipp_chaotic_pats, "test_"+str(i)+"_patterns_")
+        hipp_chaotic_pats, _ = experiment_4_x_1(hpc, train_set_size_ctr, training_patterns_associative)
+        Tools.save_experiment_4_1_results(hpc, hipp_chaotic_pats, "test_"+str(train_set_size_ctr)+"_patterns_")
 
         # ann = SimpleNeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
 
