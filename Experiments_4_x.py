@@ -13,10 +13,10 @@ def experiment_4_x_1(hpc, training_set_size, original_training_patterns):
     hippocampal_chaotic_recall_patterns = []
     random_ins = []
 
-    for train_set_num in range(5):  # always five training sets
+    for train_set_num in range(1):  # always five training sets
         current_set_hipp_chaotic_recall, current_set_random_ins = \
             training_and_recall_hpc_helper(hpc, training_set_size, train_set_num, original_training_patterns)
-        hippocampal_chaotic_recall_patterns.append(current_set_hipp_chaotic_recall)
+        hippocampal_chaotic_recall_patterns += current_set_hipp_chaotic_recall
         random_ins.append(current_set_random_ins)
 
     # show_image_from(np.asarray(next_experiment_im).astype(np.float32))
@@ -44,7 +44,7 @@ def training_and_recall_hpc_helper(hpc, training_set_size, train_set_num, origin
     print "Recalling patterns for 300 time-steps by chaotic recall..."
     t2 = time.time()
     [patterns_extracted_for_current_set, random_in] = \
-        hpc_chaotic_recall_wrapper(hpc, display_images_of_stable_output=False, recall_iterations=300)
+        hpc_chaotic_recall_wrapper(hpc, display_images_of_stable_output=False, recall_iterations=100)
     for pat in patterns_extracted_for_current_set:
         if not set_contains_pattern(hippocampal_chaotic_recall_patterns, pat):
             hippocampal_chaotic_recall_patterns.append(pat)  # append unique pattern
@@ -119,7 +119,7 @@ def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
     # ann.train(pseudopatterns_I)
     # ann.train(pseudopatterns_II)
 
-    save_experiment_4_1_results(hpc, chaotically_recalled_patterns, "exp_4_x_2")
+    save_experiment_4_1_results(hpc, chaotically_recalled_patterns, "exp_1_before2")
 
     # Attempt to recall using the entire DNMM:
     sum_corr = 0.

@@ -351,7 +351,7 @@ class HPC:
 
         # self.print_activation_values_and_weights()
         # self.print_activation_values_sum()
-        # self.print_min_max_weights()
+        self.print_min_max_weights()
         # print "self.nu_ca3.get_value():", self.nu_ca3.get_value()
         # print "self.zeta_ca3.get_value():", self.zeta_ca3.get_value()
 
