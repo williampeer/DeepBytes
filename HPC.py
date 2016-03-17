@@ -6,6 +6,7 @@ from Tools import binomial_f, uniform_f, show_image_from
 # Note: Ensure float32 for GPU-usage. Use the profiler to analyse GPU-usage.
 theano.config.floatX = 'float32'
 
+
 # dims: neuron layer sizes
 # gamma: forgetting factor
 # epsilon: steepness parameter (used in transfer function)
@@ -52,9 +53,6 @@ class HPC:
 
         ca3_values = uniform_f(1, dims[3])
         self.ca3_values = theano.shared(name='ca3_values', value=ca3_values.astype(theano.config.floatX), borrow=True)
-        # prev_ca3_values = np.zeros_like(ca3_values, dtype=np.float32)
-        # self.prev_ca3_values = theano.shared(name='prev_ca3_values', value=prev_ca3_values.astype(theano.config.floatX),
-        #                                      borrow=True)
 
         output_values = np.zeros((1, dims[4])).astype(np.float32)
         self.output_values = theano.shared(name='output_values', value=output_values.astype(theano.config.floatX),
@@ -101,6 +99,7 @@ class HPC:
         a_i_arr = _a_i * np.ones_like(ca3_values, dtype=np.float32)
         self._a_i = theano.shared(name='_a_i', value=a_i_arr.astype(theano.config.floatX))
 
+        #
         # ============== HEBBIAN LEARNING ==================
         # Input:
         # Apparently, weights are 0 or 1 between the input and EC and constant after initialization
@@ -118,14 +117,17 @@ class HPC:
         self.fire_ec_dg = theano.function([local_ec_vals, local_ec_dg_Ws], outputs=None,
                                           updates=[(self.dg_values, next_activation_values_dg)])
 
-        # wire after kWTA for this layer
-        u_prev_reshaped_transposed = T.fmatrix('u_prev_reshaped_transposed')
-        u_next_reshaped = T.fmatrix('u_next_reshaped')
-        Ws_prev_next = T.fmatrix('Ws_prev_next')
-        # Element-wise operations. w_13_next = w_13 + nu u_3(u_1-u_3 w_13).
-        next_Ws = Ws_prev_next + self._nu * u_next_reshaped * (u_prev_reshaped_transposed.T - u_next_reshaped * Ws_prev_next)
-        self.wire_ec_dg = theano.function([u_prev_reshaped_transposed, u_next_reshaped, Ws_prev_next],
-                                          updates=[(self.ec_dg_weights, next_Ws)])
+        X_i = T.fvector()
+        x_j = T.fscalar()
+        weights_column = T.fvector()
+
+        weights_column_update_unconstrained = self._gamma * weights_column + x_j * X_i
+        self.unconstrained_hebbian_equation = theano.function([X_i, x_j, weights_column],
+                                                            outputs=weights_column_update_unconstrained)
+
+        weights_column_update_constrained = weights_column + self._nu * x_j * (X_i + x_j * weights_column)
+        self.constrained_hebbian_equation = theano.function([X_i, x_j, weights_column],
+                                                              outputs=weights_column_update_constrained)
 
         # ============= CA3 =============
         # "c_"-prefix to avoid shadowing.
@@ -146,12 +148,6 @@ class HPC:
                                                 c_ca3_ca3_Ws, c_nu_ca3, c_zeta_ca3],
                                                updates=[(self.ca3_values, next_activation_values_ca3),
                                                         (self.nu_ca3, nu_ca3), (self.zeta_ca3, zeta_ca3)])
-
-        # after kWTA:
-        self.wire_ec_to_ca3 = theano.function([u_prev_reshaped_transposed, u_next_reshaped, Ws_prev_next], updates=[
-            (self.ec_ca3_weights, next_Ws)])
-        self.wire_dg_to_ca3 = theano.function([u_prev_reshaped_transposed, u_next_reshaped, Ws_prev_next], updates=[
-            (self.dg_ca3_weights, next_Ws)])
 
         local_ca3_ca3_Ws = T.fmatrix()
         local_ca3_vals = T.fmatrix()
@@ -174,13 +170,9 @@ class HPC:
         # ===================================================
         # Output:
         c_ca3_out_Ws = T.fmatrix()
-        c_out_values = T.fmatrix()
         next_activation_values_out = T.tanh(c_ca3_vals.dot(c_ca3_out_Ws) / self._epsilon)
         self.fire_ca3_out = theano.function([c_ca3_vals, c_ca3_out_Ws], updates=[(self.output_values,
                                                                                   next_activation_values_out)])
-        next_ca3_out_weights = self._gamma * c_ca3_out_Ws + T.transpose(c_ca3_vals).dot(c_out_values)
-        self.wire_ca3_out = theano.function([c_ca3_vals, c_ca3_out_Ws, c_out_values],
-                                            updates=[(self.ca3_out_weights, next_ca3_out_weights)])
 
         # =================== SETTERS =======================
         new_activation_values = T.fmatrix('new_activation_values')
@@ -196,31 +188,31 @@ class HPC:
         self.set_ca3_values = theano.function([new_activation_values], outputs=None,
                                               updates=[(self.ca3_values, new_activation_values)])
 
-        # self.set_prev_ca3_values = theano.function([new_activation_values], outputs=None,
-        #                                            updates=[(self.prev_ca3_values, new_activation_values)])
-
         self.set_output = theano.function([new_activation_values], outputs=None,
                                           updates=[(self.output_values, new_activation_values)])
 
         new_weights = T.fmatrix('new_weights')
         self.update_input_ec_weights = theano.function(inputs=[new_weights], updates=[(self.in_ec_weights, new_weights)])
 
-        new_weights_vector = T.fvector('new_weights_vector')
-        index_x_or_y = T.iscalar()
-        self.update_ec_dg_weights_column = theano.function([index_x_or_y, new_weights_vector],
-            updates={self.ec_dg_weights: T.set_subtensor(self.ec_dg_weights[:, index_x_or_y], new_weights_vector)})
-        self.update_dg_ca3_weights_row = theano.function([index_x_or_y, new_weights_vector],
-            updates={self.dg_ca3_weights: T.set_subtensor(self.dg_ca3_weights[index_x_or_y, :], new_weights_vector)})
+        weights_update_vector = T.fvector('weight_column_update')
+        index = T.iscalar('column_index')
+        self.update_ec_dg_weights_column = theano.function([index, weights_update_vector],
+            updates={self.ec_dg_weights: T.set_subtensor(self.ec_dg_weights[:, index], weights_update_vector)})
 
-        y = T.iscalar('y')
-        x = T.iscalar('x')
-        val = T.fscalar('val')
-        self.update_ec_dg_weights_value = theano.function(inputs=[y, x, val], updates=[(self.ec_dg_weights,
-                                                                                        T.set_subtensor(self.ec_dg_weights[y, x], val))])
-        self.update_dg_ca3_weights_value = theano.function(inputs=[y, x, val], updates=[(self.dg_ca3_weights,
-                                                                                         T.set_subtensor(self.dg_ca3_weights[y, x], val))])
-        self.update_ca3_ca3_weights_value = theano.function(inputs=[y, x, val], updates=[(self.ca3_ca3_weights,
-                                                                                          T.set_subtensor(self.ca3_ca3_weights[y, x], val))])
+        self.update_ec_ca3_weights_column = theano.function([index, weights_update_vector],
+            updates={self.ec_ca3_weights: T.set_subtensor(self.ec_ca3_weights[:, index], weights_update_vector)})
+
+        self.update_dg_ca3_weights_column = theano.function([index, weights_update_vector],
+            updates={self.dg_ca3_weights: T.set_subtensor(self.dg_ca3_weights[:, index], weights_update_vector)})
+
+        self.update_ca3_ca3_weights_column = theano.function([index, weights_update_vector],
+            updates={self.ca3_ca3_weights: T.set_subtensor(self.ca3_ca3_weights[:, index], weights_update_vector)})
+
+        self.update_ca3_out_weights_column= theano.function([index, weights_update_vector],
+            updates={self.ca3_out_weights: T.set_subtensor(self.ca3_out_weights[:, index], weights_update_vector)})
+
+        self.update_dg_ca3_weights_row = theano.function([index, weights_update_vector],
+            updates={self.dg_ca3_weights: T.set_subtensor(self.dg_ca3_weights[index, :], weights_update_vector)})
         # ===================================================
 
     # Partly optimized neuronal turnover. Not sure how to make the scan operations work.
@@ -291,11 +283,14 @@ class HPC:
 
         return result
 
-    # TODO: Check parallelism. Check further decentralization possibilities.
-    def learn(self):
-        # one iteration for each layer/HPC-part
-        # self.internal_recall()  # sets the t-1 nu- and zeta-values for recalling the current letter.
+    def fire_in_ec_wrapper(self):
+        self.propagate_input_to_ec(self.input_values.get_value(return_internal_type=True),
+                                   self.in_ec_weights.get_value(return_internal_type=True))
+        # kWTA for EC firing:
+        self.set_ec_values(
+                self.kWTA(self.ec_values.get_value(return_internal_type=True), self.firing_rate_ec))  # in-memory copy
 
+    def fire_ec_dg_wrapper(self):
         # fire EC to DG
         self.fire_ec_dg(self.ec_values.get_value(return_internal_type=True),
                         self.ec_dg_weights.get_value(return_internal_type=True))
@@ -303,97 +298,23 @@ class HPC:
         self.set_dg_values(
                 self.kWTA(self.dg_values.get_value(return_internal_type=True), self.firing_rate_dg))  # in-memory copy
 
-        # wire EC to DG
-        n_rows_for_u_next = self.ec_values.get_value(return_internal_type=True).shape[1]
-        n_cols_for_u_prev = self.dg_values.get_value(return_internal_type=True).shape[1]
-        u_next_for_elemwise_ops = [self.dg_values.get_value(return_internal_type=True)[0]] * n_rows_for_u_next
-        u_prev_for_elemwise_ops_transposed = [self.ec_values.get_value(return_internal_type=True)[0]] * n_cols_for_u_prev
-
-        self.wire_ec_dg(u_prev_for_elemwise_ops_transposed, u_next_for_elemwise_ops,
-                        self.ec_dg_weights.get_value(return_internal_type=True))
-
+    def fire_to_ca3_wrapper(self):
         # fire EC to CA3, DG to CA3, and CA3 to CA3
-        l_ec_vals = self.ec_values.get_value(return_internal_type=True)
-        l_ec_ca3_Ws = self.ec_ca3_weights.get_value(return_internal_type=True)
-        l_dg_vals = self.dg_values.get_value(return_internal_type=True)
-        l_dg_ca3_Ws = self.dg_ca3_weights.get_value(return_internal_type=True)
-        l_ca3_vals = self.ca3_values.get_value(borrow=False)
-        l_ca3_ca3_Ws = self.ca3_ca3_weights.get_value(return_internal_type=True)
-        l_nu_ca3 = self.nu_ca3.get_value(return_internal_type=True)
-        l_zeta_ca3 = self.zeta_ca3.get_value(return_internal_type=True)
-        self.fire_all_to_ca3(l_ec_vals, l_ec_ca3_Ws, l_dg_vals, l_dg_ca3_Ws, l_ca3_vals, l_ca3_ca3_Ws, l_nu_ca3, l_zeta_ca3)
+        current_ec_vals = self.ec_values.get_value(return_internal_type=True)
+        current_ec_ca3_Ws = self.ec_ca3_weights.get_value(return_internal_type=True)
+        current_dg_vals = self.dg_values.get_value(return_internal_type=True)
+        current_dg_ca3_Ws = self.dg_ca3_weights.get_value(return_internal_type=True)
+        current_ca3_vals = self.ca3_values.get_value(borrow=False)
+        current_ca3_ca3_Ws = self.ca3_ca3_weights.get_value(return_internal_type=True)
+        current_nu_ca3 = self.nu_ca3.get_value(return_internal_type=True)
+        current_zeta_ca3 = self.zeta_ca3.get_value(return_internal_type=True)
+        self.fire_all_to_ca3(current_ec_vals, current_ec_ca3_Ws, current_dg_vals, current_dg_ca3_Ws, current_ca3_vals,
+                             current_ca3_ca3_Ws, current_nu_ca3, current_zeta_ca3)
         # kWTA
         self.set_ca3_values(
                 self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory copy
 
-        # wire EC to CA3
-        n_rows = self.ec_values.get_value(return_internal_type=True).shape[1]
-        n_cols = self.ca3_values.get_value(return_internal_type=True).shape[1]
-        u_next_for_elemwise_ops = [self.ca3_values.get_value(return_internal_type=True)[0]] * n_rows
-        u_prev_for_elemwise_ops_transposed = [self.ec_values.get_value(return_internal_type=True)[0]] * n_cols
-        self.wire_ec_to_ca3(u_prev_for_elemwise_ops_transposed, u_next_for_elemwise_ops,
-                            self.ec_ca3_weights.get_value(return_internal_type=True))
-
-        # wire DG to CA3
-        n_rows = self.dg_values.get_value(return_internal_type=True).shape[1]
-        u_next_for_elemwise_ops = [self.ca3_values.get_value(return_internal_type=True)[0]] * n_rows
-        u_prev_for_elemwise_ops_transposed = [self.dg_values.get_value(return_internal_type=True)[0]] * n_cols
-        self.wire_dg_to_ca3(u_prev_for_elemwise_ops_transposed, u_next_for_elemwise_ops,
-                            self.dg_ca3_weights.get_value(return_internal_type=True))
-
-        # wire CA3 to CA3
-        self.wire_ca3_to_ca3(self.ca3_values.get_value(return_internal_type=True),
-                             l_ca3_vals,
-                             self.ca3_ca3_weights.get_value(return_internal_type=True))
-        self.wire_ca3_out(self.ca3_values.get_value(return_internal_type=True),
-                          self.ca3_out_weights.get_value(return_internal_type=True),
-                          self.output_values.get_value(return_internal_type=True))
-
-        # self.print_activation_values_and_weights()
-        # self.print_activation_values_sum()
-        # self.print_min_max_weights()
-        # print "self.nu_ca3.get_value():", self.nu_ca3.get_value()
-        # print "self.zeta_ca3.get_value():", self.zeta_ca3.get_value()
-
-    def setup_input(self, input_pattern):
-        # self.re_wire_fixed_input_to_ec_weights()
-        self.set_input(input_pattern)
-
-        self.propagate_input_to_ec(self.input_values.get_value(return_internal_type=True),
-                                   self.in_ec_weights.get_value(return_internal_type=True))
-        # kWTA for EC firing:
-        self.set_ec_values(
-                self.kWTA(self.ec_values.get_value(return_internal_type=True), self.firing_rate_ec))  # in-memory copy
-
-    def setup_pattern(self, input_pattern, output_pattern):
-        # self.neuronal_turnover_dg()
-        self.setup_input(input_pattern)
-        self.set_output(output_pattern)
-
-    # Method used to update the previous nu- and zeta-values with the current I/O pattern before weight updates.
-    def internal_recall(self):
-        # Fire EC to CA3, CA3 to CA3
-        self.fire_to_ca3_no_learning(self.ec_values.get_value(return_internal_type=True),
-                                     self.ec_ca3_weights.get_value(return_internal_type=True),
-                                     self.ca3_values.get_value(return_internal_type=True),
-                                     self.ca3_ca3_weights.get_value(return_internal_type=True),
-                                     self.nu_ca3.get_value(return_internal_type=True),
-                                     self.zeta_ca3.get_value(return_internal_type=True))
-        # kWTA CA3
-        self.set_ca3_values(
-                self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory
-
-    def recall(self):
-        # Fire EC to CA3, CA3 to CA3
-        self.fire_to_ca3_no_learning(self.ec_values.get_value(return_internal_type=True),
-                                     self.ec_ca3_weights.get_value(return_internal_type=True),
-                                     self.ca3_values.get_value(return_internal_type=True),
-                                     self.ca3_ca3_weights.get_value(return_internal_type=True),
-                                     self.nu_ca3.get_value(return_internal_type=True),
-                                     self.zeta_ca3.get_value(return_internal_type=True))
-        # kWTA CA3
-        self.set_ca3_values(
-                self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory
+    def fire_ca3_out_wrapper(self):
         # fire CA3 to output
         self.fire_ca3_out(self.ca3_values.get_value(return_internal_type=True),
                           self.ca3_out_weights.get_value(return_internal_type=True))
@@ -401,22 +322,127 @@ class HPC:
         # Bipolar output:
         self.set_output(self.get_bipolar_in_out_values(self.output_values.get_value(return_internal_type=True)))
 
-    def recall_until_stability_criteria(self, should_display_image, max_iterations):  # recall until output unchanged three iterations
+    def wire_ec_dg_wrapper(self):
+        activation_values = self.dg_values.get_value()
+        for neuron_index in range(activation_values.shape[1]):
+            if activation_values[0][neuron_index] == 1 or True:
+                # weights update: update column i
+                X_i = self.ec_values.get_value()[0]
+                x_j = activation_values[0][neuron_index]
+                weight_column = self.ec_dg_weights.get_value()[:, neuron_index]
+
+                self.update_ec_dg_weights_column(
+                        weight_column_update=self.constrained_hebbian_equation(X_i, x_j, weight_column),
+                        column_index=neuron_index)
+
+    def wire_ec_ca3_wrapper(self):
+        activation_values = self.ca3_values.get_value()
+        for neuron_index in range(activation_values.shape[1]):
+            if activation_values[0][neuron_index] == 1 or True:
+                # weights update: update column i
+                X_i = self.ec_values.get_value()[0]
+                x_j = activation_values[0][neuron_index]
+                weight_column = self.ec_ca3_weights.get_value()[:, neuron_index]
+                self.update_ec_ca3_weights_column(
+                        weight_column_update=self.constrained_hebbian_equation(X_i, x_j, weight_column),
+                        column_index=neuron_index)
+
+    def wire_dg_ca3_wrapper(self):
+        activation_values = self.ca3_values.get_value()
+        for neuron_index in range(activation_values.shape[1]):
+            if activation_values[0][neuron_index] == 1 or True:
+                # weights update: update column i
+                X_i = self.dg_values.get_value()[0]
+                x_j = activation_values[0][neuron_index]
+                weight_column = self.dg_ca3_weights.get_value()[:, neuron_index]
+                self.update_dg_ca3_weights_column(
+                        weight_column_update=self.constrained_hebbian_equation(X_i, x_j, weight_column),
+                        column_index=neuron_index)
+
+    def wire_ca3_ca3_wrapper(self):
+        activation_values = self.ca3_values.get_value()
+        for neuron_index in range(activation_values.shape[1]):
+            if activation_values[0][neuron_index] == 1 or True:
+                # weights update: update column i
+                X_i = self.ca3_values.get_value()[0]
+                x_j = activation_values[0][neuron_index]
+                weight_column = self.ca3_ca3_weights.get_value()[:, neuron_index]
+                self.update_ca3_ca3_weights_column(
+                        weight_column_update=self.unconstrained_hebbian_equation(X_i, x_j, weight_column),
+                        column_index=neuron_index)
+
+    def wire_ca3_out_wrapper(self):
+        activation_values = self.output_values.get_value()
+        for neuron_index in range(activation_values.shape[1]):
+            if activation_values[0][neuron_index] == 1 or True:
+                # weights update: update column i
+                X_i = self.ca3_values.get_value()[0]
+                x_j = activation_values[0][neuron_index]
+                weight_column = self.ca3_out_weights.get_value()[:, neuron_index]
+                self.update_ca3_out_weights_column(
+                        weight_column_update=self.constrained_hebbian_equation(X_i, x_j, weight_column),
+                        column_index=neuron_index)
+
+    def learn(self, I, O):
+        self.set_input(I)
+        self.set_output(O)
+
+        self.fire_in_ec_wrapper()
+
+        # one iteration for each layer/HPC-part
+
+        self.fire_ec_dg_wrapper()
+        self.wire_ec_dg_wrapper()
+
+        # self.fire_to_ca3_wrapper()  # sets the t-1 nu- and zeta-values for recalling the current letter.
+        self.fire_to_ca3_wrapper()
+        self.wire_ec_ca3_wrapper()
+        self.wire_dg_ca3_wrapper()
+        self.wire_ca3_ca3_wrapper()
+
+        # Without firing!
+        self.wire_ca3_out_wrapper()
+
+        # self.print_activation_values_and_weights()
+        # self.print_activation_values_sum()
+        # self.print_min_max_weights()
+        # print "self.nu_ca3.get_value():", self.nu_ca3.get_value()
+        # print "self.zeta_ca3.get_value():", self.zeta_ca3.get_value()
+
+    def recall(self, I):
+        self.set_input(I)
+        self.fire_in_ec_wrapper()
+        self.fire_to_ca3_wrapper()
+        self.fire_ca3_out_wrapper()
+
+    def recall_using_current_input(self):
+        self.fire_to_ca3_wrapper()
+        self.fire_ca3_out_wrapper()
+
+    def recall_random(self):
+        I = binomial_f(self.input_values.shape[0], self.input_values.shape[1], 0.5) * 2 - \
+            np.ones(shape=self.input_values.shape, dtype=np.float32)
+        self.recall(I)
+
+    # recall until output .. unchanged for three iterations
+    def recall_until_stability_criteria(self, should_display_image, max_iterations):
         out_now = np.copy(self.output_values.get_value(borrow=False))
-        out_min_1 = np.zeros_like(out_now, dtype=np.float32)
-        out_min_2 = np.zeros_like(out_now, dtype=np.float32)
+        out_t_minus_1 = np.zeros_like(out_now, dtype=np.float32)
+        out_t_minus_2 = np.zeros_like(out_now, dtype=np.float32)
+
         found_stable_output = False
         ctr = 0
         while not found_stable_output and ctr < max_iterations:
-            out_min_2 = np.copy(out_min_1)
-            out_min_1 = np.copy(out_now)
+            out_t_minus_2 = np.copy(out_t_minus_1)
+            out_t_minus_1 = np.copy(out_now)
 
-            # Attempt to set a random input for every iteration:
-            self.recall()
+            self.recall_using_current_input()
             out_now = np.copy(self.output_values.get_value(borrow=False))
+
+            # Check if output has been unchanged for three time-steps
             found_stable_output = True
             for out_y in xrange(out_now.shape[1]):
-                if not (out_min_2[0][out_y] == out_min_1[0][out_y] == out_now[0][out_y]):
+                if not (out_t_minus_2[0][out_y] == out_t_minus_1[0][out_y] == out_now[0][out_y]):
                     found_stable_output = False
                     break
             ctr += 1
@@ -436,56 +462,32 @@ class HPC:
                 new_values[0][value_index] = -1
         return new_values
 
-    def serialize_hpc(self):
-        weights_array = [self.in_ec_weights.get_value(),
-                             self.ec_dg_weights.get_value(),
-                             self.ec_ca3_weights.get_value(),
-                             self.dg_ca3_weights.get_value(),
-                             self.ca3_ca3_weights.get_value(),
-                             self.ca3_out_weights.get_value()]
-        return weights_array
-
-    def de_serialize_hpc(self, information_array):
-        self.update_input_ec_weights(information_array[0])
-
-        set_ec_dg_weights = theano.function([], updates=[(self.ec_dg_weights, information_array[1])])
-        set_ec_ca3_weights = theano.function([], updates=[(self.ec_ca3_weights, information_array[2])])
-        set_dg_ca3_weights = theano.function([], updates=[(self.dg_ca3_weights, information_array[3])])
-        set_ca3_ca3_weights = theano.function([], updates=[(self.ca3_ca3_weights, information_array[4])])
-        set_ca3_out_weights = theano.function([], updates=[(self.ca3_out_weights, information_array[5])])
-
-        set_ec_dg_weights()
-        set_ec_ca3_weights()
-        set_dg_ca3_weights()
-        set_ca3_ca3_weights()
-        set_ca3_out_weights()
-
     # ================================================ DEBUG ===============================================
     def print_activation_values_sum(self):
         print
-        ctr=0
+        sum=0
         for el in self.input_values.get_value()[0]:
-            ctr+=el
-        print "sum input:", ctr
-        ctr=0
+            sum+=el
+        print "sum input:", sum
+        sum=0
         for el in self.ec_values.get_value()[0]:
-            ctr+=el
-        print "sum ec:", ctr
-        ctr=0
+            sum+=el
+        print "sum ec:", sum
+        sum=0
         for el in self.dg_values.get_value()[0]:
-            ctr+=el
-        print "sum dg:", ctr
+            sum+=el
+        print "sum dg:", sum
 
-        ctr=0
+        sum=0
         for el in self.ca3_values.get_value()[0]:
-            ctr+=el
-        print "sum ca3:", ctr
-        if ctr==0:
+            sum+=el
+        print "sum ca3:", sum
+        if sum==0:
             print "NO ACTIVE NEURONS IN --CA3--."
-        ctr=0
+        sum=0
         for el in self.output_values.get_value()[0]:
-            ctr+=el
-        print "sum output:", ctr
+            sum+=el
+        print "sum output:", sum
 
     def print_activation_values(self):
         print "\nprinting activation values:"
