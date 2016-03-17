@@ -325,7 +325,7 @@ class HPC:
     def wire_ec_dg_wrapper(self):
         activation_values = self.dg_values.get_value()
         for neuron_index in range(activation_values.shape[1]):
-            if activation_values[0][neuron_index] == 1 or True:
+            if activation_values[0][neuron_index] == 1:
                 # weights update: update column i
                 X_i = self.ec_values.get_value()[0]
                 x_j = activation_values[0][neuron_index]
@@ -338,7 +338,7 @@ class HPC:
     def wire_ec_ca3_wrapper(self):
         activation_values = self.ca3_values.get_value()
         for neuron_index in range(activation_values.shape[1]):
-            if activation_values[0][neuron_index] == 1 or True:
+            if activation_values[0][neuron_index] == 1:
                 # weights update: update column i
                 X_i = self.ec_values.get_value()[0]
                 x_j = activation_values[0][neuron_index]
@@ -350,7 +350,7 @@ class HPC:
     def wire_dg_ca3_wrapper(self):
         activation_values = self.ca3_values.get_value()
         for neuron_index in range(activation_values.shape[1]):
-            if activation_values[0][neuron_index] == 1 or True:
+            if activation_values[0][neuron_index] == 1:
                 # weights update: update column i
                 X_i = self.dg_values.get_value()[0]
                 x_j = activation_values[0][neuron_index]
@@ -362,7 +362,7 @@ class HPC:
     def wire_ca3_ca3_wrapper(self):
         activation_values = self.ca3_values.get_value()
         for neuron_index in range(activation_values.shape[1]):
-            if activation_values[0][neuron_index] == 1 or True:
+            if activation_values[0][neuron_index] == 1:
                 # weights update: update column i
                 X_i = self.ca3_values.get_value()[0]
                 x_j = activation_values[0][neuron_index]
@@ -374,7 +374,7 @@ class HPC:
     def wire_ca3_out_wrapper(self):
         activation_values = self.output_values.get_value()
         for neuron_index in range(activation_values.shape[1]):
-            if activation_values[0][neuron_index] == 1 or True:
+            if activation_values[0][neuron_index] == 1:
                 # weights update: update column i
                 X_i = self.ca3_values.get_value()[0]
                 x_j = activation_values[0][neuron_index]
@@ -388,18 +388,13 @@ class HPC:
         self.set_output(O)
 
         self.fire_in_ec_wrapper()
-
-        # one iteration for each layer/HPC-part
-
         self.fire_ec_dg_wrapper()
-        self.wire_ec_dg_wrapper()
-
-        # self.fire_to_ca3_wrapper()  # sets the t-1 nu- and zeta-values for recalling the current letter.
         self.fire_to_ca3_wrapper()
+
+        self.wire_ec_dg_wrapper()
         self.wire_ec_ca3_wrapper()
         self.wire_dg_ca3_wrapper()
         self.wire_ca3_ca3_wrapper()
-
         # Without firing!
         self.wire_ca3_out_wrapper()
 
@@ -428,7 +423,6 @@ class HPC:
     def recall_until_stability_criteria(self, should_display_image, max_iterations):
         out_now = np.copy(self.output_values.get_value(borrow=False))
         out_t_minus_1 = np.zeros_like(out_now, dtype=np.float32)
-        out_t_minus_2 = np.zeros_like(out_now, dtype=np.float32)
 
         found_stable_output = False
         ctr = 0
