@@ -40,6 +40,8 @@ def hpc_learn_patterns_wrapper(hpc, training_patterns, max_training_iterations):
             test_hpc.ca3_out_weights = hpc.ca3_out_weights
 
             test_hpc.recall(training_patterns[pattern_index][0])
+            test_hpc.recall(training_patterns[pattern_index][0])
+            test_hpc.recall(training_patterns[pattern_index][0])
 
             out_values_row = test_hpc.output_values.get_value()[0]
             cur_p_row = training_patterns[pattern_index][1][0]

@@ -31,7 +31,7 @@ for letter_data in data_letters_lowercase:
     training_patterns_heterogeneous.append([uppercase_letter, lowercase_letter])
 
 for trial in range(1):
-    for train_set_size_ctr in range(3, 4):
+    for train_set_size_ctr in range(5, 6):
         # dims,
         # connection_rate_input_ec, perforant_path, mossy_fibers,
         #                  firing_rate_ec, firing_rate_dg, firing_rate_ca3,
