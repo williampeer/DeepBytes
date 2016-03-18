@@ -5,7 +5,7 @@ from Tools import binomial_f, uniform_f, show_image_from
 
 # Note: Ensure float32 for GPU-usage. Use the profiler to analyse GPU-usage.
 theano.config.floatX = 'float32'
-_WEIGHT_UPDATE_FOR_ALL_ELEMENTS = True
+_WEIGHT_UPDATE_FOR_ALL_ELEMENTS = False
 
 
 # dims: neuron layer sizes
@@ -455,8 +455,8 @@ class HPC:
 
         self.fire_in_ec_wrapper()
         self.fire_ec_dg_wrapper()
-        self.fire_all_to_ca3_wrapper()
-        # self.fire_ec_and_dg_to_ca3_wrapper()
+        # self.fire_all_to_ca3_wrapper()
+        self.fire_ec_and_dg_to_ca3_wrapper()
         self.fire_ca3_ca3_wrapper()
 
         self.wire_ec_dg_wrapper()
@@ -475,12 +475,13 @@ class HPC:
     def recall(self, I):
         self.set_input(I)
         self.fire_in_ec_wrapper()
-
+        # self.fire_ec_ca3_to_ca3_wrapper()
         self.fire_ec_ca3_wrapper()
         self.fire_ca3_ca3_wrapper()
         self.fire_ca3_out_wrapper()
 
     def recall_using_current_input(self):
+        # self.fire_ec_ca3_to_ca3_wrapper()
         self.fire_ec_ca3_wrapper()
         self.fire_ca3_ca3_wrapper()
         self.fire_ca3_out_wrapper()
