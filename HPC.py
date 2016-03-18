@@ -124,11 +124,11 @@ class HPC:
 
         weights_column_update_unconstrained = self._gamma * weights_column + x_j * X_i
         self.unconstrained_hebbian_equation = theano.function([X_i, x_j, weights_column],
-                                                            outputs=weights_column_update_unconstrained)
+                                                              outputs=weights_column_update_unconstrained)
 
         weights_column_update_constrained = weights_column + self._nu * x_j * (X_i - x_j * weights_column)
         self.constrained_hebbian_equation = theano.function([X_i, x_j, weights_column],
-                                                              outputs=weights_column_update_constrained)
+                                                            outputs=weights_column_update_constrained)
 
         # ============= CA3 =============
         # "c_"-prefix to avoid shadowing.
@@ -153,7 +153,12 @@ class HPC:
         test_ca3_input_sum = c_ec_vals.dot(c_ec_ca3_Ws) + c_dg_vals.dot(c_dg_ca3_Ws)
         test_next_activation_values_ca3 = T.tanh(test_ca3_input_sum / self._epsilon)
         self.fire_ec_and_dg_to_ca3 = theano.function([c_ec_vals, c_ec_ca3_Ws, c_dg_vals, c_dg_ca3_Ws],
-                                               updates=[(self.ca3_values, test_next_activation_values_ca3)])
+                                                     updates=[(self.ca3_values, test_next_activation_values_ca3)])
+
+        ec_ca3_input_sum = c_ec_vals.dot(c_ec_ca3_Ws)
+        ec_next_activation_values_ca3 = T.tanh(ec_ca3_input_sum / self._epsilon)
+        self.fire_ec_to_ca3 = theano.function([c_ec_vals, c_ec_ca3_Ws],
+                                              updates=[(self.ca3_values, ec_next_activation_values_ca3)])
 
         test_ca3_input_sum = c_ca3_vals.dot(c_ca3_ca3_Ws)
         test_nu_ca3 = self._k_m * c_nu_ca3 + test_ca3_input_sum
@@ -213,22 +218,22 @@ class HPC:
         weights_update_vector = T.fvector('weight_column_update')
         index = T.iscalar('column_index')
         self.update_ec_dg_weights_column = theano.function([index, weights_update_vector],
-            updates={self.ec_dg_weights: T.set_subtensor(self.ec_dg_weights[:, index], weights_update_vector)})
+                                                           updates={self.ec_dg_weights: T.set_subtensor(self.ec_dg_weights[:, index], weights_update_vector)})
 
         self.update_ec_ca3_weights_column = theano.function([index, weights_update_vector],
-            updates={self.ec_ca3_weights: T.set_subtensor(self.ec_ca3_weights[:, index], weights_update_vector)})
+                                                            updates={self.ec_ca3_weights: T.set_subtensor(self.ec_ca3_weights[:, index], weights_update_vector)})
 
         self.update_dg_ca3_weights_column = theano.function([index, weights_update_vector],
-            updates={self.dg_ca3_weights: T.set_subtensor(self.dg_ca3_weights[:, index], weights_update_vector)})
+                                                            updates={self.dg_ca3_weights: T.set_subtensor(self.dg_ca3_weights[:, index], weights_update_vector)})
 
         self.update_ca3_ca3_weights_column = theano.function([index, weights_update_vector],
-            updates={self.ca3_ca3_weights: T.set_subtensor(self.ca3_ca3_weights[:, index], weights_update_vector)})
+                                                             updates={self.ca3_ca3_weights: T.set_subtensor(self.ca3_ca3_weights[:, index], weights_update_vector)})
 
         self.update_ca3_out_weights_column= theano.function([index, weights_update_vector],
-            updates={self.ca3_out_weights: T.set_subtensor(self.ca3_out_weights[:, index], weights_update_vector)})
+                                                            updates={self.ca3_out_weights: T.set_subtensor(self.ca3_out_weights[:, index], weights_update_vector)})
 
         self.update_dg_ca3_weights_row = theano.function([index, weights_update_vector],
-            updates={self.dg_ca3_weights: T.set_subtensor(self.dg_ca3_weights[index, :], weights_update_vector)})
+                                                         updates={self.dg_ca3_weights: T.set_subtensor(self.dg_ca3_weights[index, :], weights_update_vector)})
         # ===================================================
 
     # Partly optimized neuronal turnover. Not sure how to make the scan operations work.
@@ -304,7 +309,7 @@ class HPC:
                                    self.in_ec_weights.get_value(return_internal_type=True))
         # kWTA for EC firing:
         self.set_ec_values(
-                self.kWTA(self.ec_values.get_value(return_internal_type=True), self.firing_rate_ec))  # in-memory copy
+            self.kWTA(self.ec_values.get_value(return_internal_type=True), self.firing_rate_ec))  # in-memory copy
 
     def fire_ec_dg_wrapper(self):
         # fire EC to DG
@@ -312,7 +317,15 @@ class HPC:
                         self.ec_dg_weights.get_value(return_internal_type=True))
         # kWTA
         self.set_dg_values(
-                self.kWTA(self.dg_values.get_value(return_internal_type=True), self.firing_rate_dg))  # in-memory copy
+            self.kWTA(self.dg_values.get_value(return_internal_type=True), self.firing_rate_dg))  # in-memory copy
+
+    def fire_ec_ca3_wrapper(self):
+        # fire EC to DG
+        self.fire_ec_to_ca3(self.ec_values.get_value(return_internal_type=True),
+                            self.ec_ca3_weights.get_value(return_internal_type=True))
+        # kWTA
+        self.set_ca3_values(
+            self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_dg))  # in-memory copy
 
     def fire_all_to_ca3_wrapper(self):
         # fire EC to CA3, DG to CA3, and CA3 to CA3
@@ -328,7 +341,21 @@ class HPC:
                              current_ca3_ca3_Ws, current_nu_ca3, current_zeta_ca3)
         # kWTA
         self.set_ca3_values(
-                self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory copy
+            self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory copy
+
+    def fire_ec_ca3_to_ca3_wrapper(self):
+        # fire EC to CA3, DG to CA3, and CA3 to CA3
+        current_ec_vals = self.ec_values.get_value(return_internal_type=True)
+        current_ec_ca3_Ws = self.ec_ca3_weights.get_value(return_internal_type=True)
+        current_ca3_vals = self.ca3_values.get_value(borrow=False)
+        current_ca3_ca3_Ws = self.ca3_ca3_weights.get_value(return_internal_type=True)
+        current_nu_ca3 = self.nu_ca3.get_value(return_internal_type=True)
+        current_zeta_ca3 = self.zeta_ca3.get_value(return_internal_type=True)
+        self.fire_to_ca3_no_learning(current_ec_vals, current_ec_ca3_Ws, current_ca3_vals, current_ca3_ca3_Ws,
+                                     current_nu_ca3, current_zeta_ca3)
+        # kWTA
+        self.set_ca3_values(
+            self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory copy
 
     def fire_ca3_out_wrapper(self):
         # fire CA3 to output
@@ -348,8 +375,8 @@ class HPC:
                 weight_column = self.ec_dg_weights.get_value()[:, neuron_index]
 
                 self.update_ec_dg_weights_column(
-                        weight_column_update=self.constrained_hebbian_equation(X_i, x_j, weight_column),
-                        column_index=neuron_index)
+                    weight_column_update=self.constrained_hebbian_equation(X_i, x_j, weight_column),
+                    column_index=neuron_index)
 
     def wire_ec_ca3_wrapper(self):
         activation_values = self.ca3_values.get_value()
@@ -360,8 +387,8 @@ class HPC:
                 x_j = activation_values[0][neuron_index]
                 weight_column = self.ec_ca3_weights.get_value()[:, neuron_index]
                 self.update_ec_ca3_weights_column(
-                        weight_column_update=self.constrained_hebbian_equation(X_i, x_j, weight_column),
-                        column_index=neuron_index)
+                    weight_column_update=self.constrained_hebbian_equation(X_i, x_j, weight_column),
+                    column_index=neuron_index)
 
     def wire_dg_ca3_wrapper(self):
         activation_values = self.ca3_values.get_value()
@@ -372,8 +399,8 @@ class HPC:
                 x_j = activation_values[0][neuron_index]
                 weight_column = self.dg_ca3_weights.get_value()[:, neuron_index]
                 self.update_dg_ca3_weights_column(
-                        weight_column_update=self.constrained_hebbian_equation(X_i, x_j, weight_column),
-                        column_index=neuron_index)
+                    weight_column_update=self.constrained_hebbian_equation(X_i, x_j, weight_column),
+                    column_index=neuron_index)
 
     def wire_ca3_ca3_wrapper(self):
         activation_values = self.ca3_values.get_value()
@@ -384,8 +411,8 @@ class HPC:
                 x_j = activation_values[0][neuron_index]
                 weight_column = self.ca3_ca3_weights.get_value()[:, neuron_index]
                 self.update_ca3_ca3_weights_column(
-                        weight_column_update=self.unconstrained_hebbian_equation(X_i, x_j, weight_column),
-                        column_index=neuron_index)
+                    weight_column_update=self.unconstrained_hebbian_equation(X_i, x_j, weight_column),
+                    column_index=neuron_index)
 
     def wire_ca3_out_wrapper(self):
         activation_values = self.output_values.get_value()
@@ -396,8 +423,8 @@ class HPC:
                 x_j = activation_values[0][neuron_index]
                 weight_column = self.ca3_out_weights.get_value()[:, neuron_index]
                 self.update_ca3_out_weights_column(
-                        weight_column_update=self.unconstrained_hebbian_equation(X_i, x_j, weight_column),
-                        column_index=neuron_index)
+                    weight_column_update=self.unconstrained_hebbian_equation(X_i, x_j, weight_column),
+                    column_index=neuron_index)
 
     def fire_ec_and_dg_to_ca3_wrapper(self):
         # fire EC to CA3, DG to CA3, and CA3 to CA3
@@ -408,7 +435,7 @@ class HPC:
         self.fire_ec_and_dg_to_ca3(current_ec_vals, current_ec_ca3_Ws, current_dg_vals, current_dg_ca3_Ws)
         # kWTA
         self.set_ca3_values(
-                self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory copy
+            self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory copy
 
     def fire_ca3_ca3_wrapper(self):
         # fire EC to CA3, DG to CA3, and CA3 to CA3
@@ -420,7 +447,7 @@ class HPC:
 
         # kWTA
         self.set_ca3_values(
-                self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory copy
+            self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory copy
 
     def learn(self, I, O):
         self.set_input(I)
@@ -430,7 +457,7 @@ class HPC:
         self.fire_ec_dg_wrapper()
         self.fire_all_to_ca3_wrapper()
         # self.fire_ec_and_dg_to_ca3_wrapper()
-        # self.fire_ca3_ca3_wrapper()
+        self.fire_ca3_ca3_wrapper()
 
         self.wire_ec_dg_wrapper()
         self.wire_ec_ca3_wrapper()
@@ -448,15 +475,14 @@ class HPC:
     def recall(self, I):
         self.set_input(I)
         self.fire_in_ec_wrapper()
-        self.fire_all_to_ca3_wrapper()
-        # self.fire_ec_and_dg_to_ca3_wrapper()
+
+        self.fire_ec_ca3_wrapper()
         self.fire_ca3_ca3_wrapper()
         self.fire_ca3_out_wrapper()
 
     def recall_using_current_input(self):
-        # self.fire_all_to_ca3_wrapper()
-        # self.fire_ec_and_dg_to_ca3_wrapper()
-        # self.fire_ca3_ca3_wrapper()
+        self.fire_ec_ca3_wrapper()
+        self.fire_ca3_ca3_wrapper()
         self.fire_ca3_out_wrapper()
 
     def recall_random(self):
