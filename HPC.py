@@ -1,7 +1,7 @@
 import theano
 import theano.tensor as T
 import numpy as np
-from Tools import binomial_f, uniform_f, show_image_from
+from Tools import binomial_f, uniform_f, random_f, show_image_from
 
 # Note: Ensure float32 for GPU-usage. Use the profiler to analyse GPU-usage.
 theano.config.floatX = 'float32'
@@ -73,27 +73,32 @@ class HPC:
                                            borrow=True)
 
         # randomly assign about 25 % of the weights to a random connection weight
-        ec_dg_weights = binomial_f(dims[1], dims[2], self.PP) * uniform_f(dims[1], dims[2])
+        # ec_dg_weights = binomial_f(dims[1], dims[2], self.PP) * uniform_f(dims[1], dims[2])
+        ec_dg_weights = binomial_f(dims[1], dims[2], self.PP) * random_f(dims[1], dims[2])
         self.ec_dg_weights = theano.shared(name='ec_dg_weights', value=ec_dg_weights.astype(theano.config.floatX),
                                            borrow=True)
 
         # randomly assign all weights between the EC and CA3
-        ec_ca3_weights = uniform_f(dims[1], dims[3])
+        # ec_ca3_weights = uniform_f(dims[1], dims[3])
+        ec_ca3_weights = random_f(dims[1], dims[3])
         self.ec_ca3_weights = theano.shared(name='ec_ca3_weights', value=ec_ca3_weights.astype(theano.config.floatX),
                                             borrow=True)
 
         # randomly assign about 4 % of the weights to random connection weights
-        dg_ca3_weights = binomial_f(dims[2], dims[3], self.MF) * uniform_f(dims[2], dims[3])  # elemwise
+        # dg_ca3_weights = binomial_f(dims[2], dims[3], self.MF) * uniform_f(dims[2], dims[3])  # elemwise
+        dg_ca3_weights = binomial_f(dims[2], dims[3], self.MF) * random_f(dims[2], dims[3])  # elemwise
         self.dg_ca3_weights = theano.shared(name='dg_ca3_weights', value=dg_ca3_weights.astype(theano.config.floatX),
                                             borrow=True)
 
         # randomly assign 100 % of the weights between CA3 and CA3
-        ca3_ca3_weights = uniform_f(dims[3], dims[3])
+        # ca3_ca3_weights = uniform_f(dims[3], dims[3])
+        ca3_ca3_weights = random_f(dims[3], dims[3])
         self.ca3_ca3_weights = theano.shared(name='ca3_ca3_weights', value=ca3_ca3_weights.astype(theano.config.floatX),
                                              borrow=True)
 
         # random weight assignment, full connection rate CA3-out
-        ca3_output_weights = uniform_f(dims[3], dims[4])
+        # ca3_output_weights = uniform_f(dims[3], dims[4])
+        ca3_output_weights = random_f(dims[3], dims[4])
         self.ca3_out_weights = theano.shared(name='ca3_out_weights',
                                              value=ca3_output_weights.astype(theano.config.floatX), borrow=True)
 
@@ -179,7 +184,7 @@ class HPC:
         self.fire_ca3_out = theano.function([c_ca3_vals, c_ca3_out_Ws], updates=[(self.output_values,
                                                                                   next_activation_values_out)])
         next_ca3_out_weights = self._gamma * c_ca3_out_Ws + T.transpose(c_ca3_vals).dot(c_out_values)
-        self.wire_ca3_out = theano.function([c_ca3_vals, c_ca3_out_Ws, c_out_values],
+        self.wire_ca3_out = theano.function([c_ca3_vals, c_out_values, c_ca3_out_Ws],
                                             updates=[(self.ca3_out_weights, next_ca3_out_weights)])
 
         # =================== SETTERS =======================
@@ -243,7 +248,8 @@ class HPC:
         # for every neuron in ec, rewire its weights to this neuron - that means ONE row in the weights matrix!
         weights_row_connection_rate_factor = binomial_f(1, self.dims[1], self.PP)
         # multiply with random weights:
-        weights_vector = uniform_f(1, self.dims[1]) * weights_row_connection_rate_factor
+        # weights_vector = uniform_f(1, self.dims[1]) * weights_row_connection_rate_factor
+        weights_vector = random_f(1, self.dims[1]) * weights_row_connection_rate_factor
         self.update_ec_dg_weights_column(column_index, weights_vector[0])
 
     def neuronal_turnover_helper_dg_ca3(self, row_index):
@@ -251,7 +257,8 @@ class HPC:
         # for every neuron in dg, rewire its weights to all neurons of ca3
         weights_row_connection_rate_factor = binomial_f(1, self.dims[3], self.MF)
         # multiply with random weights:
-        weights_vector = uniform_f(1, self.dims[3]) * weights_row_connection_rate_factor
+        # weights_vector = uniform_f(1, self.dims[3]) * weights_row_connection_rate_factor
+        weights_vector = random_f(1, self.dims[3]) * weights_row_connection_rate_factor
         self.update_dg_ca3_weights_row(row_index, weights_vector[0])
 
     def re_wire_fixed_input_to_ec_weights(self):
@@ -346,12 +353,12 @@ class HPC:
                              l_ca3_vals,
                              self.ca3_ca3_weights.get_value(return_internal_type=True))
         self.wire_ca3_out(self.ca3_values.get_value(return_internal_type=True),
-                          self.ca3_out_weights.get_value(return_internal_type=True),
-                          self.output_values.get_value(return_internal_type=True))
+                          self.output_values.get_value(return_internal_type=True),
+                          self.ca3_out_weights.get_value(return_internal_type=True))
 
         # self.print_activation_values_and_weights()
         # self.print_activation_values_sum()
-        self.print_min_max_weights()
+        # self.print_min_max_weights()
         # print "self.nu_ca3.get_value():", self.nu_ca3.get_value()
         # print "self.zeta_ca3.get_value():", self.zeta_ca3.get_value()
 
@@ -404,7 +411,6 @@ class HPC:
     def recall_until_stability_criteria(self, should_display_image, max_iterations):  # recall until output unchanged three iterations
         out_now = np.copy(self.output_values.get_value(borrow=False))
         out_min_1 = np.zeros_like(out_now, dtype=np.float32)
-        out_min_2 = np.zeros_like(out_now, dtype=np.float32)
         found_stable_output = False
         ctr = 0
         while not found_stable_output and ctr < max_iterations:
@@ -435,30 +441,6 @@ class HPC:
             if values[0][value_index] < 0:
                 new_values[0][value_index] = -1
         return new_values
-
-    def serialize_hpc(self):
-        weights_array = [self.in_ec_weights.get_value(),
-                             self.ec_dg_weights.get_value(),
-                             self.ec_ca3_weights.get_value(),
-                             self.dg_ca3_weights.get_value(),
-                             self.ca3_ca3_weights.get_value(),
-                             self.ca3_out_weights.get_value()]
-        return weights_array
-
-    def de_serialize_hpc(self, information_array):
-        self.update_input_ec_weights(information_array[0])
-
-        set_ec_dg_weights = theano.function([], updates=[(self.ec_dg_weights, information_array[1])])
-        set_ec_ca3_weights = theano.function([], updates=[(self.ec_ca3_weights, information_array[2])])
-        set_dg_ca3_weights = theano.function([], updates=[(self.dg_ca3_weights, information_array[3])])
-        set_ca3_ca3_weights = theano.function([], updates=[(self.ca3_ca3_weights, information_array[4])])
-        set_ca3_out_weights = theano.function([], updates=[(self.ca3_out_weights, information_array[5])])
-
-        set_ec_dg_weights()
-        set_ec_ca3_weights()
-        set_dg_ca3_weights()
-        set_ca3_ca3_weights()
-        set_ca3_out_weights()
 
     # ================================================ DEBUG ===============================================
     def print_activation_values_sum(self):

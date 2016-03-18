@@ -73,6 +73,9 @@ columns = T.iscalar()
 uniform_f = theano.function([rows, columns], outputs=shared_random_generator.
                             uniform(size=(rows, columns), low=-0.1, high=0.1, dtype='float32'))
 
+random_f = theano.function([rows, columns], outputs=shared_random_generator.random_integers(
+    size=(rows, columns), low=0, high=10000, dtype='float32')/10000.)
+
 
 def set_contains_pattern(set, pattern):
     for pat in set:

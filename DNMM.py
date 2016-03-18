@@ -45,7 +45,8 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
             test_hpc.setup_input(patterns[pattern_index][0])
 
             test_hpc.recall()
-            # test_hpc.recall()
+            test_hpc.recall()
+            test_hpc.recall()
 
             out_values_row = test_hpc.output_values.get_value()[0]
             cur_p_row = patterns[pattern_index][1][0]
