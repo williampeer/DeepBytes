@@ -37,7 +37,7 @@ def training_and_recall_hpc_helper(hpc, training_set_size, train_set_num, origin
     print "Neuronal turnover completed in", "{:7.3f}".format(t1-t0), "seconds."
     print "Learning patterns in training set..."
     hpc.re_wire_fixed_input_to_ec_weights()
-    hpc_learn_patterns_wrapper(hpc, patterns=training_set, max_training_iterations=13)  # when training is fixed,
+    hpc_learn_patterns_wrapper(hpc, patterns=training_set, max_training_iterations=15)  # when training is fixed,
     # convergence should occur after one or two iterations?
 
     # extract by chaotic recall:
