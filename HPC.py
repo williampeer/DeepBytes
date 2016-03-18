@@ -380,7 +380,7 @@ class HPC:
                 x_j = activation_values[0][neuron_index]
                 weight_column = self.ca3_out_weights.get_value()[:, neuron_index]
                 self.update_ca3_out_weights_column(
-                        weight_column_update=self.constrained_hebbian_equation(X_i, x_j, weight_column),
+                        weight_column_update=self.unconstrained_hebbian_equation(X_i, x_j, weight_column),
                         column_index=neuron_index)
 
     def learn(self, I, O):
