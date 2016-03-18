@@ -125,7 +125,7 @@ class HPC:
         self.unconstrained_hebbian_equation = theano.function([X_i, x_j, weights_column],
                                                             outputs=weights_column_update_unconstrained)
 
-        weights_column_update_constrained = weights_column + self._nu * x_j * (X_i + x_j * weights_column)
+        weights_column_update_constrained = weights_column + self._nu * x_j * (X_i - x_j * weights_column)
         self.constrained_hebbian_equation = theano.function([X_i, x_j, weights_column],
                                                               outputs=weights_column_update_constrained)
 
