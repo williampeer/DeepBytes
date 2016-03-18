@@ -13,10 +13,10 @@ def experiment_4_x_1(hpc, training_set_size, original_training_patterns):
     hippocampal_chaotic_recall_patterns = []
     random_ins = []
 
-    for train_set_num in range(5):  # always five training sets
+    for train_set_num in range(1):  # always five training sets
         current_set_hipp_chaotic_recall, current_set_random_ins = \
             training_and_recall_hpc_helper(hpc, training_set_size, train_set_num, original_training_patterns)
-        hippocampal_chaotic_recall_patterns.append(current_set_hipp_chaotic_recall)
+        hippocampal_chaotic_recall_patterns += current_set_hipp_chaotic_recall
         random_ins.append(current_set_random_ins)
 
     # show_image_from(np.asarray(next_experiment_im).astype(np.float32))
@@ -33,11 +33,11 @@ def training_and_recall_hpc_helper(hpc, training_set_size, train_set_num, origin
     print "Performing neuronal turnover in DG for", hpc._turnover_rate * 100, "% of the neurons.."
     t0 = time.time()
     hpc.neuronal_turnover_dg()  # neuronal turnover between each training set
+    # hpc.re_wire_fixed_input_to_ec_weights()  # re-wire for each training set
     t1 = time.time()
     print "Neuronal turnover completed in", "{:7.3f}".format(t1-t0), "seconds."
     print "Learning patterns in training set..."
-    # hpc.re_wire_fixed_input_to_ec_weights()  # re-wire for each training set
-    hpc_learn_patterns_wrapper(hpc, training_patterns=training_set, max_training_iterations=15)  # when training is fixed,
+    hpc_learn_patterns_wrapper(hpc, training_patterns=training_set, max_training_iterations=13)  # when training is fixed,
     # convergence should occur after one or two iterations?
 
     # extract by chaotic recall:

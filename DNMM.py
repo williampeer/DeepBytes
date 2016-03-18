@@ -60,7 +60,7 @@ def hpc_learn_patterns_wrapper(hpc, training_patterns, max_training_iterations):
         iter_ctr += 1
     time_stop_overall = time.time()
 
-    print "Learned", len(training_patterns), "pattern-associations in ", iter_ctr, "iterations, which took" "{:7.3f}". \
+    print "Learned", len(training_patterns), "pattern-associations in ", iter_ctr, "iterations, which took" "{:8.3f}". \
         format(time_stop_overall-time_start_overall), "seconds."
 
 
