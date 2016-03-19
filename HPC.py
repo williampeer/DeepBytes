@@ -324,7 +324,7 @@ class HPC:
                             self.ec_ca3_weights.get_value(return_internal_type=True))
         # kWTA
         self.set_ca3_values(
-            self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_dg))  # in-memory copy
+            self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory copy
 
     def fire_all_to_ca3_wrapper(self):
         # fire EC to CA3, DG to CA3, and CA3 to CA3
