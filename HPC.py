@@ -110,7 +110,7 @@ class HPC:
         self.propagate_input_to_ec = theano.function([local_in_vals, local_in_ec_Ws], outputs=None,
                                                      updates=[(self.ec_values, next_activation_values_ec)])
 
-        # ================= CONSTRAINED ====================
+        # ================= LEARNING ====================
         # kWTA outputs:
         local_ec_vals = T.fmatrix()
         local_ec_dg_Ws = T.fmatrix()
@@ -342,7 +342,7 @@ class HPC:
         self.set_ca3_values(
             self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory copy
 
-    def fire_ec_ca3_to_ca3_wrapper(self):
+    def fire_ec_and_ca3_to_ca3_wrapper(self):
         # fire EC to CA3, DG to CA3, and CA3 to CA3
         current_ec_vals = self.ec_values.get_value(return_internal_type=True)
         current_ec_ca3_Ws = self.ec_ca3_weights.get_value(return_internal_type=True)
@@ -361,8 +361,10 @@ class HPC:
         self.fire_ca3_out(self.ca3_values.get_value(return_internal_type=True),
                           self.ca3_out_weights.get_value(return_internal_type=True))
 
+        # print "out vals before bipolar:", self.output_values.get_value()
         # Bipolar output:
         self.set_output(self.get_bipolar_in_out_values(self.output_values.get_value(return_internal_type=True)))
+        # print "out vals AFTER bipolar:", self.output_values.get_value()
 
     def wire_ec_dg_wrapper(self):
         activation_values = self.dg_values.get_value()
@@ -454,9 +456,9 @@ class HPC:
 
         self.fire_in_ec_wrapper()
         self.fire_ec_dg_wrapper()
-        # self.fire_all_to_ca3_wrapper()
-        self.fire_ec_and_dg_to_ca3_wrapper()
-        self.fire_ca3_ca3_wrapper()
+        self.fire_all_to_ca3_wrapper()
+        # self.fire_ec_and_dg_to_ca3_wrapper()
+        # self.fire_ca3_ca3_wrapper()
 
         self.wire_ec_dg_wrapper()
         self.wire_ec_ca3_wrapper()
@@ -474,21 +476,24 @@ class HPC:
     def recall(self, I):
         self.set_input(I)
         self.fire_in_ec_wrapper()
-        # self.fire_ec_ca3_to_ca3_wrapper()
-        self.fire_ec_ca3_wrapper()
-        print "Before ca3-ca3 and ca3-out!"
-        self.print_activation_values_sum()
-        self.debug_show_ca3_and_out_activation_values()
-        self.fire_ca3_ca3_wrapper()
+        self.fire_ec_and_ca3_to_ca3_wrapper()
+        # self.fire_ec_ca3_wrapper()
+
+        # self.print_activation_values_sum()
+        # self.debug_show_ca3_activation_values()
+        # self.fire_ca3_ca3_wrapper()
+
         self.fire_ca3_out_wrapper()
+
         print "After ca3-ca3 and ca3-out."
         self.print_activation_values_sum()
-        self.debug_show_ca3_and_out_activation_values()
+        self.debug_show_ca3_activation_values()
+        self.debug_show_out_activation_values()
 
     def recall_using_current_input(self):
-        # self.fire_ec_ca3_to_ca3_wrapper()
-        self.fire_ec_ca3_wrapper()
-        self.fire_ca3_ca3_wrapper()
+        self.fire_ec_and_ca3_to_ca3_wrapper()
+        # self.fire_ec_ca3_wrapper()
+        # self.fire_ca3_ca3_wrapper()
         self.fire_ca3_out_wrapper()
 
     def recall_random(self):
@@ -614,10 +619,13 @@ class HPC:
         print "kWTA:", self.kWTA(dot_sum, 0.04)
         print "firing rate ca3:", self.firing_rate_ca3
 
-    def debug_show_ca3_and_out_activation_values(self):
+    def debug_show_ca3_activation_values(self):
         print "Showing ca3 activation value and out values.."
         ca3_values = self.ca3_values.get_value()
         show_image_ca3(ca3_values)
+
+    def debug_show_out_activation_values(self):
+        print "Showing out values.."
         out_values = self.output_values.get_value()
         show_image_from(out_values)
 

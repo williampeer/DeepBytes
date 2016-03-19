@@ -21,7 +21,7 @@ def hpc_learn_patterns_wrapper(hpc, training_patterns, max_training_iterations):
         for [input_pattern, output_pattern] in training_patterns:
             # one iteration of learning using Hebbian learning
             time_before = time.time()
-            # hpc.neuronal_turnover_dg()
+            hpc.neuronal_turnover_dg()
             # hpc.learn(input_pattern, output_pattern)
             hpc.learn(input_pattern, output_pattern)
             time_after = time.time()
