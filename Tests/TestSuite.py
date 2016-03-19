@@ -97,14 +97,17 @@ class TestWeightUpdatesForSingleElements(unittest.TestCase):
 
         activation_values_l1 = np.zeros_like(hpc.ec_values.get_value()).astype(np.float32)
         activation_values_l1.put([0, 0], 1)
+        activation_values_l1.put([0, 1], 1)
         hpc.set_ec_values(activation_values_l1)
 
         activation_values_l2 = np.zeros_like(hpc.ca3_values.get_value()).astype(np.float32)
         activation_values_l2.put([0, 0], 1)
         hpc.set_ca3_values(activation_values_l2)
 
-        current_weight_element = hpc.ec_ca3_weights.get_value()[0][0]
-        next_weight_element = current_weight_element + hpc._nu * (1 - current_weight_element)
+        current_weight_element_0 = hpc.ec_ca3_weights.get_value()[0][0]
+        next_weight_element_0 = current_weight_element_0 + hpc._nu * (1 - current_weight_element_0)
+        current_weight_element_1 = hpc.ec_ca3_weights.get_value()[1][0]
+        next_weight_element_1 = current_weight_element_1 + hpc._nu * (1 - current_weight_element_1)
 
         # wire EC to CA3
         n_rows = hpc.ec_values.get_value(return_internal_type=True).shape[1]
@@ -114,10 +117,14 @@ class TestWeightUpdatesForSingleElements(unittest.TestCase):
         hpc.wire_ec_to_ca3(u_prev_for_elemwise_ops_transposed, u_next_for_elemwise_ops,
                             hpc.ec_ca3_weights.get_value(return_internal_type=True))
 
-        self.assertAlmostEqual(hpc.ec_ca3_weights.get_value()[0][0], next_weight_element, places=6,
+        self.assertAlmostEqual(hpc.ec_ca3_weights.get_value()[0][0], next_weight_element_0, places=6,
                          msg="Weight update did not correspond to the predicted update value of the equation: "
-                             "next_weight_el != w_el : "+str(next_weight_element)+" != " +
+                             "next_weight_el_0 != w_el : "+str(next_weight_element_0)+" != " +
                              str(hpc.ec_ca3_weights.get_value()[0][0]))
+        self.assertAlmostEqual(hpc.ec_ca3_weights.get_value()[1][0], next_weight_element_1, places=6,
+                         msg="Weight update did not correspond to the predicted update value of the equation: "
+                             "next_weight_el_0 != w_el : "+str(next_weight_element_1)+" != " +
+                             str(hpc.ec_ca3_weights.get_value()[1][0]))
 
         # last element in weight matrix:
         weight_rows = activation_values_l1.shape[1]
