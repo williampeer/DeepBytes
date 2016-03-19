@@ -20,6 +20,7 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
             # Neuronal turnover, setting input and output in the hpc network.
             setup_start = time.time()
             hpc.setup_pattern(input_pattern, output_pattern)
+            hpc.neuronal_turnover_dg()
             setup_end = time.time()
             print "Setup took:", "{:6.3f}".format(setup_end-setup_start), "seconds."
 

@@ -390,6 +390,13 @@ class HPC:
         self.set_ca3_values(
                 self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory
 
+        # fire CA3 to output
+        self.fire_ca3_out(self.ca3_values.get_value(return_internal_type=True),
+                          self.ca3_out_weights.get_value(return_internal_type=True))
+
+        # Bipolar output:
+        self.set_output(self.get_bipolar_in_out_values(self.output_values.get_value(return_internal_type=True)))
+
     def recall(self):
         # Fire EC to CA3, CA3 to CA3
         self.fire_to_ca3_no_learning(self.ec_values.get_value(return_internal_type=True),
@@ -401,12 +408,14 @@ class HPC:
         # kWTA CA3
         self.set_ca3_values(
                 self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory
+
         # fire CA3 to output
         self.fire_ca3_out(self.ca3_values.get_value(return_internal_type=True),
                           self.ca3_out_weights.get_value(return_internal_type=True))
 
         # Bipolar output:
         self.set_output(self.get_bipolar_in_out_values(self.output_values.get_value(return_internal_type=True)))
+        # show_image_from(self.output_values.get_value())
 
     def recall_until_stability_criteria(self, should_display_image, max_iterations):  # recall until output unchanged three iterations
         out_now = np.copy(self.output_values.get_value(borrow=False))

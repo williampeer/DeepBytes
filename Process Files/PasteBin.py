@@ -83,3 +83,44 @@ for index in xrange(rand_I.shape[1]):
         #                                 sequences=[dg_res, T.arange(dg_num)])
         # neuronal_turnover_dg_ca3 = theano.function([dg_res, dg_num, ctr], outputs=None, updates=updates_dg_ca3)
 
+
+        # TURNOVER W/ SCAN FAILED ATTEMPT:
+        # get beta %
+        # for each of those neurons, initialize weights according to the percentage above.
+
+        # Execution:
+        # num_of_dg_neurons = self.dims[2]
+        # dg_neuron_selection = binomial_f(1, num_of_dg_neurons, self._turnover_rate)
+        # neuron_index = 0
+        # target_indices = []
+        # for dg_sel in dg_neuron_selection[0]:
+        #     if dg_sel == 1:
+        #         target_indices.append(neuron_index)
+        #     neuron_index += 1
+        #
+        # indices = T.ivector('indices')
+        # random_weights_sequence = T.fvectors('random_weights_sequence')
+        # ec_dg_weights = T.fmatrix('ec_dg_weights')
+        # new_ec_dg_weights = T.fmatrix('new_ec_dg_weights')
+        # ec_dg_results, ec_dg_updates = theano.scan(fn=self.return_weight_column,
+        #                                            outputs_info=new_ec_dg_weights,
+        #                                            sequences=[indices, random_weights_sequence],
+        #                                            non_sequences=[ec_dg_weights])
+        # perform_turnover_ec_dg = theano.function([indices, random_weights_sequence, ec_dg_weights],
+        #                                          outputs=ec_dg_results)
+        #
+        # #
+        # column_length = self.ec_dg_weights.get_value().shape[0]
+        # index_sequence = np.asarray(target_indices, dtype=np.int32)
+        # # print "index seq:", index_sequence
+        # new_column_weights = random_f(index_sequence.shape[1], column_length) * binomial_f(index_sequence,
+        #                                                                                    column_length, self.PP)
+        #
+        # print perform_turnover_ec_dg(index_sequence, new_column_weights, self.ec_dg_weights.get_value())
+
+    # column_index = T.iscalar("column_index")
+    #     weight_column = T.fvector("weight_column")
+    #     weight_matrix = T.fmatrix("weight_matrix")
+    #     self.return_weight_column = theano.function([column_index, weight_column, weight_matrix],
+    #                                                 outputs=T.set_subtensor(
+    #                                                         weight_matrix[:, column_index], weight_column))

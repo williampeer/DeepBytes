@@ -30,8 +30,10 @@ for letter_data in data_letters_lowercase:
     uppercase_letter = training_patterns_associative[letter_ctr][0]
     training_patterns_heterogeneous.append([uppercase_letter, lowercase_letter])
 
-for trial in range(1):
-    for train_set_size_ctr in range(5, 6):
+for trial in range(10):
+    print "TRIAL #", trial
+    for train_set_size_ctr in range(3, 4):
+        turnover_rate = 0.02 + 0.02 * trial
         # dims,
         # connection_rate_input_ec, perforant_path, mossy_fibers,
         #                  firing_rate_ec, firing_rate_dg, firing_rate_ca3,
@@ -39,11 +41,12 @@ for trial in range(1):
         hpc = HPC([io_dim, 240, 1600, 480, io_dim],
                   0.67, 0.25, 0.04,  # connection rates: (in_ec, ec_dg, dg_ca3)
                   0.10, 0.01, 0.04,  # firing rates: (ec, dg, ca3)
-                  0.7, 1.0, 0.1, 0.5,  # gamma, epsilon, nu, turnover rate
+                  0.7, 1.0, 0.1, turnover_rate,  # gamma, epsilon, nu, turnover rate
                   0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
 
         hipp_chaotic_pats, _ = experiment_4_x_1(hpc, train_set_size_ctr, training_patterns_associative)
-        Tools.save_experiment_4_1_results(hpc, hipp_chaotic_pats, "train_set_size_"+str(train_set_size_ctr)+"_exp_1")
+        Tools.save_experiment_4_1_results(hpc, hipp_chaotic_pats, "train_set_size_"+str(train_set_size_ctr)+"_exp_1"+
+                                          "turnover_rate:" + str(turnover_rate))
 
         # ann = SimpleNeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
 
