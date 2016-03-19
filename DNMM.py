@@ -21,8 +21,8 @@ def hpc_learn_patterns_wrapper(hpc, training_patterns, max_training_iterations):
         for [input_pattern, output_pattern] in training_patterns:
             # one iteration of learning using Hebbian learning
             time_before = time.time()
-            hpc.neuronal_turnover_dg()
-            hpc.learn(input_pattern, output_pattern)
+            # hpc.neuronal_turnover_dg()
+            # hpc.learn(input_pattern, output_pattern)
             hpc.learn(input_pattern, output_pattern)
             time_after = time.time()
             print "Iterated over pattern", p_ctr, "in", \
@@ -53,9 +53,9 @@ def hpc_learn_patterns_wrapper(hpc, training_patterns, max_training_iterations):
                 if out_values_row[el_index] != cur_p_row[el_index]:
                     learned_all = False
                     print "Patterns are not yet successfully learned. Learning more..."
-                    print "Displaying intermediary result(s)... (out, target)"
-                    show_image_from(np.asarray([out_values_row], dtype=np.float32))
-                    show_image_from(np.asarray([cur_p_row], dtype=np.float32))
+                    # print "Displaying intermediary result(s)... (out, target)"
+                    # show_image_from(np.asarray([out_values_row], dtype=np.float32))
+                    # show_image_from(np.asarray([cur_p_row], dtype=np.float32))
                     print "iter:", iter_ctr
                     break
             if not learned_all:

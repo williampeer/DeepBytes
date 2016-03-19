@@ -1,6 +1,7 @@
 import unittest
 from HPC import HPC
 import numpy as np
+import Tools
 
 
 class TestkWTAInHPC(unittest.TestCase):
@@ -12,6 +13,16 @@ class TestkWTAInHPC(unittest.TestCase):
           0.7, 1, 0.1, 0.5,  # gamma, epsilon, nu, turnover rate
           0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha
         I = np.asarray([[1, -1, 1, -1, 1, -1, 1] * 7], dtype=np.float32)
+        result = hpc.kWTA(I, 0.2)
+        k = np.round(I.shape[1] * 0.2)
+        self.assertEqual(sum(result[0]), k)
+
+        I = Tools.uniform_f(1, 480)
+        result = hpc.kWTA(I, 0.2)
+        k = np.round(I.shape[1] * 0.2)
+        self.assertEqual(sum(result[0]), k)
+
+        I = Tools.random_f(1, 1600)
         result = hpc.kWTA(I, 0.2)
         k = np.round(I.shape[1] * 0.2)
         self.assertEqual(sum(result[0]), k)
@@ -245,6 +256,7 @@ class TestWeightUpdatesForSingleElements(unittest.TestCase):
 
         activation_values_l1 = np.zeros_like(hpc.ec_values.get_value()).astype(np.float32)
         activation_values_l1.put([0, 0], 1)
+        activation_values_l1.put([0, 1], 1)
         hpc.set_ec_values(activation_values_l1)
 
         activation_values_l2 = np.zeros_like(hpc.ca3_values.get_value()).astype(np.float32)
@@ -254,11 +266,18 @@ class TestWeightUpdatesForSingleElements(unittest.TestCase):
         current_weight_element = hpc.ec_ca3_weights.get_value()[0][0]
         next_weight_element = current_weight_element + hpc._nu * (1 - current_weight_element)
 
+        current_weight_element_1 = hpc.ec_ca3_weights.get_value()[1][0]
+        next_weight_element_1 = current_weight_element_1 + hpc._nu * (1 - current_weight_element_1)
+
         hpc.wire_ec_ca3_wrapper()
         self.assertAlmostEqual(hpc.ec_ca3_weights.get_value()[0][0], next_weight_element, places=6,
                          msg="Weight update did not correspond to the predicted update value of the equation: "
                              "next_weight_el != w_el : "+str(next_weight_element)+" != " +
                              str(hpc.ec_ca3_weights.get_value()[0][0]))
+        self.assertAlmostEqual(hpc.ec_ca3_weights.get_value()[1][0], next_weight_element_1, places=6,
+                         msg="Weight update did not correspond to the predicted update value of the equation: "
+                             "next_weight_el != w_el : "+str(next_weight_element_1)+" != " +
+                             str(hpc.ec_ca3_weights.get_value()[1][0]))
 
         # last element in weight matrix:
         weight_rows = activation_values_l1.shape[1]

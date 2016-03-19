@@ -1,11 +1,11 @@
 import theano
 import theano.tensor as T
 import numpy as np
-from Tools import binomial_f, uniform_f, show_image_from
+from Tools import binomial_f, uniform_f, show_image_from, show_image_ca3
 
 # Note: Ensure float32 for GPU-usage. Use the profiler to analyse GPU-usage.
 theano.config.floatX = 'float32'
-_WEIGHT_UPDATE_FOR_ALL_ELEMENTS = False
+_WEIGHT_UPDATE_FOR_ALL_ELEMENTS = True
 
 
 # dims: neuron layer sizes
@@ -279,7 +279,7 @@ class HPC:
 
         sort_values_f = theano.function([], outputs=T.sort(values))
         sorted_values = sort_values_f()
-        k_th_largest_value = sorted_values[0][values_length-k-1]
+        k_th_largest_value = sorted_values[0][values_length-k-2]
 
         mask_vector = k_th_largest_value * np.ones_like(values)
         result = (values >= mask_vector).astype(np.float32)
@@ -320,7 +320,6 @@ class HPC:
             self.kWTA(self.dg_values.get_value(return_internal_type=True), self.firing_rate_dg))  # in-memory copy
 
     def fire_ec_ca3_wrapper(self):
-        # fire EC to DG
         self.fire_ec_to_ca3(self.ec_values.get_value(return_internal_type=True),
                             self.ec_ca3_weights.get_value(return_internal_type=True))
         # kWTA
@@ -477,8 +476,14 @@ class HPC:
         self.fire_in_ec_wrapper()
         # self.fire_ec_ca3_to_ca3_wrapper()
         self.fire_ec_ca3_wrapper()
+        print "Before ca3-ca3 and ca3-out!"
+        self.print_activation_values_sum()
+        self.debug_show_ca3_and_out_activation_values()
         self.fire_ca3_ca3_wrapper()
         self.fire_ca3_out_wrapper()
+        print "After ca3-ca3 and ca3-out."
+        self.print_activation_values_sum()
+        self.debug_show_ca3_and_out_activation_values()
 
     def recall_using_current_input(self):
         # self.fire_ec_ca3_to_ca3_wrapper()
@@ -608,6 +613,13 @@ class HPC:
         print "sum:", dot_sum
         print "kWTA:", self.kWTA(dot_sum, 0.04)
         print "firing rate ca3:", self.firing_rate_ca3
+
+    def debug_show_ca3_and_out_activation_values(self):
+        print "Showing ca3 activation value and out values.."
+        ca3_values = self.ca3_values.get_value()
+        show_image_ca3(ca3_values)
+        out_values = self.output_values.get_value()
+        show_image_from(out_values)
 
     def test_pydotprint(self):
         theano.printing.pydotprint(self.fire_all_to_ca3, outfile="/hpc_pydotprint_test.png",

@@ -60,6 +60,21 @@ def create_image_helper(in_values):
     return im
 
 
+def show_image_ca3(in_values):
+    pattern = np.asarray(in_values, dtype=np.float32)
+    width = 24
+    height = 20
+    pixel_scaling_factor = 2 ** 3
+    im = Image.new('1', (width*pixel_scaling_factor, height*pixel_scaling_factor))
+    for element in range(pattern.shape[1]):
+        for i in range(pixel_scaling_factor):
+            for j in range(pixel_scaling_factor):
+                im.putpixel(((element % width)*pixel_scaling_factor + j,
+                             np.floor(element/width).astype(np.int8) * pixel_scaling_factor + i),
+                            pattern[0][element] * 255)
+    im.show()
+
+
 shared_random_generator = RandomStreams()
 
 x_r = T.iscalar()
@@ -72,6 +87,9 @@ rows = T.iscalar()
 columns = T.iscalar()
 uniform_f = theano.function([rows, columns], outputs=shared_random_generator.
                             uniform(size=(rows, columns), low=-0.1, high=0.1, dtype='float32'))
+
+random_f = theano.function([rows, columns], outputs=shared_random_generator.
+                           random_integers(size=(rows, columns), low=0, high=100000, dtype='float32')/100000.)
 
 
 def set_contains_pattern(set, pattern):
