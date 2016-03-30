@@ -57,8 +57,8 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
                 if out_values_row[el_index] != cur_p_row[el_index]:
                     learned_all = False
                     print "Patterns are not yet successfully learned. Learning more..."
-                    # print "Displaying intermediary results... (output, target)"
-                    # show_image_from(np.asarray([out_values_row], dtype=np.float32))
+                    print "Displaying intermediary results... (output, target)"
+                    show_image_from(np.asarray([out_values_row], dtype=np.float32))
                     # show_image_from(np.asarray([cur_p_row], dtype=np.float32))
                     print "iter:", iter_ctr
                     break
