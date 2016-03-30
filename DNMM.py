@@ -68,7 +68,7 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
         iter_ctr += 1
     time_stop_overall = time.time()
 
-    print "Learned", len(patterns), "pattern-associations in ", iter_ctr, "iterations, which took" "{:7.3f}". \
+    print "Terminated learning", len(patterns), "pattern-associations in ", iter_ctr, "iterations, which took" "{:8.3f}". \
         format(time_stop_overall-time_start_overall), "seconds."
 
 
@@ -77,7 +77,7 @@ def hpc_chaotic_recall_wrapper(hpc, display_images_of_stable_output, recall_iter
     time_before = time.time()
     cur_iters = 0
     # random_input = uniform_f(1, hpc.dims[0]) * 2 - np.ones_like(hpc.input_values, dtype=np.float32)
-    random_input = binomial_f(1, hpc.dims[0], 0.5) * 2 - np.ones_like(hpc.input_values, dtype=np.float32)
+    random_input = 2 * binomial_f(1, hpc.dims[0], 0.5) - np.ones_like(hpc.input_values, dtype=np.float32)
     hpc.setup_input(random_input)
     hpc_extracted_pseudopatterns = []
     while cur_iters < recall_iterations:
