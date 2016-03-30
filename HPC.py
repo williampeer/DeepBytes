@@ -80,7 +80,7 @@ class HPC:
 
         # randomly assign all weights between the EC and CA3
         # ec_ca3_weights = uniform_f(dims[1], dims[3])
-        ec_ca3_weights = np.random.normal(0.5, 0.25, (dims[1], dims[3]))
+        ec_ca3_weights = binomial_f(dims[1], dims[3], self.PP) * np.random.normal(0.5, 0.25, (dims[1], dims[3]))
         self.ec_ca3_weights = theano.shared(name='ec_ca3_weights', value=ec_ca3_weights.astype(theano.config.floatX),
                                             borrow=True)
 
@@ -143,8 +143,8 @@ class HPC:
         c_nu_ca3 = T.fmatrix()
         c_zeta_ca3 = T.fmatrix()
 
-        ca3_input_sum = c_ec_vals.dot(c_ec_ca3_Ws) + c_dg_vals.dot(c_dg_ca3_Ws) + c_ca3_vals.dot(c_ca3_ca3_Ws)
-        # ca3_input_sum = c_ec_vals.dot(c_ec_ca3_Ws) + 25 * c_dg_vals.dot(c_dg_ca3_Ws) + c_ca3_vals.dot(c_ca3_ca3_Ws)
+        # ca3_input_sum = c_ec_vals.dot(c_ec_ca3_Ws) + c_dg_vals.dot(c_dg_ca3_Ws) + c_ca3_vals.dot(c_ca3_ca3_Ws)
+        ca3_input_sum = c_ec_vals.dot(c_ec_ca3_Ws) + 25 * c_dg_vals.dot(c_dg_ca3_Ws) + c_ca3_vals.dot(c_ca3_ca3_Ws)
         nu_ca3 = self._k_m * c_nu_ca3 + ca3_input_sum
         zeta_ca3 = self._k_r * c_zeta_ca3 - self._alpha * c_ca3_vals + self._a_i
         next_activation_values_ca3 = T.tanh((nu_ca3 + zeta_ca3) / self._epsilon)
@@ -274,7 +274,7 @@ class HPC:
 
         sort_values_f = theano.function([], outputs=T.sort(values))
         sorted_values = sort_values_f()
-        k_th_largest_value = sorted_values[0][values_length-k-1]
+        k_th_largest_value = (sorted_values[0][values_length-k-1] + sorted_values[0][values_length-k-2]) / 2
 
         mask_vector = k_th_largest_value * np.ones_like(values)
         result = (values >= mask_vector).astype(np.float32)
