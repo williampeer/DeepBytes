@@ -77,8 +77,8 @@ random_f = theano.function([rows, columns], outputs=shared_random_generator.rand
     size=(rows, columns), low=0, high=10000, dtype='float32')/10000.)
 
 
-def set_contains_pattern(set, pattern):
-    for pat in set:
+def set_contains_pattern(patterns_set, pattern):
+    for pat in patterns_set:
         if get_pattern_correlation(pat, pattern) == 1:
             return True
     return False
