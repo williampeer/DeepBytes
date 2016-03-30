@@ -80,7 +80,7 @@ class HPC:
 
         # randomly assign all weights between the EC and CA3
         # ec_ca3_weights = uniform_f(dims[1], dims[3])
-        ec_ca3_weights = np.random.normal(0.5, 0.25, (dims[1], dims[2]))
+        ec_ca3_weights = np.random.normal(0.5, 0.25, (dims[1], dims[3]))
         self.ec_ca3_weights = theano.shared(name='ec_ca3_weights', value=ec_ca3_weights.astype(theano.config.floatX),
                                             borrow=True)
 
