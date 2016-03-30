@@ -76,7 +76,6 @@ def hpc_chaotic_recall_wrapper(hpc, display_images_of_stable_output, recall_iter
     time_the_beginning_of_time = time.time()
     time_before = time.time()
     cur_iters = 0
-    # random_input = uniform_f(1, hpc.dims[0]) * 2 - np.ones_like(hpc.input_values, dtype=np.float32)
     random_input = 2 * binomial_f(1, hpc.dims[0], 0.5) - np.ones_like(hpc.input_values, dtype=np.float32)
     hpc.setup_input(random_input)
     hpc_extracted_pseudopatterns = []
