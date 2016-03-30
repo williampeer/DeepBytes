@@ -44,17 +44,14 @@ class HPC:
                                           borrow=True)
 
         # in order to create fmatrices, we need to call random.random, and not zeros(1, N).
-        ec_values = uniform_f(1, dims[1])
+        ec_values = np.zeros((1, dims[1])).astype(np.float32)
         self.ec_values = theano.shared(name='ec_values', value=ec_values.astype(theano.config.floatX), borrow=True)
 
-        dg_values = uniform_f(1, dims[2])
+        dg_values = np.zeros((1, dims[1])).astype(np.float32)
         self.dg_values = theano.shared(name='dg_values', value=dg_values.astype(theano.config.floatX), borrow=True)
 
-        ca3_values = uniform_f(1, dims[3])
+        ca3_values = np.zeros((1, dims[1])).astype(np.float32)
         self.ca3_values = theano.shared(name='ca3_values', value=ca3_values.astype(theano.config.floatX), borrow=True)
-        # prev_ca3_values = np.zeros_like(ca3_values, dtype=np.float32)
-        # self.prev_ca3_values = theano.shared(name='prev_ca3_values', value=prev_ca3_values.astype(theano.config.floatX),
-        #                                      borrow=True)
 
         output_values = np.zeros((1, dims[4])).astype(np.float32)
         self.output_values = theano.shared(name='output_values', value=output_values.astype(theano.config.floatX),
@@ -73,31 +70,26 @@ class HPC:
                                            borrow=True)
 
         # randomly assign about 25 % of the weights to a random connection weight
-        # ec_dg_weights = binomial_f(dims[1], dims[2], self.PP) * uniform_f(dims[1], dims[2])
         ec_dg_weights = binomial_f(dims[1], dims[2], self.PP) * np.random.normal(0.5, 0.25 ** 2, (dims[1], dims[2]))
         self.ec_dg_weights = theano.shared(name='ec_dg_weights', value=ec_dg_weights.astype(theano.config.floatX),
                                            borrow=True)
 
         # randomly assign all weights between the EC and CA3
-        # ec_ca3_weights = uniform_f(dims[1], dims[3])
         ec_ca3_weights = binomial_f(dims[1], dims[3], self.PP) * np.random.normal(0.5, 0.25 ** 2, (dims[1], dims[3]))
         self.ec_ca3_weights = theano.shared(name='ec_ca3_weights', value=ec_ca3_weights.astype(theano.config.floatX),
                                             borrow=True)
 
         # randomly assign about 4 % of the weights to random connection weights
-        # dg_ca3_weights = binomial_f(dims[2], dims[3], self.MF) * uniform_f(dims[2], dims[3])  # elemwise
         dg_ca3_weights = binomial_f(dims[2], dims[3], self.MF) * np.random.normal(0.9, 0.01 ** 2, (dims[2], dims[3]))  # elemwise
         self.dg_ca3_weights = theano.shared(name='dg_ca3_weights', value=dg_ca3_weights.astype(theano.config.floatX),
                                             borrow=True)
 
         # randomly assign 100 % of the weights between CA3 and CA3
-        # ca3_ca3_weights = uniform_f(dims[3], dims[3])
         ca3_ca3_weights = np.random.normal(0.5, 0.25 ** 2, (dims[3], dims[3]))
         self.ca3_ca3_weights = theano.shared(name='ca3_ca3_weights', value=ca3_ca3_weights.astype(theano.config.floatX),
                                              borrow=True)
 
         # random weight assignment, full connection rate CA3-out
-        # ca3_output_weights = uniform_f(dims[3], dims[4])
         ca3_output_weights = np.random.normal(0.5, 0.25 ** 2, (dims[3], dims[4]))
         self.ca3_out_weights = theano.shared(name='ca3_out_weights',
                                              value=ca3_output_weights.astype(theano.config.floatX), borrow=True)
@@ -202,9 +194,6 @@ class HPC:
         self.set_ca3_values = theano.function([new_activation_values], outputs=None,
                                               updates=[(self.ca3_values, new_activation_values)])
 
-        # self.set_prev_ca3_values = theano.function([new_activation_values], outputs=None,
-        #                                            updates=[(self.prev_ca3_values, new_activation_values)])
-
         self.set_output = theano.function([new_activation_values], outputs=None,
                                           updates=[(self.output_values, new_activation_values)])
 
@@ -274,6 +263,7 @@ class HPC:
 
         sort_values_f = theano.function([], outputs=T.sort(values))
         sorted_values = sort_values_f()
+        # 0-indexed, mean of k-th and k-1-th largest values. could then use hard thresholding, using soft with removal
         k_th_largest_value = (sorted_values[0][values_length-k-1] + sorted_values[0][values_length-k-2]) / 2
 
         mask_vector = k_th_largest_value * np.ones_like(values)
@@ -302,7 +292,6 @@ class HPC:
     # TODO: Check parallelism. Check further decentralization possibilities.
     def learn(self):
         # one iteration for each layer/HPC-part
-        # self.internal_recall()  # sets the t-1 nu- and zeta-values for recalling the current letter.
 
         # fire EC to DG
         self.fire_ec_dg(self.ec_values.get_value(return_internal_type=True),
@@ -357,14 +346,7 @@ class HPC:
                           self.output_values.get_value(return_internal_type=True),
                           self.ca3_out_weights.get_value(return_internal_type=True))
 
-        # self.print_activation_values_and_weights()
-        # self.print_activation_values_sum()
-        # self.print_min_max_weights()
-        # print "self.nu_ca3.get_value():", self.nu_ca3.get_value()
-        # print "self.zeta_ca3.get_value():", self.zeta_ca3.get_value()
-
     def setup_input(self, input_pattern):
-        # self.re_wire_fixed_input_to_ec_weights()
         self.set_input(input_pattern)
 
         self.propagate_input_to_ec(self.input_values.get_value(return_internal_type=True),
@@ -374,7 +356,6 @@ class HPC:
                 self.kWTA(self.ec_values.get_value(return_internal_type=True), self.firing_rate_ec))  # in-memory copy
 
     def setup_pattern(self, input_pattern, output_pattern):
-        # self.neuronal_turnover_dg()
         self.setup_input(input_pattern)
         self.set_output(output_pattern)
 
@@ -410,7 +391,8 @@ class HPC:
         # Bipolar output:
         self.set_output(self.get_bipolar_in_out_values(self.output_values.get_value(return_internal_type=True)))
 
-    def recall_until_stability_criteria(self, should_display_image, max_iterations):  # recall until output unchanged three iterations
+    def recall_until_stability_criteria(self, should_display_image, max_iterations):
+        # recall until output unchanged three iterations
         out_now = np.copy(self.output_values.get_value(borrow=False))
         out_min_1 = np.zeros_like(out_now, dtype=np.float32)
         found_stable_output = False
@@ -435,9 +417,6 @@ class HPC:
         return [ctr, found_stable_output, out_now]
 
     def get_bipolar_in_out_values(self, values):
-        # new_values = values + 0.000001 * np.ones_like(values, dtype=np.float32)
-        # return new_values / np.abs(new_values)
-
         new_values = np.ones_like(values, dtype=np.float32)
         for value_index in xrange(values.shape[1]):
             if values[0][value_index] < 0:
