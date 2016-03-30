@@ -3,12 +3,15 @@ import numpy as np
 from Tools import binomial_f, uniform_f, show_image_from
 from HPC import HPC
 
+
 def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
-    test_hpc = HPC([49, 240, 1600, 480, 49],
-          0.67, 0.25, 0.04,  # connection rates: (in_ec, ec_dg, dg_ca3)
-          0.10, 0.01, 0.04,  # firing rates: (ec, dg, ca3)
-          0.7, 1.0, 0.1, 0.5,  # gamma, epsilon, nu, turnover rate
-          0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
+
+    test_hpc = HPC([hpc.dims[0], hpc.dims[1], hpc.dims[2], hpc.dims[3], hpc.dims[4]],
+          hpc.connection_rate_input_ec, hpc.PP, hpc.MF,  # connection rates: (in_ec, ec_dg, dg_ca3)
+          hpc.firing_rate_ec, hpc.firing_rate_dg, hpc.firing_rate_ca3,  # firing rates: (ec, dg, ca3)
+          hpc._gamma, hpc._epsilon, hpc._nu, hpc._turnover_rate,  # gamma, epsilon, nu, turnover rate
+          hpc._k_m, hpc._k_r, hpc._a_i, hpc._alpha)  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
+
     print "Commencing learning of", len(patterns), "I/O patterns."
     time_start_overall = time.time()
     iter_ctr = 0
@@ -51,8 +54,6 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
 
             out_values_row = test_hpc.output_values.get_value()[0]
             cur_p_row = patterns[pattern_index][1][0]
-            # print "outvals:", out_values
-            # print "curp", cur_p
             for el_index in range(len(cur_p_row)):
                 if out_values_row[el_index] != cur_p_row[el_index]:
                     learned_all = False

@@ -56,7 +56,8 @@ for round_num in range(1):
             # information_vector = experiment_4_x_2(hpc, ann, train_set_size_ctr,
             #                                       training_patterns_associative[:5 * train_set_size_ctr])
             # print "Saving the results."
-            # Tools.save_experiment_4_2_results(information_vector, "train_set_size_" + str(train_set_size_ctr) + "_exp_2_")
+            # Tools.save_experiment_4_2_results(information_vector, "train_set_size_" + str(train_set_size_ctr) +
+            #                                   "_exp_2_")
 
             # For now, this is the ONLY place where the counter is incremented.
             Tools.increment_experiment_counter()
