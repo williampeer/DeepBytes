@@ -10,7 +10,7 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
           hpc.connection_rate_input_ec, hpc.PP, hpc.MF,  # connection rates: (in_ec, ec_dg, dg_ca3)
           hpc.firing_rate_ec, hpc.firing_rate_dg, hpc.firing_rate_ca3,  # firing rates: (ec, dg, ca3)
           hpc._gamma, hpc._epsilon, hpc._nu, hpc._turnover_rate,  # gamma, epsilon, nu, turnover rate
-          hpc._k_m, hpc._k_r, hpc._a_i, hpc._alpha)  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
+          hpc._k_m, hpc._k_r, hpc._a_i.get_value()[0][0], hpc._alpha)  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
 
     print "Commencing learning of", len(patterns), "I/O patterns."
     time_start_overall = time.time()
@@ -19,10 +19,9 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
     # while iter_ctr < 3:
     while not learned_all and iter_ctr < max_training_iterations:
         p_ctr = 0
+        # hpc.neuronal_turnover_dg()
         for [input_pattern, output_pattern] in patterns:
-            # Neuronal turnover, setting input and output in the hpc network.
             setup_start = time.time()
-            # hpc.neuronal_turnover_dg()
             hpc.setup_pattern(input_pattern, output_pattern)
             setup_end = time.time()
             print "Setup took:", "{:6.3f}".format(setup_end-setup_start), "seconds."
@@ -58,7 +57,7 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
                 if out_values_row[el_index] != cur_p_row[el_index]:
                     learned_all = False
                     print "Patterns are not yet successfully learned. Learning more..."
-                    print "Displaying intermediary results... (output, target)"
+                    print "Displaying intermediary result(s)..."
                     show_image_from(np.asarray([out_values_row], dtype=np.float32))
                     # show_image_from(np.asarray([cur_p_row], dtype=np.float32))
                     print "iter:", iter_ctr
