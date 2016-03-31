@@ -75,8 +75,7 @@ class HPC:
                                            borrow=True)
 
         # randomly assign all weights between the EC and CA3
-        ec_ca3_weights = np.random.normal(0.5, np.sqrt(0.25), (dims[1], dims[3])) * \
-                         Tools.binomial_f(dims[1], dims[3], self.PP)
+        ec_ca3_weights = np.random.normal(0.5, np.sqrt(0.25), (dims[1], dims[3]))# * Tools.binomial_f(dims[1], dims[3], self.PP)
         self.ec_ca3_weights = theano.shared(name='ec_ca3_weights', value=ec_ca3_weights.astype(theano.config.floatX),
                                             borrow=True)
 
@@ -92,7 +91,7 @@ class HPC:
                                              borrow=True)
 
         # random weight assignment, full connection rate CA3-out
-        ca3_output_weights = np.random.normal(0., np.sqrt(0.25), (dims[3], dims[4]))
+        ca3_output_weights = np.random.normal(0., np.sqrt(0.5), (dims[3], dims[4]))
         self.ca3_out_weights = theano.shared(name='ca3_out_weights',
                                              value=ca3_output_weights.astype(theano.config.floatX), borrow=True)
 
@@ -359,6 +358,10 @@ class HPC:
         self.wire_ca3_out(self.ca3_values.get_value(return_internal_type=True),
                           self.output_values.get_value(return_internal_type=True),
                           self.ca3_out_weights.get_value(return_internal_type=True))
+
+        # DEBUGGING:
+        # self.print_activation_values_sum()
+        # self.print_min_max_weights()
 
     def setup_input(self, input_pattern):
         self.set_input(input_pattern)
