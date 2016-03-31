@@ -70,29 +70,29 @@ class HPC:
                                            borrow=True)
 
         # randomly assign about 25 % of the weights to a random connection weight
-        ec_dg_weights = Tools.binomial_f(dims[1], dims[2], self.PP) * np.random.normal(0.5, 0.25 ** 2, (dims[1], dims[2]))
+        ec_dg_weights = Tools.binomial_f(dims[1], dims[2], self.PP) * np.random.normal(0.5, np.sqrt(0.25), (dims[1], dims[2]))
         self.ec_dg_weights = theano.shared(name='ec_dg_weights', value=ec_dg_weights.astype(theano.config.floatX),
                                            borrow=True)
 
         # randomly assign all weights between the EC and CA3
-        ec_ca3_weights = np.random.normal(0.5, 0.25 ** 2, (dims[1], dims[3])) * \
+        ec_ca3_weights = np.random.normal(0.5, np.sqrt(0.25), (dims[1], dims[3])) * \
                          Tools.binomial_f(dims[1], dims[3], self.PP)
         self.ec_ca3_weights = theano.shared(name='ec_ca3_weights', value=ec_ca3_weights.astype(theano.config.floatX),
                                             borrow=True)
 
         # randomly assign about 4 % of the weights to random connection weights
         dg_ca3_weights = Tools.binomial_f(dims[2], dims[3], self.MF) * \
-                         np.random.normal(0.9, 0.01 ** 2, (dims[2], dims[3]))  # elemwise
+                         np.random.normal(0.9, np.sqrt(0.01), (dims[2], dims[3]))  # elemwise
         self.dg_ca3_weights = theano.shared(name='dg_ca3_weights', value=dg_ca3_weights.astype(theano.config.floatX),
                                             borrow=True)
 
         # randomly assign 100 % of the weights between CA3 and CA3
-        ca3_ca3_weights = np.random.normal(0.5, 0.25 ** 2, (dims[3], dims[3]))
+        ca3_ca3_weights = np.random.normal(0.5, np.sqrt(0.25), (dims[3], dims[3]))
         self.ca3_ca3_weights = theano.shared(name='ca3_ca3_weights', value=ca3_ca3_weights.astype(theano.config.floatX),
                                              borrow=True)
 
         # random weight assignment, full connection rate CA3-out
-        ca3_output_weights = np.random.normal(0., 0.25 ** 2, (dims[3], dims[4]))
+        ca3_output_weights = np.random.normal(0., np.sqrt(0.25), (dims[3], dims[4]))
         self.ca3_out_weights = theano.shared(name='ca3_out_weights',
                                              value=ca3_output_weights.astype(theano.config.floatX), borrow=True)
 
@@ -298,6 +298,8 @@ class HPC:
         # fire EC to DG
         self.fire_ec_dg(self.ec_values.get_value(return_internal_type=True),
                         self.ec_dg_weights.get_value(return_internal_type=True))
+
+        # print "activation values DG before kWTA:", self.dg_values.get_value()
         # kWTA
         self.set_dg_values(
                 self.kWTA(self.dg_values.get_value(return_internal_type=True), self.firing_rate_dg))  # in-memory copy
@@ -326,6 +328,10 @@ class HPC:
         # print "Showing CA3 activation values before kWTA!"
         # Tools.show_image_ca3(self.ca3_values.get_value())
         # kWTA
+        # arr = self.ca3_values.get_value()
+        # arr = np.sort(arr)
+        # print "CA3 min, max before kWTA"
+        # print "min:", arr[0][0], "max:", arr[0][arr.shape[1]-1]
         self.set_ca3_values(
                 self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory copy
         # print "Displaying the CA3-representation after kWTA..."
@@ -389,6 +395,8 @@ class HPC:
                                      self.nu_ca3.get_value(return_internal_type=True),
                                      self.zeta_ca3.get_value(return_internal_type=True))
         # kWTA CA3
+        # print "Showing CA3 activation values before kWTA!"
+        # Tools.show_image_ca3(self.ca3_values.get_value())
         self.set_ca3_values(
                 self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory
 
@@ -417,6 +425,15 @@ class HPC:
                 if not (out_min_2[0][out_y] == out_min_1[0][out_y] == out_now[0][out_y]):
                     found_stable_output = False
                     break
+            # sum_1 = 0
+            # sum_2 = 0
+            # sum_3 = 0
+            # for out_y in range(out_now.shape[1]):
+            #     sum_1 += out_y * out_now[0][out_y]
+            #     sum_2 += out_y * out_min_1[0][out_y]
+            #     sum_3 += out_y * out_min_2[0][out_y]
+            # if sum_1 != sum_2 or sum_1 != sum_3 or sum_2 != sum_3:
+            #     found_stable_output = False
             ctr += 1
         if should_display_image and found_stable_output:
             Tools.show_image_from(out_now=out_now)
@@ -430,6 +447,15 @@ class HPC:
             if values[0][value_index] < 0:
                 new_values[0][value_index] = -1
         return new_values
+
+    def reset_zeta_and_nu_values(self):
+        print "Resetting zeta and nu-values..."
+        ca3_values = self.ca3_values.get_value()
+        nu_ca3 = np.zeros_like(ca3_values, dtype=np.float32)
+        self.nu_ca3 = theano.shared(name='nu_ca3', value=nu_ca3.astype(theano.config.floatX), borrow=True)
+
+        zeta_ca3 = np.zeros_like(ca3_values, dtype=np.float32)
+        self.zeta_ca3 = theano.shared(name='zeta_ca3', value=zeta_ca3.astype(theano.config.floatX), borrow=True)
 
     # ================================================ DEBUG ===============================================
     def print_activation_values_sum(self):

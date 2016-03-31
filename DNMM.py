@@ -19,7 +19,7 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
     # while iter_ctr < 3:
     while not learned_all and iter_ctr < max_training_iterations:
         p_ctr = 0
-        # hpc.neuronal_turnover_dg()
+        hpc.neuronal_turnover_dg()
         for [input_pattern, output_pattern] in patterns:
             setup_start = time.time()
             hpc.setup_pattern(input_pattern, output_pattern)
@@ -37,6 +37,7 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
 
         learned_all = True
         print "Attempting to recall patterns..."
+        # test_hpc.reset_zeta_and_nu_values()
         for pattern_index in range(len(patterns)):
             print "Recalling pattern #", pattern_index
             test_hpc.in_ec_weights = hpc.in_ec_weights
@@ -57,8 +58,8 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
                 if out_values_row[el_index] != cur_p_row[el_index]:
                     learned_all = False
                     print "Patterns are not yet successfully learned. Learning more..."
-                    print "Displaying intermediary result(s)..."
-                    show_image_from(np.asarray([out_values_row], dtype=np.float32))
+                    # print "Displaying intermediary result(s)..."
+                    # show_image_from(np.asarray([out_values_row], dtype=np.float32))
                     # show_image_from(np.asarray([cur_p_row], dtype=np.float32))
                     print "iter:", iter_ctr
                     break

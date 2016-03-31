@@ -30,34 +30,33 @@ for letter_data in data_letters_lowercase:
     uppercase_letter = training_patterns_associative[letter_ctr][0]
     training_patterns_heterogeneous.append([uppercase_letter, lowercase_letter])
 
-for round_num in range(1):
-    for trial in range(1):
-        for train_set_size_ctr in range(3, 4):
-            turnover_rate = 0.50
-            # print "TRIAL #", trial, "turnover rate:", turnover_rate
-            # dims,
-            # connection_rate_input_ec, perforant_path, mossy_fibers,
-            #                  firing_rate_ec, firing_rate_dg, firing_rate_ca3,
-            #                  _gamma, _epsilon, _nu, _turnover_rate, _k_m, _k_r, _a_i, _alpha):
-            hpc = HPC([io_dim, 240, 1600, 480, io_dim],
-                      0.67, 0.25, 0.04,  # connection rates: (in_ec, ec_dg, dg_ca3)
-                      0.10, 0.01, 0.04,  # firing rates: (ec, dg, ca3)
-                      0.7, 100.0, 0.1, turnover_rate,  # gamma, epsilon, nu, turnover rate
-                      0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
+for trial in range(1):
+    for train_set_size_ctr in range(3, 4):
+        turnover_rate = 0.50
+        # print "TRIAL #", trial, "turnover rate:", turnover_rate
+        # dims,
+        # connection_rate_input_ec, perforant_path, mossy_fibers,
+        #                  firing_rate_ec, firing_rate_dg, firing_rate_ca3,
+        #                  _gamma, _epsilon, _nu, _turnover_rate, _k_m, _k_r, _a_i, _alpha):
+        hpc = HPC([io_dim, 240, 1600, 480, io_dim],
+                  0.67, 0.25, 0.04,  # connection rates: (in_ec, ec_dg, dg_ca3)
+                  0.10, 0.01, 0.04,  # firing rates: (ec, dg, ca3)
+                  0.7, 100.0, 0.1, turnover_rate,  # gamma, epsilon, nu, turnover rate
+                  0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
 
-            hipp_chaotic_pats, _ = experiment_4_x_1(hpc, train_set_size_ctr, training_patterns_associative)
-            Tools.save_experiment_4_1_results(hpc, hipp_chaotic_pats, "train_set_size_"+str(train_set_size_ctr)+"_exp_1"+
-                                              "turnover_rate_" + str(turnover_rate))
+        hipp_chaotic_pats, _ = experiment_4_x_1(hpc, train_set_size_ctr, training_patterns_associative)
+        Tools.save_experiment_4_1_results(hpc, hipp_chaotic_pats, "train_set_size_"+str(train_set_size_ctr)+"_exp_1"+
+                                          "turnover_rate_" + str(turnover_rate))
 
-            # ann = SimpleNeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
+        # ann = SimpleNeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
 
-            # print "Starting experiment 4_2..."
-            # This also saves the experiment_4_x_1 results!
-            # information_vector = experiment_4_x_2(hpc, ann, train_set_size_ctr,
-            #                                       training_patterns_associative[:5 * train_set_size_ctr])
-            # print "Saving the results."
-            # Tools.save_experiment_4_2_results(information_vector, "train_set_size_" + str(train_set_size_ctr) +
-            #                                   "_exp_2_")
+        # print "Starting experiment 4_2..."
+        # This also saves the experiment_4_x_1 results!
+        # information_vector = experiment_4_x_2(hpc, ann, train_set_size_ctr,
+        #                                       training_patterns_associative[:5 * train_set_size_ctr])
+        # print "Saving the results."
+        # Tools.save_experiment_4_2_results(information_vector, "train_set_size_" + str(train_set_size_ctr) +
+        #                                   "_exp_2_")
 
-            # For now, this is the ONLY place where the counter is incremented.
-            Tools.increment_experiment_counter()
+        # For now, this is the ONLY place where the counter is incremented.
+        Tools.increment_experiment_counter()
