@@ -16,7 +16,7 @@ theano.config.floatX = 'float32'
 class HPC:
     def __init__(self, dims, connection_rate_input_ec, perforant_path, mossy_fibers,
                  firing_rate_ec, firing_rate_dg, firing_rate_ca3,
-                 _gamma, _epsilon, _nu, _turnover_rate, _k_m, _k_r, _a_i, _alpha):
+                 _gamma, _epsilon, _nu, _turnover_rate, _k_m, _k_r, _a_i, _alpha, weighting_dg):
 
         # =================== PARAMETERS ====================
         self.dims = dims  # numbers of neurons in the different layers
@@ -37,6 +37,7 @@ class HPC:
         self._k_m = _k_m
         self._k_r = _k_r
         self._alpha = _alpha
+        self._weighting_dg = weighting_dg
 
         # ============== ACTIVATION VALUES ==================
         input_values = np.zeros((1, dims[0]), dtype=np.float32)
@@ -137,7 +138,7 @@ class HPC:
         c_zeta_ca3 = T.fmatrix()
 
         # ca3_input_sum = c_ec_vals.dot(c_ec_ca3_Ws) + c_dg_vals.dot(c_dg_ca3_Ws) + c_ca3_vals.dot(c_ca3_ca3_Ws)
-        ca3_input_sum = c_ec_vals.dot(c_ec_ca3_Ws) + 25 * c_dg_vals.dot(c_dg_ca3_Ws) + c_ca3_vals.dot(c_ca3_ca3_Ws)
+        ca3_input_sum = c_ec_vals.dot(c_ec_ca3_Ws) + self._weighting_dg * c_dg_vals.dot(c_dg_ca3_Ws) + c_ca3_vals.dot(c_ca3_ca3_Ws)
         nu_ca3 = self._k_m * c_nu_ca3 + ca3_input_sum
         zeta_ca3 = self._k_r * c_zeta_ca3 - self._alpha * c_ca3_vals + self._a_i
         next_activation_values_ca3 = T.tanh((nu_ca3 + zeta_ca3) / self._epsilon)

@@ -10,7 +10,7 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
           hpc.connection_rate_input_ec, hpc.PP, hpc.MF,  # connection rates: (in_ec, ec_dg, dg_ca3)
           hpc.firing_rate_ec, hpc.firing_rate_dg, hpc.firing_rate_ca3,  # firing rates: (ec, dg, ca3)
           hpc._gamma, hpc._epsilon, hpc._nu, hpc._turnover_rate,  # gamma, epsilon, nu, turnover rate
-          hpc._k_m, hpc._k_r, hpc._a_i.get_value()[0][0], hpc._alpha)  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
+          hpc._k_m, hpc._k_r, hpc._a_i.get_value()[0][0], hpc._alpha, hpc._weighting_dg)  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
 
     print "Commencing learning of", len(patterns), "I/O patterns."
     time_start_overall = time.time()
