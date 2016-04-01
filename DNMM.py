@@ -20,6 +20,7 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
     while not learned_all and iter_ctr < max_training_iterations:
         p_ctr = 0
         hpc.neuronal_turnover_dg()
+        hpc.re_wire_fixed_input_to_ec_weights()
         for [input_pattern, output_pattern] in patterns:
             setup_start = time.time()
             hpc.setup_pattern(input_pattern, output_pattern)
