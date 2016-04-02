@@ -457,10 +457,14 @@ class HPC:
         print "Resetting zeta and nu-values..."
         ca3_values = self.ca3_values.get_value()
         nu_ca3 = np.zeros_like(ca3_values, dtype=np.float32)
-        self.nu_ca3 = theano.shared(name='nu_ca3', value=nu_ca3.astype(theano.config.floatX), borrow=True)
-
         zeta_ca3 = np.zeros_like(ca3_values, dtype=np.float32)
-        self.zeta_ca3 = theano.shared(name='zeta_ca3', value=zeta_ca3.astype(theano.config.floatX), borrow=True)
+
+        new_values = T.fmatrix()
+        update_nu_ca3 = theano.function([new_values], updates=[(self.nu_ca3, new_values)])
+        update_zeta_ca3 = theano.function([new_values], updates=[(self.zeta_ca3, new_values)])
+
+        update_nu_ca3(nu_ca3)
+        update_zeta_ca3(zeta_ca3)
 
     def reset_hpc_module(self):
         dims = self.dims
@@ -496,6 +500,8 @@ class HPC:
         update_dg_ca3_Ws(dg_ca3_weights)
         update_ca3_ca3_Ws(ca3_ca3_weights)
         update_ca3_out_Ws(ca3_output_weights)
+
+        self.reset_zeta_and_nu_values()
 
     # ================================================ DEBUG ===============================================
     def print_activation_values_sum(self):
