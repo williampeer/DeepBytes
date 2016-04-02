@@ -7,7 +7,7 @@
 
 # API
 
-HPC - constructor:
+HPC-constructor:
 
 - dims: number of neurons in the input-layer, ec-layer, dg-layer, ca3-layer, and output-layer
 - connection_rate_input_ec: self-explanatory
