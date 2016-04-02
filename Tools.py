@@ -118,7 +118,16 @@ def save_experiment_4_1_results(hpc, chaotically_recalled_patterns, custom_name)
     # cPickle.dump(hpc, hpc_f, protocol=cPickle.HIGHEST_PROTOCOL)
     # hpc_f.close()
 
-    save_images_from(chaotically_recalled_patterns, experiment_dir+'/images'+custom_name)
+    # save HPC-info; write to file
+    hpc_info_string = "epsilon: "+str(hpc._epsilon) + '\n' + \
+                      "dg weighting: "+str(hpc._weighting_dg) + '\n' + \
+                      "neuronal turnover ratio: "+str(hpc._turnover_rate) + \
+                      "custom name: " + custom_name
+    hpc_info_f = file(experiment_dir+'/hpc_info.txt', 'wb')
+    hpc_info_f.write(hpc_info_string)
+    hpc_info_f.close()
+
+    save_images_from(chaotically_recalled_patterns, experiment_dir+'/images')
 
     # f2 = file(experiment_dir+'/_chaotically_recalled_patterns.save', 'wb')
     # cPickle.dump(chaotically_recalled_patterns, f2, protocol=cPickle.HIGHEST_PROTOCOL)
