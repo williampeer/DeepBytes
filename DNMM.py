@@ -70,6 +70,8 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
 
     print "Terminated learning", len(patterns), "pattern-associations in ", iter_ctr, "iterations, which took" "{:8.3f}". \
         format(time_stop_overall-time_start_overall), "seconds."
+    Tools.append_line_to_log("Convergence after " + str(iter_ctr) + " iterations. Turnover: " +
+                                 str(hpc._turnover_rate) + ". DG-weighting: " + str(hpc._weighting_dg))
 
 
 def hpc_chaotic_recall_wrapper(hpc, display_images_of_stable_output, recall_iterations):
@@ -94,8 +96,6 @@ def hpc_chaotic_recall_wrapper(hpc, display_images_of_stable_output, recall_iter
 
         print "Propagation time until stability:", "{:6.3f}".format(prop_time_until_stable), "seconds."
         print "t =", cur_iters
-        Tools.append_line_to_log("Convergence after " + str(cur_iters) + " iterations. Turnover: " +
-                                 str(hpc._turnover_rate) + ". DG-weighting: " + str(hpc._weighting_dg))
         time_before = time.time()
     print "Total chaotic recall time:", "{:6.3f}".format(time.time()-time_the_beginning_of_time), "seconds."
     return [hpc_extracted_pseudopatterns, random_input]

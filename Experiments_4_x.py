@@ -54,6 +54,8 @@ def training_and_recall_hpc_helper(hpc, training_set_size, train_set_num, origin
     t3 = time.time()
     print "Set size for hippocampal_chaotic_recall_patterns:", len(hippocampal_chaotic_recall_patterns)
     print "Chaotic recall completed in", "{:8.3f}".format(t3-t2), "seconds, for t=300."
+    Tools.append_line_to_log("Recalled " + str(len(hippocampal_chaotic_recall_patterns)) +
+                             " distinct patterns by chaotic recall.")
 
     # Use this to debug the current model:
     # learned_ctr = 0

@@ -178,13 +178,15 @@ def get_experiment_dir():
 
 def append_line_to_log(line):
     log_path = 'saved_data/log.txt'
-    log_f = file(log_path, 'wb')
     file_contents = ""
 
     if os.path.exists(log_path):
+        log_f = file(log_path, 'rb')
         file_contents = log_f.read()
+        log_f.close()
 
     file_contents += line + '\n'
 
-    cPickle.dump(file_contents, log_f)
+    log_f = file(log_path, 'wb')
+    log_f.write(file_contents)
     log_f.close()

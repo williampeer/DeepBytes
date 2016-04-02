@@ -1,17 +1,23 @@
 from HPC import *
 from Tools import save_images_from
 import cPickle
+import time
 
 io_dim = 49
 
 hpc = HPC([io_dim, 240, 1600, 480, io_dim],
           0.67, 0.25, 0.04,  # connection rates: (in_ec, ec_dg, dg_ca3)
           0.10, 0.01, 0.04,  # firing rates: (ec, dg, ca3)
-          0.7, 1, 0.1, 0.5,  # gamma, epsilon, nu, turnover rate
-          0.10, 0.95, 0.8, 2.0)  # k_m, k_r, a_i, alpha
+          0.7, 100, 0.1, 0.5,  # gamma, epsilon, nu, turnover rate
+          0.10, 0.95, 0.8, 2.0, 3)  # k_m, k_r, a_i, alpha
 
 I = np.asarray([[1, -1, 1, -1, 1, -1, 1] * 7], dtype=np.float32)
-save_images_from([I])
+
+t1 = time.time()
+hpc.recall_until_stability_criteria(False, 300)
+t2 = time.time()
+
+print "Time:", str(t2-t1)
 
 
 # test_vals = np.random.random((1, 100)).astype(np.float32)
