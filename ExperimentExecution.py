@@ -43,8 +43,8 @@ hpc = HPC([io_dim, 240, 1600, 480, io_dim],
           0.7, 100.0, 0.1, turnover_rate,  # gamma, epsilon, nu, turnover rate
           0.10, 0.95, 0.8, 2.0, weighting_dg)  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
 
-for trial in range(25):
-    for three_trials in range(3):
+for trial in range(1, 25):
+    for three_trials in range(2):
         hpc.reset_hpc_module()
         hpc._weighting_dg = trial
         for train_set_size_ctr in range(3, 4):
