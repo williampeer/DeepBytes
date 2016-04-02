@@ -413,7 +413,7 @@ class HPC:
 
     def recall_until_stability_criteria(self, should_display_image, max_iterations):
         # recall until output unchanged three iterations
-        self.re_wire_fixed_input_to_ec_weights()
+        # self.re_wire_fixed_input_to_ec_weights()
         out_now = np.copy(self.output_values.get_value(borrow=False))
         out_min_1 = np.zeros_like(out_now, dtype=np.float32)
         found_stable_output = False
@@ -466,34 +466,35 @@ class HPC:
         dims = self.dims
         # ============== WEIGHT MATRICES ===================
         input_ec_weights = Tools.binomial_f(dims[0], dims[1], self.connection_rate_input_ec)
-        self.in_ec_weights = theano.shared(name='in_ec_weights', value=input_ec_weights.astype(theano.config.floatX),
-                                           borrow=True)
+        self.update_input_ec_weights(input_ec_weights)
 
         # randomly assign about 25 % of the weights to a random connection weight
-        ec_dg_weights = Tools.binomial_f(dims[1], dims[2], self.PP) * np.random.normal(0.5, np.sqrt(0.25), (dims[1], dims[2]))
-        self.ec_dg_weights = theano.shared(name='ec_dg_weights', value=ec_dg_weights.astype(theano.config.floatX),
-                                           borrow=True)
-
-        # randomly assign all weights between the EC and CA3
-        ec_ca3_weights = np.random.normal(0.5, np.sqrt(0.25), (dims[1], dims[3]))# * Tools.binomial_f(dims[1], dims[3], self.PP)
-        self.ec_ca3_weights = theano.shared(name='ec_ca3_weights', value=ec_ca3_weights.astype(theano.config.floatX),
-                                            borrow=True)
+        ec_dg_weights = Tools.binomial_f(dims[1], dims[2], self.PP) * np.random.normal(0.5, 0.5, (dims[1], dims[2]))
 
         # randomly assign about 4 % of the weights to random connection weights
         dg_ca3_weights = Tools.binomial_f(dims[2], dims[3], self.MF) * \
                          np.random.normal(0.9, np.sqrt(0.01), (dims[2], dims[3]))  # elemwise
-        self.dg_ca3_weights = theano.shared(name='dg_ca3_weights', value=dg_ca3_weights.astype(theano.config.floatX),
-                                            borrow=True)
 
         # randomly assign 100 % of the weights between CA3 and CA3
         ca3_ca3_weights = np.random.normal(0.5, np.sqrt(0.25), (dims[3], dims[3]))
-        self.ca3_ca3_weights = theano.shared(name='ca3_ca3_weights', value=ca3_ca3_weights.astype(theano.config.floatX),
-                                             borrow=True)
 
         # random weight assignment, full connection rate CA3-out
         ca3_output_weights = np.random.normal(0., np.sqrt(0.5), (dims[3], dims[4]))
-        self.ca3_out_weights = theano.shared(name='ca3_out_weights',
-                                             value=ca3_output_weights.astype(theano.config.floatX), borrow=True)
+
+        new_Ws = T.fmatrix("new_Ws")
+        update_ec_dg_Ws = theano.function([new_Ws], updates=(self.ec_dg_weights, new_Ws))
+        update_ec_ca3_Ws = theano.function([new_Ws], updates=(self.ec_ca3_weights, new_Ws))
+        update_dg_ca3_Ws = theano.function([new_Ws], updates=(self.dg_ca3_weights, new_Ws))
+        update_ca3_ca3_Ws = theano.function([new_Ws], updates=(self.ca3_ca3_weights, new_Ws))
+        update_ca3_out_Ws = theano.function([new_Ws], updates=(self.ca3_out_weights, new_Ws))
+
+        # randomly assign all weights between the EC and CA3
+        ec_ca3_weights = np.random.normal(0.5, np.sqrt(0.25), (dims[1], dims[3]))
+        update_ec_dg_Ws(ec_dg_weights)
+        update_ec_ca3_Ws(ec_ca3_weights)
+        update_dg_ca3_Ws(dg_ca3_weights)
+        update_ca3_ca3_Ws(ca3_ca3_weights)
+        update_ca3_out_Ws(ca3_output_weights)
 
     # ================================================ DEBUG ===============================================
     def print_activation_values_sum(self):
