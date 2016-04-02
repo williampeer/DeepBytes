@@ -9,6 +9,8 @@ import Tools
 
 io_dim = 49
 
+current_dg_weighting = Tools.get_experiment_counter()
+
 training_patterns_associative = []
 # Setup all training patterns:
 for letter_data in data_letters_capital:
@@ -31,7 +33,7 @@ for letter_data in data_letters_lowercase:
     training_patterns_heterogeneous.append([uppercase_letter, lowercase_letter])
 
 turnover_rate = 0.50
-weighting_dg = 25
+weighting_dg = current_dg_weighting % 25
 # print "TRIAL #", trial, "turnover rate:", turnover_rate
 # dims,
 # connection_rate_input_ec, perforant_path, mossy_fibers,
@@ -43,26 +45,24 @@ hpc = HPC([io_dim, 240, 1600, 480, io_dim],
           0.7, 100.0, 0.1, turnover_rate,  # gamma, epsilon, nu, turnover rate
           0.10, 0.95, 0.8, 2.0, weighting_dg)  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
 
-for trial in range(1, 25):
-    for three_trials in range(2):
-        hpc.reset_hpc_module()
-        hpc._weighting_dg = trial
-        for train_set_size_ctr in range(3, 4):
+for three_trials in range(3):
+    hpc.reset_hpc_module()
+    for train_set_size_ctr in range(3, 4):
 
-            hipp_chaotic_pats, _ = experiment_4_x_1(hpc, train_set_size_ctr, training_patterns_associative)
-            Tools.save_experiment_4_1_results(hpc, hipp_chaotic_pats, "train_set_size_"+str(train_set_size_ctr)+"_exp_1"+
-                                              "turnover_rate_" + str(turnover_rate) +
-                                              "weighting_" + str(hpc._weighting_dg))
+        hipp_chaotic_pats, _ = experiment_4_x_1(hpc, train_set_size_ctr, training_patterns_associative)
+        Tools.save_experiment_4_1_results(hpc, hipp_chaotic_pats, "train_set_size_"+str(train_set_size_ctr)+"_exp_1"+
+                                          "turnover_rate_" + str(turnover_rate) +
+                                          "weighting_" + str(hpc._weighting_dg))
 
-            # ann = SimpleNeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
+        # ann = SimpleNeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
 
-            # print "Starting experiment 4_2..."
-            # This also saves the experiment_4_x_1 results!
-            # information_vector = experiment_4_x_2(hpc, ann, train_set_size_ctr,
-            #                                       training_patterns_associative[:5 * train_set_size_ctr])
-            # print "Saving the results."
-            # Tools.save_experiment_4_2_results(information_vector, "train_set_size_" + str(train_set_size_ctr) +
-            #                                   "_exp_2_")
+        # print "Starting experiment 4_2..."
+        # This also saves the experiment_4_x_1 results!
+        # information_vector = experiment_4_x_2(hpc, ann, train_set_size_ctr,
+        #                                       training_patterns_associative[:5 * train_set_size_ctr])
+        # print "Saving the results."
+        # Tools.save_experiment_4_2_results(information_vector, "train_set_size_" + str(train_set_size_ctr) +
+        #                                   "_exp_2_")
 
-            # For now, this is the ONLY place where the counter is incremented.
-            Tools.increment_experiment_counter()
+        # For now, this is the ONLY place where the counter is incremented.
+        Tools.increment_experiment_counter()

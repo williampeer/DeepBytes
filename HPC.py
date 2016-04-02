@@ -413,7 +413,7 @@ class HPC:
 
     def recall_until_stability_criteria(self, should_display_image, max_iterations):
         # recall until output unchanged three iterations
-        out_now = np.copy(self.output_values.get_value(borrow=False))
+        out_now = np.copy(self.output_values.get_value())
         out_min_1 = np.zeros_like(out_now, dtype=np.float32)
         found_stable_output = False
         ctr = 0
@@ -423,21 +423,12 @@ class HPC:
 
             # Attempt to set a random input for every iteration:
             self.recall()
-            out_now = np.copy(self.output_values.get_value(borrow=False))
+            out_now = np.copy(self.output_values.get_value())
             found_stable_output = True
             for out_y in xrange(out_now.shape[1]):
                 if not (out_min_2[0][out_y] == out_min_1[0][out_y] == out_now[0][out_y]):
                     found_stable_output = False
                     break
-            # sum_1 = 0
-            # sum_2 = 0
-            # sum_3 = 0
-            # for out_y in range(out_now.shape[1]):
-            #     sum_1 += out_y * out_now[0][out_y]
-            #     sum_2 += out_y * out_min_1[0][out_y]
-            #     sum_3 += out_y * out_min_2[0][out_y]
-            # if sum_1 != sum_2 or sum_1 != sum_3 or sum_2 != sum_3:
-            #     found_stable_output = False
             ctr += 1
         if should_display_image and found_stable_output:
             Tools.show_image_from(out_now=out_now)
