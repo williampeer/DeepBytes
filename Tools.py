@@ -122,6 +122,7 @@ def save_experiment_4_1_results(hpc, chaotically_recalled_patterns, custom_name)
     hpc_info_string = "epsilon: "+str(hpc._epsilon) + '\n' + \
                       "dg weighting: "+str(hpc._weighting_dg) + '\n' + \
                       "neuronal turnover ratio: "+str(hpc._turnover_rate) + '\n' + \
+                      "number of distinct extracted patterns: " + str(len(chaotically_recalled_patterns)) + \
                       "custom name: " + custom_name
     hpc_info_f = file(experiment_dir+'/hpc_info.txt', 'wb')
     hpc_info_f.write(hpc_info_string)
