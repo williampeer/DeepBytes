@@ -1,6 +1,6 @@
 import time
 import numpy as np
-from Tools import binomial_f, uniform_f, show_image_from
+import Tools
 from HPC import HPC
 
 
@@ -16,11 +16,9 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
     time_start_overall = time.time()
     iter_ctr = 0
     learned_all = False
-    # while iter_ctr < 3:
     while not learned_all and iter_ctr < max_training_iterations:
         p_ctr = 0
         hpc.neuronal_turnover_dg()
-        # hpc.re_wire_fixed_input_to_ec_weights()
         for [input_pattern, output_pattern] in patterns:
             setup_start = time.time()
             hpc.setup_pattern(input_pattern, output_pattern)
@@ -78,7 +76,7 @@ def hpc_chaotic_recall_wrapper(hpc, display_images_of_stable_output, recall_iter
     time_the_beginning_of_time = time.time()
     time_before = time.time()
     cur_iters = 0
-    random_input = 2 * binomial_f(1, hpc.dims[0], 0.5) - np.ones_like(hpc.input_values, dtype=np.float32)
+    random_input = 2 * Tools.binomial_f(1, hpc.dims[0], 0.5) - np.ones_like(hpc.input_values, dtype=np.float32)
     hpc.setup_input(random_input)
     hpc_extracted_pseudopatterns = []
     while cur_iters < recall_iterations:
@@ -88,12 +86,16 @@ def hpc_chaotic_recall_wrapper(hpc, display_images_of_stable_output, recall_iter
 
         if found_stable_output:
             hpc_extracted_pseudopatterns.append(output)
+            random_input = 2 * Tools.binomial_f(1, hpc.dims[0], 0.5) - np.ones_like(hpc.input_values, dtype=np.float32)
+            hpc.setup_input(random_input)
 
         time_after = time.time()
         prop_time_until_stable = time_after - time_before
 
         print "Propagation time until stability:", "{:6.3f}".format(prop_time_until_stable), "seconds."
         print "t =", cur_iters
+        Tools.append_line_to_log("Convergence after " + str(cur_iters) + " iterations. Turnover: " +
+                                 str(hpc._turnover_rate) + ". DG-weighting: " + str(hpc._weighting_dg))
         time_before = time.time()
     print "Total chaotic recall time:", "{:6.3f}".format(time.time()-time_the_beginning_of_time), "seconds."
     return [hpc_extracted_pseudopatterns, random_input]
@@ -106,7 +108,7 @@ def generate_pseudopattern_II_hpc_outputs(dim, hpc_extracted_pseudopatterns, rev
     while pseudopattern_ctr < set_size:
         pattern = hpc_extracted_pseudopatterns[pseudopattern_ctr % extracted_set_size]
         # q=1-p because we're flipping the sign of the ones that are not flipped.
-        reverse_vector = binomial_f(1, dim, (1-reverse_P))
+        reverse_vector = Tools.binomial_f(1, dim, (1-reverse_P))
         reverse_vector = reverse_vector * 2 - np.ones_like(reverse_vector)
         pseudopatterns_II.append(pattern * reverse_vector)
         pseudopattern_ctr += 1

@@ -413,7 +413,6 @@ class HPC:
 
     def recall_until_stability_criteria(self, should_display_image, max_iterations):
         # recall until output unchanged three iterations
-        # self.re_wire_fixed_input_to_ec_weights()
         out_now = np.copy(self.output_values.get_value(borrow=False))
         out_min_1 = np.zeros_like(out_now, dtype=np.float32)
         found_stable_output = False
