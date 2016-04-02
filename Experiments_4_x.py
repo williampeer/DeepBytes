@@ -30,21 +30,23 @@ def training_and_recall_hpc_helper(hpc, training_set_size, train_set_num, origin
     training_set = original_training_patterns[training_set_size * train_set_num : training_set_size +
                                                                            train_set_num*training_set_size]
 
-    print "Performing neuronal turnover in DG for", hpc._turnover_rate * 100, "% of the neurons.."
-    t0 = time.time()
-    hpc.neuronal_turnover_dg()
-    t1 = time.time()
-    print "Neuronal turnover completed in", "{:7.3f}".format(t1-t0), "seconds."
+    # print "Performing neuronal turnover in DG for", hpc._turnover_rate * 100, "% of the neurons.."
+    # t0 = time.time()
+    # hpc.neuronal_turnover_dg()
+    # t1 = time.time()
+    # print "Neuronal turnover completed in", "{:7.3f}".format(t1-t0), "seconds."
+    # hpc.re_wire_fixed_input_to_ec_weights()
     print "Learning patterns in training set..."
-    hpc.re_wire_fixed_input_to_ec_weights()
-    hpc_learn_patterns_wrapper(hpc, patterns=training_set, max_training_iterations=10)  # when training is fixed,
+    hpc_learn_patterns_wrapper(hpc, patterns=training_set, max_training_iterations=30)  # when training is fixed,
     # convergence should occur after one or two iterations?
 
     # extract by chaotic recall:
-    print "Recalling patterns for 300 time-steps by chaotic recall..."
+    chaotic_recall_iters = 300
+    print "Recalling patterns for", chaotic_recall_iters, "time-steps by chaotic recall..."
     t2 = time.time()
+    # hpc.reset_zeta_and_nu_values()
     [patterns_extracted_for_current_set, random_in] = \
-        hpc_chaotic_recall_wrapper(hpc, display_images_of_stable_output=False, recall_iterations=300)
+        hpc_chaotic_recall_wrapper(hpc, display_images_of_stable_output=False, recall_iterations=chaotic_recall_iters)
     for pat in patterns_extracted_for_current_set:
         if not set_contains_pattern(hippocampal_chaotic_recall_patterns, pat):
             hippocampal_chaotic_recall_patterns.append(pat)  # append unique pattern
@@ -52,6 +54,8 @@ def training_and_recall_hpc_helper(hpc, training_set_size, train_set_num, origin
     t3 = time.time()
     print "Set size for hippocampal_chaotic_recall_patterns:", len(hippocampal_chaotic_recall_patterns)
     print "Chaotic recall completed in", "{:8.3f}".format(t3-t2), "seconds, for t=300."
+    Tools.append_line_to_log("Recalled " + str(len(hippocampal_chaotic_recall_patterns)) +
+                             " distinct patterns by chaotic recall.")
 
     # Use this to debug the current model:
     # learned_ctr = 0

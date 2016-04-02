@@ -60,6 +60,21 @@ def create_image_helper(in_values):
     return im
 
 
+def show_image_ca3(in_values):
+    pattern = np.asarray(in_values, dtype=np.float32)
+    width = 24
+    height = 20
+    pixel_scaling_factor = 2 ** 3
+    im = Image.new('1', (width*pixel_scaling_factor, height*pixel_scaling_factor))
+    for element in range(pattern.shape[1]):
+        for i in range(pixel_scaling_factor):
+            for j in range(pixel_scaling_factor):
+                im.putpixel(((element % width)*pixel_scaling_factor + j,
+                             np.floor(element/width).astype(np.int8) * pixel_scaling_factor + i),
+                            pattern[0][element] * 255)
+    im.show()
+
+
 shared_random_generator = RandomStreams()
 
 x_r = T.iscalar()
@@ -77,8 +92,8 @@ random_f = theano.function([rows, columns], outputs=shared_random_generator.rand
     size=(rows, columns), low=0, high=10000, dtype='float32')/10000.)
 
 
-def set_contains_pattern(set, pattern):
-    for pat in set:
+def set_contains_pattern(patterns_set, pattern):
+    for pat in patterns_set:
         if get_pattern_correlation(pat, pattern) == 1:
             return True
     return False
@@ -88,11 +103,11 @@ pat2 = T.fmatrix()
 get_pattern_correlation = theano.function([pat1, pat2], outputs=T.sum(pat1 * pat2)/(pat1.shape[0] * pat1.shape[1]))
 
 
-def get_pattern_correlation_slow(pat1, pat2):
+def get_pattern_correlation_slow(pattern_1, pattern_2):
     corr = 0
-    for row_ind in range(len(pat1)):
-        for col_ind in range(len(pat1[0])):
-            corr += pat1[row_ind][col_ind] * pat2[row_ind][col_ind]
+    for row_ind in range(len(pattern_1)):
+        for col_ind in range(len(pattern_1[0])):
+            corr += pattern_1[row_ind][col_ind] * pattern_2[row_ind][col_ind]
     return corr
 
 
@@ -159,3 +174,19 @@ def get_experiment_dir():
         print "Info.: OS path already exists."
 
     return experiment_dir
+
+
+def append_line_to_log(line):
+    log_path = 'saved_data/log.txt'
+    file_contents = ""
+
+    if os.path.exists(log_path):
+        log_f = file(log_path, 'rb')
+        file_contents = log_f.read()
+        log_f.close()
+
+    file_contents += line + '\n'
+
+    log_f = file(log_path, 'wb')
+    log_f.write(file_contents)
+    log_f.close()
