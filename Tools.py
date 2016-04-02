@@ -114,15 +114,15 @@ def get_pattern_correlation_slow(pattern_1, pattern_2):
 def save_experiment_4_1_results(hpc, chaotically_recalled_patterns, custom_name):
     experiment_dir = get_experiment_dir()
 
-    hpc_f = file(experiment_dir+'/hpc_'+custom_name+'.save', 'wb')
-    cPickle.dump(hpc, hpc_f, protocol=cPickle.HIGHEST_PROTOCOL)
-    hpc_f.close()
+    # hpc_f = file(experiment_dir+'/hpc_'+custom_name+'.save', 'wb')
+    # cPickle.dump(hpc, hpc_f, protocol=cPickle.HIGHEST_PROTOCOL)
+    # hpc_f.close()
 
-    save_images_from(chaotically_recalled_patterns, experiment_dir+'/images')
+    save_images_from(chaotically_recalled_patterns, experiment_dir+'/images'+custom_name)
 
-    f2 = file(experiment_dir+'/_chaotically_recalled_patterns.save', 'wb')
-    cPickle.dump(chaotically_recalled_patterns, f2, protocol=cPickle.HIGHEST_PROTOCOL)
-    f2.close()
+    # f2 = file(experiment_dir+'/_chaotically_recalled_patterns.save', 'wb')
+    # cPickle.dump(chaotically_recalled_patterns, f2, protocol=cPickle.HIGHEST_PROTOCOL)
+    # f2.close()
 
 
 def save_experiment_4_2_results(information_vector, custom_name):

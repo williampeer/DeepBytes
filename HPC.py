@@ -71,28 +71,28 @@ class HPC:
                                            borrow=True)
 
         # randomly assign about 25 % of the weights to a random connection weight
-        ec_dg_weights = Tools.binomial_f(dims[1], dims[2], self.PP) * np.random.normal(0.5, np.sqrt(0.25), (dims[1], dims[2]))
+        ec_dg_weights = Tools.binomial_f(dims[1], dims[2], self.PP) * np.random.normal(0.5, np.sqrt(0.25), (dims[1], dims[2])).astype(np.float32)
         self.ec_dg_weights = theano.shared(name='ec_dg_weights', value=ec_dg_weights.astype(theano.config.floatX),
                                            borrow=True)
 
         # randomly assign all weights between the EC and CA3
-        ec_ca3_weights = np.random.normal(0.5, np.sqrt(0.25), (dims[1], dims[3]))# * Tools.binomial_f(dims[1], dims[3], self.PP)
+        ec_ca3_weights = np.random.normal(0.5, np.sqrt(0.25), (dims[1], dims[3])).astype(np.float32)# * Tools.binomial_f(dims[1], dims[3], self.PP)
         self.ec_ca3_weights = theano.shared(name='ec_ca3_weights', value=ec_ca3_weights.astype(theano.config.floatX),
                                             borrow=True)
 
         # randomly assign about 4 % of the weights to random connection weights
         dg_ca3_weights = Tools.binomial_f(dims[2], dims[3], self.MF) * \
-                         np.random.normal(0.9, np.sqrt(0.01), (dims[2], dims[3]))  # elemwise
+                         np.random.normal(0.9, np.sqrt(0.01), (dims[2], dims[3])).astype(np.float32)  # elemwise
         self.dg_ca3_weights = theano.shared(name='dg_ca3_weights', value=dg_ca3_weights.astype(theano.config.floatX),
                                             borrow=True)
 
         # randomly assign 100 % of the weights between CA3 and CA3
-        ca3_ca3_weights = np.random.normal(0.5, np.sqrt(0.25), (dims[3], dims[3]))
+        ca3_ca3_weights = np.random.normal(0.5, np.sqrt(0.25), (dims[3], dims[3])).astype(np.float32)
         self.ca3_ca3_weights = theano.shared(name='ca3_ca3_weights', value=ca3_ca3_weights.astype(theano.config.floatX),
                                              borrow=True)
 
         # random weight assignment, full connection rate CA3-out
-        ca3_output_weights = np.random.normal(0., np.sqrt(0.5), (dims[3], dims[4]))
+        ca3_output_weights = np.random.normal(0., np.sqrt(0.5), (dims[3], dims[4])).astype(np.float32)
         self.ca3_out_weights = theano.shared(name='ca3_out_weights',
                                              value=ca3_output_weights.astype(theano.config.floatX), borrow=True)
 
