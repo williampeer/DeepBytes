@@ -7,10 +7,10 @@ def reset_counters():
     cPickle.dump(ctr, ctr_f, protocol=cPickle.HIGHEST_PROTOCOL)
     ctr_f.close()
 
-    # info_ctr = 0
-    # info_f = file('information-ctr.save', 'wb')
-    # cPickle.dump(info_ctr, info_f, protocol=cPickle.HIGHEST_PROTOCOL)
-    # info_f.close()
+    param_ctr = 0
+    param_ctr_f = file('parameter_ctr.save', 'wb')
+    cPickle.dump(param_ctr, param_ctr_f, protocol=cPickle.HIGHEST_PROTOCOL)
+    param_ctr_f.close()
 
     # img_ctr = 0
     # img_f = file('image-ctr.save', 'wb')

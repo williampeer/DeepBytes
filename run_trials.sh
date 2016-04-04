@@ -1,6 +1,6 @@
 COUNTER=0
-while [  $COUNTER -lt 250 ]; do
-	echo Run \# $COUNTER
+while [  $COUNTER -lt 10 ]; do
+	echo Run \#$COUNTER
 	echo theano-cache clear
 	theano-cache clear
 	echo python ExperimentExecution.py

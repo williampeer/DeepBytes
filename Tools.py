@@ -163,6 +163,16 @@ def get_experiment_counter():
     return experiment_ctr
 
 
+def get_parameter_counter():
+    param_ctr_f = file('saved_data/parameter_ctr.save', 'rb')
+    param_ctr = cPickle.load(param_ctr_f)
+    param_ctr_f.close()
+
+    increment_param_counter()
+
+    return param_ctr
+
+
 def increment_experiment_counter():
     experiment_ctr_f = file('saved_data/ctr.save', 'rb')
     experiment_ctr = cPickle.load(experiment_ctr_f)
@@ -171,6 +181,18 @@ def increment_experiment_counter():
     experiment_ctr += 1
 
     experiment_ctr_f = file('saved_data/ctr.save', 'wb')
+    cPickle.dump(experiment_ctr, experiment_ctr_f, protocol=cPickle.HIGHEST_PROTOCOL)
+    experiment_ctr_f.close()
+
+
+def increment_param_counter():
+    experiment_ctr_f = file('saved_data/parameter_ctr.save', 'rb')
+    experiment_ctr = cPickle.load(experiment_ctr_f)
+    experiment_ctr_f.close()
+
+    experiment_ctr += 1
+
+    experiment_ctr_f = file('saved_data/parameter_ctr.save', 'wb')
     cPickle.dump(experiment_ctr, experiment_ctr_f, protocol=cPickle.HIGHEST_PROTOCOL)
     experiment_ctr_f.close()
 
