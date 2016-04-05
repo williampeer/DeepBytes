@@ -6,7 +6,7 @@ theano.config.floatX = 'float32'
 
 
 # Ans et al. (1997): Error measure the cross-entropy. Learning rate: 0.01, momentum term: 0.5.
-class SimpleNeocorticalNetwork:
+class NeocorticalNetwork:
     def __init__(self, in_dim, h_dim, out_dim, alpha, momentum):
 
         self.alpha = alpha

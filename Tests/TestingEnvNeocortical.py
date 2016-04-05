@@ -1,9 +1,9 @@
-from SimpleNeocorticalNetwork import *
+from NeocorticalNetwork import *
 from Tools import *
 
 # def __init__(self, in_dim, h_dim, out_dim, alpha, momentum):
 # Neocortical module:
-ann = SimpleNeocorticalNetwork(49, 50, 49, 0.85, 0.01)
+ann = NeocorticalNetwork(49, 50, 49, 0.85, 0.01)
 
 a = [0.1, 0.2] * 24
 a.append(0.1)

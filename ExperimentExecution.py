@@ -1,7 +1,7 @@
 import numpy as np
 
 from HPC import HPC
-from SimpleNeocorticalNetwork import SimpleNeocorticalNetwork
+from NeocorticalNetwork import NeocorticalNetwork
 from Experiments_4_x import experiment_4_x_1, experiment_4_x_2
 from data_capital import data_letters_capital
 from data_lowercase import data_letters_lowercase
@@ -30,7 +30,7 @@ for letter_data in data_letters_lowercase:
     uppercase_letter = training_patterns_associative[letter_ctr][0]
     training_patterns_heterogeneous.append([uppercase_letter, lowercase_letter])
 
-turnover_rate = (Tools.get_parameter_counter() % 12) * 0.05  # + 10
+turnover_rate = (Tools.get_parameter_counter() % 18) * 0.02 + 0.32
 weighting_dg = 25  # Tools.get_experiment_counter() % 26
 # print "TRIAL #", trial, "turnover rate:", turnover_rate
 # dims,
