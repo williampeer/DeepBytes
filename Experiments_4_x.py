@@ -1,5 +1,5 @@
 import time
-from DNMM import hpc_learn_patterns_wrapper, hpc_chaotic_recall_wrapper, generate_pseudopattern_II_hpc_outputs
+from HPCWrappers import hpc_learn_patterns_wrapper, hpc_chaotic_recall_wrapper, generate_pseudopattern_II_hpc_outputs
 from Tools import set_contains_pattern, get_pattern_correlation, save_experiment_4_1_results, save_images_from
 import Tools
 import numpy as np
