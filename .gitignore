@@ -3,6 +3,7 @@
 *.txt
 data\ letters~
 Workbench.py
+*.sh~
 saved_data/*
 
 !.gitignore
