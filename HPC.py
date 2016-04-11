@@ -5,6 +5,7 @@ import Tools
 
 # Note: Ensure float32 for GPU-usage. Use the profiler to analyse GPU-usage.
 theano.config.floatX = 'float32'
+_ASYNC_FLAG = False
 
 # dims: neuron layer sizes
 # gamma: forgetting factor
@@ -387,9 +388,11 @@ class HPC:
         l_ca3_ca3_Ws = self.ca3_ca3_weights.get_value(return_internal_type=True)
         l_nu_ca3 = self.eta_ca3.get_value(return_internal_type=True)
         l_zeta_ca3 = self.zeta_ca3.get_value(return_internal_type=True)
-        # self.fire_all_to_ca3(l_ec_vals, l_ec_ca3_Ws, l_dg_vals, l_dg_ca3_Ws, l_ca3_vals, l_ca3_ca3_Ws, l_nu_ca3,
-        #                      l_zeta_ca3)
-        self.async_ca3_wrapper(l_ec_vals, l_ec_ca3_Ws, l_dg_vals, l_dg_ca3_Ws, l_ca3_vals, l_ca3_ca3_Ws, l_nu_ca3,
+        if _ASYNC_FLAG:
+            self.async_ca3_wrapper(l_ec_vals, l_ec_ca3_Ws, l_dg_vals, l_dg_ca3_Ws, l_ca3_vals, l_ca3_ca3_Ws, l_nu_ca3,
+                             l_zeta_ca3)
+        else:
+            self.fire_all_to_ca3(l_ec_vals, l_ec_ca3_Ws, l_dg_vals, l_dg_ca3_Ws, l_ca3_vals, l_ca3_ca3_Ws, l_nu_ca3,
                              l_zeta_ca3)
 
         # print "Showing CA3 activation values before kWTA!"
@@ -446,12 +449,23 @@ class HPC:
 
     def recall(self):
         # Fire EC to CA3, CA3 to CA3
-        self.fire_to_ca3_no_learning(self.ec_values.get_value(return_internal_type=True),
+        if(_ASYNC_FLAG):
+            self.async_ca3_wrapper(self.ec_values.get_value(return_internal_type=True),
+                                     self.ec_ca3_weights.get_value(return_internal_type=True),
+                               np.zeros_like(self.dg_values.get_value(), dtype=np.float32),  # same as not including
+                               np.zeros_like(self.dg_ca3_weights.get_value(), dtype=np.float32),
+                                     self.ca3_values.get_value(return_internal_type=True),
+                                     self.ca3_ca3_weights.get_value(return_internal_type=True),
+                                     self.eta_ca3.get_value(return_internal_type=True),
+                                     self.zeta_ca3.get_value(return_internal_type=True))
+        else:
+            self.fire_to_ca3_no_learning(self.ec_values.get_value(return_internal_type=True),
                                      self.ec_ca3_weights.get_value(return_internal_type=True),
                                      self.ca3_values.get_value(return_internal_type=True),
                                      self.ca3_ca3_weights.get_value(return_internal_type=True),
                                      self.eta_ca3.get_value(return_internal_type=True),
                                      self.zeta_ca3.get_value(return_internal_type=True))
+
         # kWTA CA3
         # print "Showing CA3 activation values before kWTA!"
         # Tools.show_image_ca3(self.ca3_values.get_value())
