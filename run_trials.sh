@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 COUNTER=0
-while [  $COUNTER -lt 18 ]; do
+while [  $COUNTER -lt 20 ]; do
 	echo Run \#$COUNTER
 	echo theano-cache clear
 	theano-cache clear
@@ -8,3 +8,4 @@ while [  $COUNTER -lt 18 ]; do
 	python ExperimentExecution.py
 	let COUNTER=COUNTER+1
 	done
+poweroff
