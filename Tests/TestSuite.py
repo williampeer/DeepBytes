@@ -1,6 +1,7 @@
 import unittest
 from HPC import HPC
 import numpy as np
+import Tools
 
 
 class kWTAHPC(unittest.TestCase):
