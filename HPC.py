@@ -5,6 +5,7 @@ import Tools
 
 # Note: Ensure float32 for GPU-usage. Use the profiler to analyse GPU-usage.
 theano.config.floatX = 'float32'
+_ASYNC_FLAG = False
 
 # dims: neuron layer sizes
 # gamma: forgetting factor
@@ -59,8 +60,8 @@ class HPC:
                                            borrow=True)
 
         # =========== CA3 CHAOTIC NEURONS SETUP ============
-        nu_ca3 = np.zeros_like(ca3_values, dtype=np.float32)
-        self.nu_ca3 = theano.shared(name='nu_ca3', value=nu_ca3.astype(theano.config.floatX), borrow=True)
+        eta_ca3 = np.zeros_like(ca3_values, dtype=np.float32)
+        self.eta_ca3 = theano.shared(name='nu_ca3', value=eta_ca3.astype(theano.config.floatX), borrow=True)
 
         zeta_ca3 = np.zeros_like(ca3_values, dtype=np.float32)
         self.zeta_ca3 = theano.shared(name='zeta_ca3', value=zeta_ca3.astype(theano.config.floatX), borrow=True)
@@ -134,18 +135,18 @@ class HPC:
         c_dg_ca3_Ws = T.fmatrix()
         c_ca3_vals = T.fmatrix()
         c_ca3_ca3_Ws = T.fmatrix()
-        c_nu_ca3 = T.fmatrix()
+        c_eta_ca3 = T.fmatrix()
         c_zeta_ca3 = T.fmatrix()
 
         # ca3_input_sum = c_ec_vals.dot(c_ec_ca3_Ws) + c_dg_vals.dot(c_dg_ca3_Ws) + c_ca3_vals.dot(c_ca3_ca3_Ws)
         ca3_input_sum = c_ec_vals.dot(c_ec_ca3_Ws) + self._weighting_dg * c_dg_vals.dot(c_dg_ca3_Ws) + c_ca3_vals.dot(c_ca3_ca3_Ws)
-        nu_ca3 = self._k_m * c_nu_ca3 + ca3_input_sum
+        eta_ca3 = self._k_m * c_eta_ca3 + ca3_input_sum
         zeta_ca3 = self._k_r * c_zeta_ca3 - self._alpha * c_ca3_vals + self._a_i
-        next_activation_values_ca3 = T.tanh((nu_ca3 + zeta_ca3) / self._epsilon)
+        next_activation_values_ca3 = T.tanh((eta_ca3 + zeta_ca3) / self._epsilon)
         self.fire_all_to_ca3 = theano.function([c_ec_vals, c_ec_ca3_Ws, c_dg_vals, c_dg_ca3_Ws, c_ca3_vals,
-                                                c_ca3_ca3_Ws, c_nu_ca3, c_zeta_ca3],
+                                                c_ca3_ca3_Ws, c_eta_ca3, c_zeta_ca3],
                                                updates=[(self.ca3_values, next_activation_values_ca3),
-                                                        (self.nu_ca3, nu_ca3), (self.zeta_ca3, zeta_ca3)])
+                                                        (self.eta_ca3, eta_ca3), (self.zeta_ca3, zeta_ca3)])
 
         # after kWTA:
         self.wire_ec_to_ca3 = theano.function([u_prev_reshaped_transposed, u_next_reshaped, Ws_prev_next], updates=[
@@ -162,14 +163,39 @@ class HPC:
 
         # without learning:
         no_learning_ca3_input_sum = c_ec_vals.dot(c_ec_ca3_Ws) + c_ca3_vals.dot(c_ca3_ca3_Ws)
-        no_learning_nu_ca3 = self._k_m * c_nu_ca3 + no_learning_ca3_input_sum
+        no_learning_eta_ca3 = self._k_m * c_eta_ca3 + no_learning_ca3_input_sum
         no_learning_zeta_ca3 = self._k_r * c_zeta_ca3 - self._alpha * c_ca3_vals + self._a_i
-        no_learning_next_act_vals_ca3 = T.tanh((no_learning_nu_ca3 + no_learning_zeta_ca3) / self._epsilon)
-        self.fire_to_ca3_no_learning = theano.function([c_ec_vals, c_ec_ca3_Ws, c_ca3_vals, c_ca3_ca3_Ws, c_nu_ca3,
+        no_learning_next_act_vals_ca3 = T.tanh((no_learning_eta_ca3 + no_learning_zeta_ca3) / self._epsilon)
+        self.fire_to_ca3_no_learning = theano.function([c_ec_vals, c_ec_ca3_Ws, c_ca3_vals, c_ca3_ca3_Ws, c_eta_ca3,
                                                         c_zeta_ca3],
                                                        updates=[(self.ca3_values, no_learning_next_act_vals_ca3),
-                                                                (self.nu_ca3, no_learning_nu_ca3),
+                                                                (self.eta_ca3, no_learning_eta_ca3),
                                                                 (self.zeta_ca3, no_learning_zeta_ca3)])
+
+        # symbolic definition of neuron-wise CA3 updates:
+        neuron_index = T.iscalar()
+        ec_value_product = T.fscalar()
+        dg_value_product = T.fscalar()
+        ca3_activation_values = T.fvector()
+        ca3_weights_column = T.fvector()
+        former_eta_i = T.fscalar()
+        former_zeta_i = T.fscalar()
+
+        neuron_ca3_i = ec_value_product + dg_value_product + \
+                       ca3_activation_values.dot(ca3_weights_column)
+        next_eta_i = self._k_m * former_eta_i + neuron_ca3_i
+        next_zeta_i = self._k_r * former_zeta_i - self._alpha * ca3_activation_values[neuron_index] + \
+                      self._a_i[0]
+        next_ca3_value = T.tanh((next_zeta_i + next_eta_i) / self._epsilon)
+        self.calculate_ca3_neuronal_updates = theano.function([neuron_index, ec_value_product, dg_value_product,
+            ca3_activation_values, ca3_weights_column, former_eta_i, former_zeta_i],
+            updates=[(self.eta_ca3, T.set_subtensor(self.eta_ca3[neuron_index], next_eta_i)),
+                     (self.zeta_ca3, T.set_subtensor(self.zeta_ca3[neuron_index], next_zeta_i)),
+                     (self.ca3_values, T.set_subtensor(self.ca3_values[neuron_index], next_ca3_value))])
+
+        new_values = T.fmatrix()
+        self.update_eta_ca3 = theano.function([new_values], updates=[(self.eta_ca3, new_values)])
+        self.update_zeta_ca3 = theano.function([new_values], updates=[(self.zeta_ca3, new_values)])
 
         # ===================================================
         # Output:
@@ -218,7 +244,48 @@ class HPC:
                                                                                          T.set_subtensor(self.dg_ca3_weights[y, x], val))])
         self.update_ca3_ca3_weights_value = theano.function(inputs=[y, x, val], updates=[(self.ca3_ca3_weights,
                                                                                           T.set_subtensor(self.ca3_ca3_weights[y, x], val))])
+
+        new_Ws = T.fmatrix("new_Ws")
+        self.update_ec_dg_Ws = theano.function([new_Ws], updates=[(self.ec_dg_weights, new_Ws)])
+        self.update_ec_ca3_Ws = theano.function([new_Ws], updates=[(self.ec_ca3_weights, new_Ws)])
+        self.update_dg_ca3_Ws = theano.function([new_Ws], updates=[(self.dg_ca3_weights, new_Ws)])
+        self.update_ca3_ca3_Ws = theano.function([new_Ws], updates=[(self.ca3_ca3_weights, new_Ws)])
+        self.update_ca3_out_Ws = theano.function([new_Ws], updates=[(self.ca3_out_weights, new_Ws)])
+
+        self.update_eta_value = theano.function([x, val], updates=[(self.eta_ca3, T.set_subtensor(self.eta_ca3[1, x],
+                                                                                                  val))])
+        self.update_zeta_value = theano.function([x, val], updates=[(self.zeta_ca3, T.set_subtensor(self.zeta_ca3[1, x],
+                                                                                                    val))])
+        self.update_ca3_value = theano.function([x, val], updates=[(self.ca3_values,
+                                                                    T.set_subtensor(self.ca3_values[1, x], val))])
+
+        # other functions
+        values = T.fvector()
+        self.sort_values_f = theano.function([values], outputs=T.sort(values))
+
+        values = T.fvector()
+        weights = T.fmatrix()
+        product = values.dot(weights)
+        self.product_func = theano.function([values, weights], outputs=product)
         # ===================================================
+
+    def async_ca3_wrapper(self, ec_vals, ec_ca3_Ws, dg_vals, dg_ca3_Ws, ca3_vals, ca3_ca3_Ws, eta_ca3, zeta_ca3):
+        ec_val_products = self.product_func(ec_vals[0], ec_ca3_Ws)
+        dg_val_products = self.product_func(dg_vals[0], dg_ca3_Ws)
+
+        index_set = range(len(ca3_vals))
+        current_len = len(index_set)
+        while current_len > 0:
+            random_index = np.random.randint(0, current_len)
+            neuron_index = index_set[random_index]
+            index_set.remove(neuron_index)
+            current_len = len(index_set)
+
+            self.calculate_ca3_neuronal_updates(neuron_index, ec_val_products[neuron_index],
+                                                dg_val_products[neuron_index], self.ca3_values.get_value()[0],
+                                                ca3_ca3_Ws[:, neuron_index], eta_ca3[0, neuron_index],
+                                                zeta_ca3[0, neuron_index])
+
 
     # Partly optimized neuronal turnover. Not sure how to make the scan operations work.
     def neuronal_turnover_dg(self):
@@ -263,10 +330,9 @@ class HPC:
         values_length = len(values[0])
         k = np.round(values_length * f_r).astype(np.int32)
 
-        sort_values_f = theano.function([], outputs=T.sort(values))
-        sorted_values = sort_values_f()
+        sorted_values = self.sort_values_f(values[0])
         # 0-indexed, mean of k-th and k-1-th largest values. could then use hard thresholding, using soft with removal
-        k_th_largest_value = (sorted_values[0][values_length-k-1] + sorted_values[0][values_length-k-2]) / 2
+        k_th_largest_value = (sorted_values[values_length-k-1] + sorted_values[values_length-k-2]) / 2
 
         mask_vector = k_th_largest_value * np.ones_like(values)
         result = (values >= mask_vector).astype(np.float32)
@@ -320,9 +386,13 @@ class HPC:
         l_dg_ca3_Ws = self.dg_ca3_weights.get_value(return_internal_type=True)
         l_ca3_vals = self.ca3_values.get_value(borrow=False)
         l_ca3_ca3_Ws = self.ca3_ca3_weights.get_value(return_internal_type=True)
-        l_nu_ca3 = self.nu_ca3.get_value(return_internal_type=True)
+        l_nu_ca3 = self.eta_ca3.get_value(return_internal_type=True)
         l_zeta_ca3 = self.zeta_ca3.get_value(return_internal_type=True)
-        self.fire_all_to_ca3(l_ec_vals, l_ec_ca3_Ws, l_dg_vals, l_dg_ca3_Ws, l_ca3_vals, l_ca3_ca3_Ws, l_nu_ca3,
+        if _ASYNC_FLAG:
+            self.async_ca3_wrapper(l_ec_vals, l_ec_ca3_Ws, l_dg_vals, l_dg_ca3_Ws, l_ca3_vals, l_ca3_ca3_Ws, l_nu_ca3,
+                             l_zeta_ca3)
+        else:
+            self.fire_all_to_ca3(l_ec_vals, l_ec_ca3_Ws, l_dg_vals, l_dg_ca3_Ws, l_ca3_vals, l_ca3_ca3_Ws, l_nu_ca3,
                              l_zeta_ca3)
 
         # print "Showing CA3 activation values before kWTA!"
@@ -377,27 +447,25 @@ class HPC:
         self.setup_input(input_pattern)
         self.set_output(output_pattern)
 
-    # Method used to update the previous nu- and zeta-values with the current I/O pattern before weight updates.
-    # def internal_recall(self):
-    #     # Fire EC to CA3, CA3 to CA3
-    #     self.fire_to_ca3_no_learning(self.ec_values.get_value(return_internal_type=True),
-    #                                  self.ec_ca3_weights.get_value(return_internal_type=True),
-    #                                  self.ca3_values.get_value(return_internal_type=True),
-    #                                  self.ca3_ca3_weights.get_value(return_internal_type=True),
-    #                                  self.nu_ca3.get_value(return_internal_type=True),
-    #                                  self.zeta_ca3.get_value(return_internal_type=True))
-    #     # kWTA CA3
-    #     self.set_ca3_values(
-    #             self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory
-
     def recall(self):
         # Fire EC to CA3, CA3 to CA3
-        self.fire_to_ca3_no_learning(self.ec_values.get_value(return_internal_type=True),
+        if(_ASYNC_FLAG):
+            self.async_ca3_wrapper(self.ec_values.get_value(return_internal_type=True),
+                                     self.ec_ca3_weights.get_value(return_internal_type=True),
+                               np.zeros_like(self.dg_values.get_value(), dtype=np.float32),  # same as not including
+                               np.zeros_like(self.dg_ca3_weights.get_value(), dtype=np.float32),
+                                     self.ca3_values.get_value(return_internal_type=True),
+                                     self.ca3_ca3_weights.get_value(return_internal_type=True),
+                                     self.eta_ca3.get_value(return_internal_type=True),
+                                     self.zeta_ca3.get_value(return_internal_type=True))
+        else:
+            self.fire_to_ca3_no_learning(self.ec_values.get_value(return_internal_type=True),
                                      self.ec_ca3_weights.get_value(return_internal_type=True),
                                      self.ca3_values.get_value(return_internal_type=True),
                                      self.ca3_ca3_weights.get_value(return_internal_type=True),
-                                     self.nu_ca3.get_value(return_internal_type=True),
+                                     self.eta_ca3.get_value(return_internal_type=True),
                                      self.zeta_ca3.get_value(return_internal_type=True))
+
         # kWTA CA3
         # print "Showing CA3 activation values before kWTA!"
         # Tools.show_image_ca3(self.ca3_values.get_value())
@@ -443,18 +511,14 @@ class HPC:
                 new_values[0][value_index] = -1
         return new_values
 
-    def reset_zeta_and_nu_values(self):
+    def reset_eta_and_zeta_values(self):
         print "Resetting zeta and nu-values..."
         ca3_values = self.ca3_values.get_value()
         nu_ca3 = np.zeros_like(ca3_values, dtype=np.float32)
         zeta_ca3 = np.zeros_like(ca3_values, dtype=np.float32)
 
-        new_values = T.fmatrix()
-        update_nu_ca3 = theano.function([new_values], updates=[(self.nu_ca3, new_values)])
-        update_zeta_ca3 = theano.function([new_values], updates=[(self.zeta_ca3, new_values)])
-
-        update_nu_ca3(nu_ca3)
-        update_zeta_ca3(zeta_ca3)
+        self.update_eta_ca3(nu_ca3)
+        self.update_zeta_ca3(zeta_ca3)
 
     def reset_hpc_module(self):
         dims = self.dims
@@ -478,20 +542,13 @@ class HPC:
         # random weight assignment, full connection rate CA3-out
         ca3_output_weights = np.random.normal(0., np.sqrt(0.5), (dims[3], dims[4])).astype(np.float32)
 
-        new_Ws = T.fmatrix("new_Ws")
-        update_ec_dg_Ws = theano.function([new_Ws], updates=[(self.ec_dg_weights, new_Ws)])
-        update_ec_ca3_Ws = theano.function([new_Ws], updates=[(self.ec_ca3_weights, new_Ws)])
-        update_dg_ca3_Ws = theano.function([new_Ws], updates=[(self.dg_ca3_weights, new_Ws)])
-        update_ca3_ca3_Ws = theano.function([new_Ws], updates=[(self.ca3_ca3_weights, new_Ws)])
-        update_ca3_out_Ws = theano.function([new_Ws], updates=[(self.ca3_out_weights, new_Ws)])
+        self.update_ec_dg_Ws(ec_dg_weights)
+        self.update_ec_ca3_Ws(ec_ca3_weights)
+        self.update_dg_ca3_Ws(dg_ca3_weights)
+        self.update_ca3_ca3_Ws(ca3_ca3_weights)
+        self.update_ca3_out_Ws(ca3_output_weights)
 
-        update_ec_dg_Ws(ec_dg_weights)
-        update_ec_ca3_Ws(ec_ca3_weights)
-        update_dg_ca3_Ws(dg_ca3_weights)
-        update_ca3_ca3_Ws(ca3_ca3_weights)
-        update_ca3_out_Ws(ca3_output_weights)
-
-        self.reset_zeta_and_nu_values()
+        self.reset_eta_and_zeta_values()
 
     # ================================================ DEBUG ===============================================
     def print_activation_values_sum(self):
