@@ -45,12 +45,12 @@ hpc = HPC([io_dim, 240, 1600, 480, io_dim],
           0.10, 0.95, 0.8, 2.0, weighting_dg)  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
 
 
-Tools.append_line_to_log("INIT. EXPERIMENT MESSAGE: Synchronized CA3 Updating. 20 trials. " +
-                         "No turnover between iterations. Turnover " + str(turnover_rate) +
+Tools.append_line_to_log("INIT. EXPERIMENT MESSAGE: Async CA3 Updating. 20 trials. " +
+                         "Turnover for every set. Turnover " + str(turnover_rate) +
                          ", DG-weighting: " + str(weighting_dg))
 
 # hpc.reset_hpc_module()
-for i in range(20):
+for i in range(1):
     for train_set_size_ctr in range(3, 4):
 
         hipp_chaotic_pats, _ = experiment_4_x_1(hpc, train_set_size_ctr, training_patterns_associative)
