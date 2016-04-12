@@ -8,3 +8,5 @@ saved_data/*
 
 !.gitignore
 !saved_data/counters_reset_copy.py
+!saved_data/parse_log_data.py
+!saved_data/Plotting.py
