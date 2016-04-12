@@ -32,6 +32,7 @@ for letter_data in data_letters_lowercase:
 
 turnover_rate = 0.5  #(Tools.get_parameter_counter() % 18) * 0.02 + 0.32
 weighting_dg = 25  # Tools.get_experiment_counter() % 26
+_ASYNC_FLAG = True
 
 # print "TRIAL #", trial, "turnover rate:", turnover_rate
 # dims,
@@ -42,14 +43,15 @@ hpc = HPC([io_dim, 240, 1600, 480, io_dim],
           0.67, 0.25, 0.04,  # connection rates: (in_ec, ec_dg, dg_ca3)
           0.10, 0.01, 0.04,  # firing rates: (ec, dg, ca3)
           0.7, 100.0, 0.1, turnover_rate,  # gamma, epsilon, nu, turnover rate
-          0.10, 0.95, 0.8, 2.0, weighting_dg)  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
+          0.10, 0.95, 0.8, 2.0, weighting_dg,  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
+          _ASYNC_FLAG=_ASYNC_FLAG)
 
 
 # hpc.reset_hpc_module()
 # for i in range(20):
 for train_set_size_ctr in range(2, 6):
-    Tools.append_line_to_log("INIT. EXPERIMENT MESSAGE: Sync CA3 Updating. 20 trials. set size: " +
-                             str(train_set_size_ctr) + "x5. " + "Turnover for every set. Turnover rate:"
+    Tools.append_line_to_log("INIT. EXPERIMENT MESSAGE: ASYNC-flag:" + str(_ASYNC_FLAG) + ". " +
+                             str(train_set_size_ctr) + "x5. " + "Turnover for every set iteration. Turnover rate:"
                              + str(turnover_rate) + ", DG-weighting: " + str(weighting_dg) + ".")
 
     hipp_chaotic_pats, _ = experiment_4_x_1(hpc, train_set_size_ctr, training_patterns_associative)

@@ -5,7 +5,6 @@ import Tools
 
 # Note: Ensure float32 for GPU-usage. Use the profiler to analyse GPU-usage.
 theano.config.floatX = 'float32'
-_ASYNC_FLAG = False
 
 # dims: neuron layer sizes
 # gamma: forgetting factor
@@ -17,7 +16,8 @@ _ASYNC_FLAG = False
 class HPC:
     def __init__(self, dims, connection_rate_input_ec, perforant_path, mossy_fibers,
                  firing_rate_ec, firing_rate_dg, firing_rate_ca3,
-                 _gamma, _epsilon, _nu, _turnover_rate, _k_m, _k_r, _a_i, _alpha, weighting_dg):
+                 _gamma, _epsilon, _nu, _turnover_rate, _k_m, _k_r, _a_i, _alpha, weighting_dg,
+                 _ASYNC_FLAG):
 
         # =================== PARAMETERS ====================
         self.dims = dims  # numbers of neurons in the different layers
@@ -39,6 +39,7 @@ class HPC:
         self._k_r = _k_r
         self._alpha = _alpha
         self._weighting_dg = weighting_dg
+        self._ASYNC_FLAG = _ASYNC_FLAG
 
         # ============== ACTIVATION VALUES ==================
         input_values = np.zeros((1, dims[0]), dtype=np.float32)
@@ -388,7 +389,7 @@ class HPC:
         l_ca3_ca3_Ws = self.ca3_ca3_weights.get_value(return_internal_type=True)
         l_nu_ca3 = self.eta_ca3.get_value(return_internal_type=True)
         l_zeta_ca3 = self.zeta_ca3.get_value(return_internal_type=True)
-        if _ASYNC_FLAG:
+        if self._ASYNC_FLAG:
             self.async_ca3_wrapper(l_ec_vals, l_ec_ca3_Ws, l_dg_vals, l_dg_ca3_Ws, l_ca3_vals, l_ca3_ca3_Ws, l_nu_ca3,
                              l_zeta_ca3)
         else:
@@ -449,7 +450,7 @@ class HPC:
 
     def recall(self):
         # Fire EC to CA3, CA3 to CA3
-        if(_ASYNC_FLAG):
+        if(self._ASYNC_FLAG):
             self.async_ca3_wrapper(self.ec_values.get_value(return_internal_type=True),
                                      self.ec_ca3_weights.get_value(return_internal_type=True),
                                np.zeros_like(self.dg_values.get_value(), dtype=np.float32),  # same as not including

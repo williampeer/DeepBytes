@@ -8,4 +8,3 @@ while [  $COUNTER -lt 20 ]; do
 	python ExperimentExecution.py
 	let COUNTER=COUNTER+1
 	done
-poweroff

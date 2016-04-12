@@ -30,12 +30,6 @@ def training_and_recall_hpc_helper(hpc, training_set_size, train_set_num, origin
     training_set = original_training_patterns[training_set_size * train_set_num : training_set_size +
                                                                            train_set_num*training_set_size]
 
-    # print "Performing neuronal turnover in DG for", hpc._turnover_rate * 100, "% of the neurons.."
-    # t0 = time.time()
-    # hpc.neuronal_turnover_dg()
-    # t1 = time.time()
-    # print "Neuronal turnover completed in", "{:7.3f}".format(t1-t0), "seconds."
-    # hpc.re_wire_fixed_input_to_ec_weights()
     print "Learning patterns in training set..."
     hpc_learn_patterns_wrapper(hpc, patterns=training_set, max_training_iterations=50)  # when training is fixed,
     # convergence should occur after one or two iterations?
@@ -44,7 +38,6 @@ def training_and_recall_hpc_helper(hpc, training_set_size, train_set_num, origin
     chaotic_recall_iters = 300
     print "Recalling patterns for", chaotic_recall_iters, "time-steps by chaotic recall..."
     t2 = time.time()
-    # hpc.reset_zeta_and_nu_values()
     [patterns_extracted_for_current_set, random_in] = \
         hpc_chaotic_recall_wrapper(hpc, display_images_of_stable_output=False, recall_iterations=chaotic_recall_iters)
     for pat in patterns_extracted_for_current_set:
