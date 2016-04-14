@@ -32,6 +32,6 @@ def get_data_from_log_file(filename):
         all_data.append(experiment_data)
 
     return all_data
-
-filename = 'log.txt'  # log_file_path
-print get_data_from_log_file(filename)
+#
+# filename = 'log.txt'  # log_file_path
+# print get_data_from_log_file(filename)
