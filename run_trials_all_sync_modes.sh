@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
-sudo echo testing sudo
-
-cd saved_data
-counters_reset_copy.py
-cd ..
+sudo echo sudo test
 
 echo Run mode 1
+echo theano-cache clear
 theano-cache clear
+echo python ExperimentExecutionm1.py
 python ExperimentExecutionm1.py
 
 echo Run mode 2

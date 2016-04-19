@@ -59,7 +59,6 @@ for i in range(20):
         tar_patts = []
         for p in training_patterns_associative[:5*train_set_size_ctr]:
             tar_patts.append(p[0])
-        print tar_patts
         hipp_chaotic_pats, _ = experiment_4_x_1(hpc, train_set_size_ctr, training_patterns_associative)
         # write perfect recall rate to log:
         Tools.log_perfect_recall_rate(hipp_chaotic_pats, tar_patts)
