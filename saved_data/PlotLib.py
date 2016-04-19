@@ -9,25 +9,30 @@ parsed_data = Parser.get_data_from_log_file('log.txt')
 # print parsed_data[0][3:]
 
 convergence_data, distinct_patterns_data = Parser.get_convergence_and_distinct_patterns_from_log_v1(parsed_data)
+perfect_recall_rates, spurious_patterns_extracted = Parser.\
+    get_perfect_recall_rates_and_spurious_patterns_from_data(parsed_data)
 # convergence_data[0]: convergence data for the first set size.
 
 # for each scheme, plot two graphs
 convergence_stats = Parser.get_convergence_avgs(convergence_data)
-avg_recall_ratios = Parser.get_average_recall_ratios(distinct_patterns_data)
+avg_recall_ratios, stds_avg_recall = Parser.get_average_recall_ratios(distinct_patterns_data)
 
-print convergence_stats
+for i in range(len(spurious_patterns_extracted)):
+    for j in range(len(spurious_patterns_extracted[i])):
+        spurious_patterns_extracted[i][j] = spurious_patterns_extracted[i][j] / 5.
+avg_spurious_ratios, stds_spurious = Parser.get_average_recall_ratios(spurious_patterns_extracted)
+
 print avg_recall_ratios
+print stds_avg_recall
+print avg_spurious_ratios
+print stds_spurious
 
 # graph 1: box plot
-stds = []
-i = 0
-for ds in distinct_patterns_data:
-    stds.append(Parser.get_standard_deviation(avg_recall_ratios[i], ds))
-    i += 1
 V = np.arange(4)
-print stds
 
-plt.bar(V, avg_recall_ratios, width=.5, color='y', yerr=stds)
+plt.bar(V, avg_recall_ratios, width=.5, color='y', yerr=stds_avg_recall)
+p2 = plt.bar(V, avg_spurious_ratios, width=.5, color='r',
+             bottom=avg_recall_ratios, yerr=stds_spurious)
 
 plt.ylabel('Distinct recalled patterns')
 plt.title('Patterns recalled by set size')

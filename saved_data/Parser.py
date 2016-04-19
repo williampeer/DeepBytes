@@ -1,5 +1,6 @@
 import numpy as np
 
+
 # returns: [ experiment: [set_size, #sets, DGW, 5x tuples: [iters_to_convergence, distinct_patterns_recalled]]]
 def get_data_from_log_file(filename):
     log_file = file(filename, 'r')
@@ -9,22 +10,28 @@ def get_data_from_log_file(filename):
 
     lines = contents.split('\n')
     all_data = []
-    for experiment_ctr in range(len(lines)/11):
+    for experiment_ctr in range(len(lines)/13):
         experiment_data = []
 
-        sep = lines[11*experiment_ctr].split('x')
+        sep = lines[13*experiment_ctr].split('x')
         set_size = int(sep[0][len(sep[0])-1])
         training_sets = int(sep[1][0])
 
-        words = lines[experiment_ctr * 11].split()
+        words = lines[experiment_ctr * 13].split()
         dg_weighting = words[-1][:len(words[-1])-1]
+
+        perfect_recall_rate = float(lines[13 * experiment_ctr + 11].split()[-1])
+        num_of_spurious_patterns = int(lines[13 * experiment_ctr + 12].split()[-1])
 
         experiment_data.append(set_size)
         experiment_data.append(training_sets)
         experiment_data.append(float(dg_weighting))
+        experiment_data.append(perfect_recall_rate)
+        experiment_data.append(num_of_spurious_patterns)
+
         for i in range(5):
-            convergence_line_words = lines[11 * experiment_ctr + 1 + 2 * i].split()
-            patterns_recalled_line_words = lines[11 * experiment_ctr + 2 + 2 * i].split()
+            convergence_line_words = lines[13 * experiment_ctr + 1 + 2 * i].split()
+            patterns_recalled_line_words = lines[13 * experiment_ctr + 2 + 2 * i].split()
 
             iterations_before_convergence = int(convergence_line_words[2])
             distinct_patterns_recalled = int(patterns_recalled_line_words[1])
@@ -48,7 +55,7 @@ def get_convergence_and_distinct_patterns_from_log_v1(parsed_data):
         num_of_sets = parsed_data[i][1]
         dg_weighting = parsed_data[i][2]
 
-        for data_tuple in parsed_data[i][3:]:
+        for data_tuple in parsed_data[i][5:]:
             iterations_to_convergence_or_max = data_tuple[0]
             distinct_patterns_recalled = data_tuple[1]
 
@@ -56,6 +63,22 @@ def get_convergence_and_distinct_patterns_from_log_v1(parsed_data):
             experiment_data_distinct_patterns[set_size-2].append(distinct_patterns_recalled)
 
     return [experiment_data_convergence, experiment_data_distinct_patterns]
+
+
+def get_perfect_recall_rates_and_spurious_patterns_from_data(parsed_data):
+    perf_recall_data = []
+    spurious_patts_data = []
+    for i in range(4):
+        perf_recall_data.append([])
+        spurious_patts_data.append([])
+
+    num_of_experiments = len(parsed_data)
+    for i in range(num_of_experiments):
+        set_size = parsed_data[i][0]
+        perf_recall_data[set_size-2].append(parsed_data[i][3])
+        spurious_patts_data[set_size-2].append(parsed_data[i][4])
+
+    return [perf_recall_data, spurious_patts_data]
 
 
 def get_convergence_info_and_distinct_patterns_from_data(set_size, convergence_data, distinct_patterns_data):
@@ -99,14 +122,14 @@ def get_convergence_avgs(convergence_data):
 
 def get_average_recall_ratios(distinct_patterns_data):
     # graph 2: avg. distinct patterns recalled, and relative to set size, i.e. recall ratio
-    set_size = 2
     avg_recall_ratios = []
+    stds = []
     for data_set in distinct_patterns_data:
-        avg_recalled_patterns = np.sum(data_set) / float(len(data_set))
-        avg_recall_ratio = avg_recalled_patterns  # / float(set_size)
-        set_size += 1
-        avg_recall_ratios.append(avg_recall_ratio)
-    return avg_recall_ratios
+        avg_recalled_patterns = np.sum(data_set).astype(np.float32) / float(len(data_set))
+        avg_recall_ratios.append(avg_recalled_patterns)
+
+        stds.append(get_standard_deviation(avg_recalled_patterns, data_set))
+    return [avg_recall_ratios, stds]
 
 
 def get_standard_deviation(avg_value, values):
