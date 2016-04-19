@@ -116,7 +116,7 @@ def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
     # ann.train(pseudopatterns_I)
     # ann.train(pseudopatterns_II)
 
-    save_experiment_4_1_results(hpc, chaotically_recalled_patterns, "exp_1_before2")
+    save_experiment_4_1_results(hpc, chaotically_recalled_patterns, "exp_1_before2", training_set_size)
 
     # Attempt to recall using the entire DNMM:
     sum_corr = 0.

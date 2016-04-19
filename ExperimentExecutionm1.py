@@ -64,7 +64,7 @@ for i in range(20):
         Tools.log_perfect_recall_rate(hipp_chaotic_pats, tar_patts)
         Tools.save_experiment_4_1_results(hpc, hipp_chaotic_pats, "train_set_size_"+str(train_set_size_ctr)+"_exp_1"+
                                           "turnover_rate_" + str(turnover_rate) +
-                                          "weighting_" + str(hpc._weighting_dg))
+                                          "weighting_" + str(hpc._weighting_dg), train_set_size_ctr)
 
         # ann = SimpleNeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
 
