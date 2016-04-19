@@ -30,14 +30,14 @@ print stds_spurious
 # graph 1: box plot
 V = np.arange(4)
 
-plt.bar(V, avg_recall_ratios, width=.5, color='y', yerr=stds_avg_recall)
+p1 = plt.bar(V, avg_recall_ratios, width=.5, color='y', yerr=stds_avg_recall)
 p2 = plt.bar(V, avg_spurious_ratios, width=.5, color='r',
              bottom=avg_recall_ratios, yerr=stds_spurious)
 
-plt.ylabel('Distinct recalled patterns')
+plt.ylabel('# patterns recalled')
 plt.title('Patterns recalled by set size')
 plt.xticks(V + .5/2., ('2', '3', '4', '5'))
 # plt.yticks(np.arange(0, 81, 10))
-# plt.legend((p1[0], p2[0]), ('Men', 'Women'))
+plt.legend((p1[0], p2[0]), ('Distinct patterns', 'Non-perfect recall'))
 
 plt.show()
