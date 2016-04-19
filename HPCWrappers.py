@@ -19,12 +19,15 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
     learned_all = False
 
     # scope: for every new set
-    neuronal_turnover_helper(hpc)
+    if hpc._TURNOVER_MODE == 0:
+        neuronal_turnover_helper(hpc)
 
     while not learned_all and iter_ctr < max_training_iterations:
         p_ctr = 0
 
         # scope: for every training set iteration
+        if hpc._TURNOVER_MODE == 1:
+            neuronal_turnover_helper(hpc)
 
         for [input_pattern, output_pattern] in patterns:
             setup_start = time.time()

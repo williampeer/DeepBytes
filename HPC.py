@@ -17,7 +17,7 @@ class HPC:
     def __init__(self, dims, connection_rate_input_ec, perforant_path, mossy_fibers,
                  firing_rate_ec, firing_rate_dg, firing_rate_ca3,
                  _gamma, _epsilon, _nu, _turnover_rate, _k_m, _k_r, _a_i, _alpha, weighting_dg,
-                 _ASYNC_FLAG):
+                 _ASYNC_FLAG, _TURNOVER_MODE):
 
         # =================== PARAMETERS ====================
         self.dims = dims  # numbers of neurons in the different layers
@@ -40,6 +40,7 @@ class HPC:
         self._alpha = _alpha
         self._weighting_dg = weighting_dg
         self._ASYNC_FLAG = _ASYNC_FLAG
+        self._TURNOVER_MODE = _TURNOVER_MODE
 
         # ============== ACTIVATION VALUES ==================
         input_values = np.zeros((1, dims[0]), dtype=np.float32)

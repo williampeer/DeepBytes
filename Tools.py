@@ -222,3 +222,27 @@ def append_line_to_log(line):
     log_f = file(log_path, 'wb')
     log_f.write(file_contents)
     log_f.close()
+
+
+def log_perfect_recall_rate(hipp_chao_patts, train_set):
+    log_path = 'saved_data/log.txt'
+    file_contents = ""
+
+    if os.path.exists(log_path):
+        log_f = file(log_path, 'rb')
+        file_contents = log_f.read()
+        log_f.close()
+
+    perf_recalls = 0
+    for p in hipp_chao_patts:
+        if set_contains_pattern(train_set, p):
+            perf_recalls += 1
+
+    perfect_recall_rate = perf_recalls / float(len(train_set))
+
+    file_contents += "Perfect recall rate: " + "{:6.3f}".format(perfect_recall_rate) + '\n'
+    file_contents += "Spurious patterns: " + str(len(hipp_chao_patts) - perf_recalls) + '\n'
+
+    log_f = file(log_path, 'wb')
+    log_f.write(file_contents)
+    log_f.close()

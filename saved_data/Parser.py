@@ -1,4 +1,4 @@
-
+import numpy as np
 
 # returns: [ experiment: [set_size, #sets, DGW, 5x tuples: [iters_to_convergence, distinct_patterns_recalled]]]
 def get_data_from_log_file(filename):
@@ -38,7 +38,7 @@ def get_data_from_log_file(filename):
 def get_convergence_and_distinct_patterns_from_log_v1(parsed_data):
     experiment_data_convergence = []
     experiment_data_distinct_patterns = []
-    for i in range(5):
+    for i in range(4):
         experiment_data_convergence.append([])
         experiment_data_distinct_patterns.append([])
 
@@ -77,3 +77,42 @@ def get_convergence_info_and_distinct_patterns_from_data(set_size, convergence_d
     recall_ratio = avg_dist_patterns / float(set_size)
 
     return [[avg_convergence_iters, convergence_ratio], [avg_dist_patterns, recall_ratio]]
+
+
+def get_convergence_avgs(convergence_data):
+    # graph 1: convergence ratio
+    convergence_stats = [[], []]  # [avgs, ratios]
+    for data_set in convergence_data:
+        avg_convergence = np.sum(data_set) / float(len(data_set))
+        number_converged_arr = np.array(data_set) < 50
+        convergence_ratio = np.sum(number_converged_arr) / float(len(data_set))
+
+        # print np.sum(number_converged_arr) / float(len(data_set)) * 100, '%'
+        # print avg_convergence
+        # print
+
+        convergence_stats[0].append(avg_convergence)
+        convergence_stats[1].append(convergence_ratio)
+
+    return convergence_stats
+
+
+def get_average_recall_ratios(distinct_patterns_data):
+    # graph 2: avg. distinct patterns recalled, and relative to set size, i.e. recall ratio
+    set_size = 2
+    avg_recall_ratios = []
+    for data_set in distinct_patterns_data:
+        avg_recalled_patterns = np.sum(data_set) / float(len(data_set))
+        avg_recall_ratio = avg_recalled_patterns  # / float(set_size)
+        set_size += 1
+        avg_recall_ratios.append(avg_recall_ratio)
+    return avg_recall_ratios
+
+
+def get_standard_deviation(avg_value, values):
+    # print "avg:", avg_value
+    # print "values:", values
+    std = 0
+    for value in values:
+        std += np.power(value-avg_value, 2)
+    return np.sqrt(std / float(len(values) - 1))  # -1 degree of freedom
