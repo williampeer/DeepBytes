@@ -23,21 +23,29 @@ for i in range(len(spurious_patterns_extracted)):
 avg_spurious_ratios, stds_spurious = Parser.get_average_recall_ratios(spurious_patterns_extracted)
 
 print avg_recall_ratios
+for i in range(len(avg_recall_ratios)):
+    avg_recall_ratios[i] = avg_recall_ratios[i] - avg_spurious_ratios[i]
+
+print avg_recall_ratios
 print stds_avg_recall
+print
 print avg_spurious_ratios
 print stds_spurious
 
 # graph 1: box plot
+width = .35
 V = np.arange(4)
 
-p1 = plt.bar(V, avg_recall_ratios, width=.5, color='y', yerr=stds_avg_recall)
-p2 = plt.bar(V, avg_spurious_ratios, width=.5, color='r',
-             bottom=avg_recall_ratios, yerr=stds_spurious)
+p1 = plt.bar(V, avg_recall_ratios, width=width, color='y')  #, yerr=stds_avg_recall)
+p2 = plt.bar(V, avg_spurious_ratios, width=width, color='r',
+             bottom=avg_recall_ratios, yerr=stds_avg_recall)
 
-plt.ylabel('# patterns recalled')
-plt.title('Patterns recalled by set size')
-plt.xticks(V + .5/2., ('2', '3', '4', '5'))
+plt.ylabel('Average number of patterns recalled')
+plt.xlabel('Set size')
+plt.title('Average number of distinct patterns recalled by set size')
+plt.xticks(V + width/2., ('2', '3', '4', '5'))
 # plt.yticks(np.arange(0, 81, 10))
-plt.legend((p1[0], p2[0]), ('Distinct patterns', 'Non-perfect recall'))
+plt.legend((p1[0], p2[0]), ('Perfectly recalled patterns', 'Non-perfect or spurious recall'),
+           bbox_to_anchor=(0.326, 1))
 
 plt.show()
