@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#sudo echo sudo test
 
 echo Run mode 1
 echo theano-cache clear
@@ -25,4 +24,8 @@ theano-cache clear
 echo python ExperimentExecutionm4.py
 python ExperimentExecutionm4.py
 
-#sudo poweroff
+touch /home/williapb/Dropbox/log.txt
+cat saved_data/log.txt > /home/williapb/Dropbox/log.txt
+
+sleep 1m  # while syncing the log-file.
+sudo poweroff
