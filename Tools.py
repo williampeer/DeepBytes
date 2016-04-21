@@ -111,14 +111,11 @@ def get_pattern_correlation_slow(pattern_1, pattern_2):
     return corr
 
 
-def save_experiment_4_1_results(hpc, chaotically_recalled_patterns, custom_name, train_set_size):
+def save_experiment_4_1_results(hpc, all_chaotically_recalled_patterns, unique_chaotically_recalled_patterns,
+                                custom_name, train_set_size):
     experiment_dir = get_experiment_dir()
 
-    unique_recalled_patterns = []
-    for recalled_pattern in chaotically_recalled_patterns:
-        if not set_contains_pattern(unique_recalled_patterns, recalled_pattern):
-            unique_recalled_patterns.append(recalled_pattern)
-    save_images_from(unique_recalled_patterns, experiment_dir+'/images')
+    save_images_from(unique_chaotically_recalled_patterns, experiment_dir+'/images')
 
     # hpc_f = file(experiment_dir+'/hpc_'+custom_name+'.save', 'wb')
     # cPickle.dump(hpc, hpc_f, protocol=cPickle.HIGHEST_PROTOCOL)
@@ -128,7 +125,7 @@ def save_experiment_4_1_results(hpc, chaotically_recalled_patterns, custom_name,
     hpc_info_string = "epsilon: "+str(hpc._epsilon) + '\n' + \
                       "dg weighting: "+str(hpc._weighting_dg) + '\n' + \
                       "neuronal turnover ratio: "+str(hpc._turnover_rate) + '\n' + \
-                      "number of distinct extracted patterns: " + str(len(unique_recalled_patterns)) + \
+                      "number of distinct extracted patterns: " + str(len(unique_chaotically_recalled_patterns)) + \
                       "custom name: " + custom_name
     hpc_info_f = file(experiment_dir+'/hpc_info.txt', 'wb')
     hpc_info_f.write(hpc_info_string)
@@ -136,7 +133,7 @@ def save_experiment_4_1_results(hpc, chaotically_recalled_patterns, custom_name,
 
     f2 = file(get_chaotic_pat_dir(train_set_size)+'/_chaotically_recalled_patterns_exp#' +
               str(get_experiment_counter()) + '.save', 'wb')
-    cPickle.dump(chaotically_recalled_patterns, f2, protocol=cPickle.HIGHEST_PROTOCOL)
+    cPickle.dump(all_chaotically_recalled_patterns, f2, protocol=cPickle.HIGHEST_PROTOCOL)
     f2.close()
 
 

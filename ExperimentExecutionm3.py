@@ -60,15 +60,17 @@ for i in range(20):
         for p in training_patterns_associative[:5*train_set_size_ctr]:
             tar_patts.append(p[0])
 
-        hipp_chaotic_pats, _ = experiment_4_x_1(hpc, train_set_size_ctr, training_patterns_associative)
+        hipp_chaotic_pats_sets, rand_ins = experiment_4_x_1(hpc, train_set_size_ctr, training_patterns_associative)
         distinct_hipp_chaotic_patts = []
-        for p in hipp_chaotic_pats:
-            if not Tools.set_contains_pattern(distinct_hipp_chaotic_patts, p):
-                distinct_hipp_chaotic_patts.append(p)
+        for set in hipp_chaotic_pats_sets:
+            for p in set:
+                if not Tools.set_contains_pattern(distinct_hipp_chaotic_patts, p):
+                    distinct_hipp_chaotic_patts.append(p)
 
         # write perfect recall rate to log:
         Tools.log_perfect_recall_rate(distinct_hipp_chaotic_patts, tar_patts)
-        Tools.save_experiment_4_1_results(hpc, distinct_hipp_chaotic_patts, "train_set_size_"+str(train_set_size_ctr)+
+        Tools.save_experiment_4_1_results(hpc, hipp_chaotic_pats_sets, distinct_hipp_chaotic_patts,
+                                          "train_set_size_" + str(train_set_size_ctr) +
                                           "_exp_1" + "turnover_rate_" + str(turnover_rate) +
                                           "weighting_" + str(hpc._weighting_dg), train_set_size_ctr)
 

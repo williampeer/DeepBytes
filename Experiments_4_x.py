@@ -16,7 +16,7 @@ def experiment_4_x_1(hpc, training_set_size, original_training_patterns):
     for train_set_num in range(5):  # always five training sets
         current_set_hipp_chaotic_recall, current_set_random_ins = \
             training_and_recall_hpc_helper(hpc, training_set_size, train_set_num, original_training_patterns)
-        hippocampal_chaotic_recall_patterns += current_set_hipp_chaotic_recall
+        hippocampal_chaotic_recall_patterns.append(current_set_hipp_chaotic_recall)
         random_ins.append(current_set_random_ins)
 
     # show_image_from(np.asarray(next_experiment_im).astype(np.float32))
