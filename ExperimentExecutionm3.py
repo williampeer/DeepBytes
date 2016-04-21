@@ -53,8 +53,7 @@ for i in range(20):
     for train_set_size_ctr in range(2, 6):
         Tools.append_line_to_log("INIT. EXPERIMENT MESSAGE: ASYNC-flag:" + str(_ASYNC_FLAG) + ". " +
                                  str(train_set_size_ctr) + "x5. " + "Turnover mode: " + str(_TURNOVER_MODE) +
-                                 ". Turnover rate:"
-                                 + str(turnover_rate) + ", DG-weighting: " + str(weighting_dg) + ".")
+                                 ". Turnover rate:" + str(turnover_rate) + ", DG-weighting: " + str(weighting_dg) + ".")
 
         tar_patts = []
         for p in training_patterns_associative[:5*train_set_size_ctr]:
