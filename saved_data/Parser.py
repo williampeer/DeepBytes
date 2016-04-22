@@ -125,6 +125,7 @@ def get_average_recall_ratios(distinct_patterns_data):
     avg_recall_ratios = []
     stds = []
     for data_set in distinct_patterns_data:
+        print "len(data_set):", len(data_set)
         avg_recalled_patterns = np.sum(data_set).astype(np.float32) / float(len(data_set))
         avg_recall_ratios.append(avg_recalled_patterns)
 
