@@ -113,8 +113,8 @@ def plot_convergence_iterations_for_data(parsed_data):
     plt.title('Average #iterations before convergence by set size')
     plt.xticks(x, ('2', '3', '4', '5'))
 
-    plt.legend((p1[0], p2[0]), ('Sync., turnover between learnt sets', 'Standard deviation'),
-               bbox_to_anchor=(0.42, 1))
+    plt.legend((p1[0], p2[0]), ('Async., turnover between learnt sets', 'Standard deviation'),
+               bbox_to_anchor=(0.428, 1))
     plt.show()
 
 
