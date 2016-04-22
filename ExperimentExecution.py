@@ -48,31 +48,68 @@ hpc = HPC([io_dim, 240, 1600, 480, io_dim],
           _ASYNC_FLAG=_ASYNC_FLAG, _TURNOVER_MODE=_TURNOVER_MODE)
 
 
-# hpc.reset_hpc_module()
-for i in range(1):
-    for train_set_size_ctr in range(2, 6):
-        Tools.append_line_to_log("INIT. EXPERIMENT MESSAGE: ASYNC-flag:" + str(_ASYNC_FLAG) + ". " +
-                                 str(train_set_size_ctr) + "x5. " + "Turnover mode: " + str(_TURNOVER_MODE) +
-                                 ". Turnover rate:" + str(turnover_rate) + ", DG-weighting: " + str(weighting_dg) + ".")
+for turnover_rate_increment_ctr in range(30):
+    turnover_rate = 0.02 * turnover_rate_increment_ctr
+    hpc._turnover_rate = turnover_rate
 
-        tar_patts = []
-        for p in training_patterns_associative[:5*train_set_size_ctr]:
-            tar_patts.append(p[1])
+    for i in range(10):
+        for train_set_size_ctr in range(2, 6):
+            Tools.append_line_to_log("INIT. EXPERIMENT MESSAGE: ASYNC-flag:" + str(_ASYNC_FLAG) + ". " +
+                                     str(train_set_size_ctr) + "x5. " + "Turnover mode: " + str(_TURNOVER_MODE) +
+                                     ". Turnover rate:" + str(turnover_rate) + ", DG-weighting: " + str(weighting_dg) + ".")
+            hpc.reset_hpc_module()
 
-        # hipp_chaotic_pats_sets, rand_ins = experiment_4_x_1(hpc, train_set_size_ctr, training_patterns_associative)
-        # Tools.save_experiment_4_1_results(hpc, rand_ins, hipp_chaotic_pats_sets, tar_patts, "train_set_size_" +
-        #                                   str(train_set_size_ctr) + "_exp_1" + "turnover_rate_" + str(turnover_rate) +
-        #                                   "weighting_" + str(hpc._weighting_dg), train_set_size_ctr)
+            tar_patts = []
+            for p in training_patterns_associative[:5*train_set_size_ctr]:
+                tar_patts.append(p[1])
 
-        ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
+            hipp_chaotic_pats_sets, rand_ins = experiment_4_x_1(hpc, train_set_size_ctr, training_patterns_associative)
+            Tools.save_experiment_4_1_results(hpc, rand_ins, hipp_chaotic_pats_sets, tar_patts, "train_set_size_" +
+                                              str(train_set_size_ctr) + "_exp_1" + "turnover_rate_" + str(turnover_rate) +
+                                              "weighting_" + str(hpc._weighting_dg), train_set_size_ctr)
 
-        print "Starting experiment 4_2..."
-        # This also saves the experiment_4_x_1 results!
-        information_vector = experiment_4_x_2(hpc, ann, train_set_size_ctr,
-                                              training_patterns_associative[:5 * train_set_size_ctr])
-        print "Saving the results."
-        Tools.save_experiment_4_2_results(information_vector, "train_set_size_" + str(train_set_size_ctr) +
-                                          "_exp_2_")
+            # ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
 
-        # For now, this is the ONLY place where the counter is incremented.
-        Tools.increment_experiment_counter()
+            # print "Starting experiment 4_2..."
+            # This also saves the experiment_4_x_1 results!
+            # information_vector = experiment_4_x_2(hpc, ann, train_set_size_ctr,
+            #                                       training_patterns_associative[:5 * train_set_size_ctr])
+            # print "Saving the results."
+            # Tools.save_experiment_4_2_results(information_vector, "train_set_size_" + str(train_set_size_ctr) +
+            #                                   "_exp_2_")
+
+            # For now, this is the ONLY place where the counter is incremented.
+            Tools.increment_experiment_counter()
+
+hpc._turnover_rate = 0.5
+for dg_w_ctr in range(30):
+    hpc._weighting_dg = dg_w_ctr
+
+    for j in range(10):
+        for train_set_size_ctr in range(2, 6):
+            Tools.append_line_to_log("INIT. EXPERIMENT MESSAGE: ASYNC-flag:" + str(_ASYNC_FLAG) + ". " +
+                                     str(train_set_size_ctr) + "x5. " + "Turnover mode: " + str(_TURNOVER_MODE) +
+                                     ". Turnover rate:" + str(turnover_rate) + ", DG-weighting: " + str(weighting_dg) + ".")
+            hpc.reset_hpc_module()
+
+            tar_patts = []
+            for p in training_patterns_associative[:5*train_set_size_ctr]:
+                tar_patts.append(p[1])
+
+            # hipp_chaotic_pats_sets, rand_ins = experiment_4_x_1(hpc, train_set_size_ctr, training_patterns_associative)
+            # Tools.save_experiment_4_1_results(hpc, rand_ins, hipp_chaotic_pats_sets, tar_patts, "train_set_size_" +
+            #                                   str(train_set_size_ctr) + "_exp_1" + "turnover_rate_" + str(turnover_rate) +
+            #                                   "weighting_" + str(hpc._weighting_dg), train_set_size_ctr)
+
+            ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
+
+            print "Starting experiment 4_2..."
+            # This also saves the experiment_4_x_1 results!
+            information_vector = experiment_4_x_2(hpc, ann, train_set_size_ctr,
+                                                  training_patterns_associative[:5 * train_set_size_ctr])
+            print "Saving the results."
+            Tools.save_experiment_4_2_results(information_vector, "train_set_size_" + str(train_set_size_ctr) +
+                                              "_exp_2_")
+
+            # For now, this is the ONLY place where the counter is incremented.
+            Tools.increment_experiment_counter()

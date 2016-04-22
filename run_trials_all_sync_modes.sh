@@ -24,8 +24,14 @@ theano-cache clear
 echo python ExperimentExecutionm4.py
 python ExperimentExecutionm4.py
 
-touch /home/williapb/Dropbox/log.txt
-cat saved_data/log.txt > /home/williapb/Dropbox/log.txt
+echo Run turnover rate experiments
+echo theano-cache clear
+theano-cache clear
+echo python ExperimentExecutionm.py
+python ExperimentExecutionm.py
+
+#touch /home/williapb/Dropbox/log.txt
+#cat saved_data/log.txt > /home/williapb/Dropbox/log.txt
 
 sleep 1m  # while syncing the log-file.
-sudo poweroff
+poweroff
