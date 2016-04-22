@@ -71,6 +71,8 @@ def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
     pseudopatterns_I = []
     pseudopatterns_II = []
 
+    all_rand_ins = []
+
     for train_set_num in range(5):  # always five training sets
         current_set_hipp_chaotic_recall, current_set_random_ins = \
             training_and_recall_hpc_helper(hpc, training_set_size, train_set_num, original_training_patterns)
@@ -113,10 +115,19 @@ def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
             ann.train(current_pseudopatterns_I)
             # ann.train(current_pseudopatterns_II)
 
+        all_rand_ins.append(current_set_random_ins)
+
     # ann.train(pseudopatterns_I)
     # ann.train(pseudopatterns_II)
 
-    save_experiment_4_1_results(hpc, chaotically_recalled_patterns, "exp_1_before2", training_set_size)
+    #hpc, rand_ins, all_chaotically_recalled_patterns, unique_chaotically_recalled_patterns,
+                                # custom_name, train_set_size
+    tar_patts = []
+    for p in original_training_patterns[:5*training_set_size]:
+        tar_patts.append(p[1])
+
+    save_experiment_4_1_results(hpc, all_rand_ins, chaotically_recalled_patterns, tar_patts, "exp_1_before2",
+                                training_set_size)
 
     # Attempt to recall using the entire DNMM:
     sum_corr = 0.

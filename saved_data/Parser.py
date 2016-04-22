@@ -108,7 +108,7 @@ def get_convergence_avgs(convergence_data):
     for data_set in convergence_data:
         avg_convergence = np.sum(data_set) / float(len(data_set))
         number_converged_arr = np.array(data_set) < 50
-        convergence_ratio = np.sum(number_converged_arr) / float(len(data_set))
+        convergence_ratio = np.sum(number_converged_arr) / float(len(data_set)) * 100
 
         # print np.sum(number_converged_arr) / float(len(data_set)) * 100, '%'
         # print avg_convergence
@@ -135,6 +135,17 @@ def get_average_recall_ratios(distinct_patterns_data):
 def get_standard_deviation(avg_value, values):
     # print "avg:", avg_value
     # print "values:", values
+    std = 0
+    for value in values:
+        std += np.power(value-avg_value, 2)
+    return np.sqrt(std / float(len(values) - 1))  # -1 degree of freedom
+
+
+def get_standard_deviation_from_values(values):
+    avg_value = np.sum(values) / float(len(values))
+    # print "avg:", avg_value
+    # print "values:", values
+    # print "len(values):", len(values)
     std = 0
     for value in values:
         std += np.power(value-avg_value, 2)

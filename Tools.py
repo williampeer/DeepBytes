@@ -111,10 +111,17 @@ def get_pattern_correlation_slow(pattern_1, pattern_2):
     return corr
 
 
-def save_experiment_4_1_results(hpc, all_chaotically_recalled_patterns, unique_chaotically_recalled_patterns,
-                                custom_name, train_set_size):
+def save_experiment_4_1_results(hpc, rand_ins, all_chaotically_recalled_patterns, tar_patts, custom_name, train_set_size):
     experiment_dir = get_experiment_dir()
 
+    unique_chaotically_recalled_patterns = []
+    for pattern_set in all_chaotically_recalled_patterns:
+        for p in pattern_set:
+            if not set_contains_pattern(unique_chaotically_recalled_patterns, p):
+                unique_chaotically_recalled_patterns.append(p)
+
+    # write perfect recall rate to log:
+    log_perfect_recall_rate(unique_chaotically_recalled_patterns, tar_patts)
     save_images_from(unique_chaotically_recalled_patterns, experiment_dir+'/images')
 
     # hpc_f = file(experiment_dir+'/hpc_'+custom_name+'.save', 'wb')
@@ -136,6 +143,11 @@ def save_experiment_4_1_results(hpc, all_chaotically_recalled_patterns, unique_c
     cPickle.dump(all_chaotically_recalled_patterns, f2, protocol=cPickle.HIGHEST_PROTOCOL)
     f2.close()
 
+    f3 = file(get_chaotic_pat_dir(train_set_size)+'/_corresponding_random_ins_exp#' +
+              str(get_experiment_counter()) + '.save', 'wb')
+    cPickle.dump(rand_ins, f3, protocol=cPickle.HIGHEST_PROTOCOL)
+    f3.close()
+
 
 def save_experiment_4_2_results(information_vector, custom_name):
     experiment_dir = get_experiment_dir()
@@ -152,9 +164,9 @@ def save_experiment_4_2_results(information_vector, custom_name):
     f_goodness.write(str(information_vector[4]) + ' <-- goodness of fit')  # goodness of fit
     f_goodness.close()
 
-    f = file(experiment_dir+'/information_vector'+custom_name+'.save', 'wb')
-    cPickle.dump(information_vector, f, protocol=cPickle.HIGHEST_PROTOCOL)
-    f.close()
+    # f = file(experiment_dir+'/information_vector'+custom_name+'.save', 'wb')
+    # cPickle.dump(information_vector, f, protocol=cPickle.HIGHEST_PROTOCOL)
+    # f.close()
 
 
 def get_experiment_counter():
