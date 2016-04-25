@@ -4,28 +4,50 @@ import numpy as np
 import Parser
 
 
-def plot_pattern_stats_from_parsed_data_v1(parsed_data):
+def plot_pattern_stats_from_parsed_data_v1(parsed_data, exp_num):
     _, distinct_patterns_data = Parser.get_convergence_and_distinct_patterns_from_log_v1(parsed_data)
-
-    perfect_recall_rates, spurious_patterns_extracted = Parser.\
+    perfect_recall_rates, spurious_patterns_extracted = Parser. \
         get_perfect_recall_rates_and_spurious_patterns_from_data(parsed_data)
+
+    dist_patterns_data_experiments = []
+    pf_buckets = []
+    spurious_buckets = []
+    for i in range(4):
+        dist_patterns_data_experiments.append([])
+        pf_buckets.append([])
+        spurious_buckets.append([])
+
+    for i in range(4):
+        dist_patterns_data_experiments[i].append(distinct_patterns_data[0][i*100: i*100 + 100])
+        dist_patterns_data_experiments[i].append(distinct_patterns_data[1][i*100: i*100 + 100])
+        dist_patterns_data_experiments[i].append(distinct_patterns_data[2][i*100: i*100 + 100])
+        dist_patterns_data_experiments[i].append(distinct_patterns_data[3][i*100: i*100 + 100])
+
+        pf_buckets[i].append(perfect_recall_rates[0][i*20: i*20 + 20])
+        pf_buckets[i].append(perfect_recall_rates[1][i*20: i*20 + 20])
+        pf_buckets[i].append(perfect_recall_rates[2][i*20: i*20 + 20])
+        pf_buckets[i].append(perfect_recall_rates[3][i*20: i*20 + 20])
+
+        spurious_buckets[i].append(spurious_patterns_extracted[0][i*20: i*20 + 20])
+        spurious_buckets[i].append(spurious_patterns_extracted[1][i*20: i*20 + 20])
+        spurious_buckets[i].append(spurious_patterns_extracted[2][i*20: i*20 + 20])
+        spurious_buckets[i].append(spurious_patterns_extracted[3][i*20: i*20 + 20])
+
     # convergence_data[0]: convergence data for the first set size.
-    avg_recall, stds_avg_recall = Parser.get_average_recall_ratios(distinct_patterns_data)
+    avg_recall, stds_avg_recall = Parser.get_average_recall_ratios(dist_patterns_data_experiments[exp_num])
 
-    for i in range(len(spurious_patterns_extracted)):
-        for j in range(len(spurious_patterns_extracted[i])):
-            spurious_patterns_extracted[i][j] = spurious_patterns_extracted[i][j] / 5.
-    avg_spurious_ratios, stds_spurious = Parser.get_average_recall_ratios(spurious_patterns_extracted)
+    for i in range(len(spurious_buckets[exp_num])):
+        for j in range(len(spurious_buckets[exp_num][i])):
+            spurious_buckets[exp_num][i][j] = spurious_buckets[exp_num][i][j] / 5.
 
-    print avg_recall
-    # for i in range(len(avg_recall_ratios)):
-    #     avg_recall_ratios[i] = avg_recall_ratios[i] - avg_spurious_ratios[i]
-    #
-    # print avg_recall_ratios
-    # print stds_avg_recall
+    # print spurious_buckets[0][1]
+    avg_spurious_ratios, stds_spurious = Parser.get_average_recall_ratios(spurious_buckets[exp_num])
+
+    # print avg_recall
+    # print "stds_avg_recall:", stds_avg_recall
     # print
     # print avg_spurious_ratios
-    # print stds_spurious
+    # print "stds_spurious:", stds_spurious
 
     # graph 1: box plot
     width = .35
@@ -60,11 +82,6 @@ def plot_convergence_ratios_for_data(parsed_data):
     convergence_stats_async_false_mode_0 = Parser.get_convergence_avgs(ds[2])[1]
     convergence_stats_async_false_mode_1 = Parser.get_convergence_avgs(ds[3])[1]
 
-    e1 = []
-    for i in range(4):
-        e1.append(Parser.get_standard_deviation_from_values((np.array(ds[0]) < 50)[i]))
-    e1 = np.asarray(e1)
-
     # Plotting:
     x = np.asarray([2, 3, 4, 5])
     plt.rcParams.update({'font.size': 20})
@@ -89,7 +106,7 @@ def plot_convergence_ratios_for_data(parsed_data):
     plt.show()
 
 
-def plot_convergence_iterations_for_data(parsed_data):
+def plot_convergence_iterations_for_data(parsed_data, exp_num):
     convergence_data, _ = Parser.get_convergence_and_distinct_patterns_from_log_v1(parsed_data)
     # for all data: 4 buckets, containing 4x100 data points.
 
@@ -98,7 +115,7 @@ def plot_convergence_iterations_for_data(parsed_data):
     for i in range(4):
         ds.append([convergence_data[0][i*100:i*100 + 100], convergence_data[1][i*100:i*100 + 100],
                    convergence_data[2][i*100:i*100 + 100], convergence_data[3][i*100:i*100 + 100]])
-    average_iters_convergence, sigmas = Parser.get_average_recall_ratios(ds[0])
+    average_iters_convergence, sigmas = Parser.get_average_recall_ratios(ds[exp_num])
 
     # Plotting:
     x = np.asarray([2, 3, 4, 5])
@@ -113,8 +130,8 @@ def plot_convergence_iterations_for_data(parsed_data):
     plt.title('Average #iterations before convergence by set size')
     plt.xticks(x, ('2', '3', '4', '5'))
 
-    plt.legend((p1[0], p2[0]), ('Async., turnover between learnt sets', 'Standard deviation'),
-               bbox_to_anchor=(0.428, 1))
+    plt.legend((p1[0], p2[0]), ('Sync., turnover for every learnt set', 'Standard deviation'))
+               # bbox_to_anchor=(0.445, 1))
     plt.show()
 
 
@@ -165,6 +182,7 @@ def plot_perfect_recall_rates_for_data(parsed_data):
     plt.xlabel('Set size')
     plt.title('Average perfect recall rates by set size')
     plt.xticks(x, ('2', '3', '4', '5'))
+    plt.margins(0.05)
 
     plt.legend((p1[0], p2[0], p3[0], p4[0]), ('Async., turnover for new sets', 'Async., turnover every iteration',
                                               'Sync., turnover for new sets', 'Sync., turnover every iteration'))
@@ -197,15 +215,15 @@ def plot_avg_perfect_extraction_and_spurious_patterns(parsed_data):
     spurpf1, stdspurpf1 = Parser.get_average_recall_ratios(spds[3])
 
     for i in range(len(perf_recall_stats_async_true_mode_0)):
-        perf_recall_stats_async_true_mode_0[i] = perf_recall_stats_async_true_mode_0[i] * (2 + i)
-        perf_recall_stats_async_true_mode_1[i] = perf_recall_stats_async_true_mode_1[i] * (2 + i)
-        perf_recall_stats_async_false_mode_0[i] = perf_recall_stats_async_false_mode_0[i] * (2 + i)
-        perf_recall_stats_async_false_mode_1[i] = perf_recall_stats_async_false_mode_1[i] * (2 + i)
+        perf_recall_stats_async_true_mode_0[i] = perf_recall_stats_async_true_mode_0[i] * float(2 + i)
+        perf_recall_stats_async_true_mode_1[i] = perf_recall_stats_async_true_mode_1[i] * float(2 + i)
+        perf_recall_stats_async_false_mode_0[i] = perf_recall_stats_async_false_mode_0[i] * float(2 + i)
+        perf_recall_stats_async_false_mode_1[i] = perf_recall_stats_async_false_mode_1[i] * float(2 + i)
 
-        stds_t_0[i] = stds_t_0[i] * (2 + i)
-        stds_t_1[i] = stds_t_1[i] * (2 + i)
-        stds_f_0[i] = stds_f_0[i] * (2 + i)
-        stds_f_1[i] = stds_f_1[i] * (2 + i)
+        stds_t_0[i] = stds_t_0[i] * float(2 + i)
+        stds_t_1[i] = stds_t_1[i] * float(2 + i)
+        stds_f_0[i] = stds_f_0[i] * float(2 + i)
+        stds_f_1[i] = stds_f_1[i] * float(2 + i)
 
         spurpt0[i] = spurpt0[i] / float(2+i)
         spurpt1[i] = spurpt1[i] / float(2+i)
@@ -218,13 +236,13 @@ def plot_avg_perfect_extraction_and_spurious_patterns(parsed_data):
     plt.rcParams.update({'font.size': 20})
 
     p1 = plt.bar(x, perf_recall_stats_async_true_mode_0, color='y', width=width/2)
-    p1_e = plt.bar(x, spurpt0, color='r', width=width/2, bottom=perf_recall_stats_async_true_mode_0)
+    # p1_e = plt.bar(x, spurpt0, color='r', width=width/2, bottom=perf_recall_stats_async_true_mode_0)
     p2 = plt.bar(x+width/2, perf_recall_stats_async_true_mode_1, color='g', width=width/2)
-    p2_2 = plt.bar(x+width/2, spurpt1, color='r', width=width/2, bottom=perf_recall_stats_async_true_mode_1)
+    # p2_2 = plt.bar(x+width/2, spurpt1, color='r', width=width/2, bottom=perf_recall_stats_async_true_mode_1)
     p3 = plt.bar(x+width, perf_recall_stats_async_false_mode_0, color='b', width=width/2)
-    p3_e = plt.bar(x+width, spurpf0, color='r', width=width/2, bottom=perf_recall_stats_async_false_mode_0)
+    # p3_e = plt.bar(x+width, spurpf0, color='r', width=width/2, bottom=perf_recall_stats_async_false_mode_0)
     p4 = plt.bar(x+3*width/2, perf_recall_stats_async_false_mode_1, color='c', width=width/2)
-    p4_e = plt.bar(x+3*width/2, spurpf1, color='r', width=width/2, bottom=perf_recall_stats_async_false_mode_1)
+    # p4_e = plt.bar(x+3*width/2, spurpf1, color='r', width=width/2, bottom=perf_recall_stats_async_false_mode_1)
 
     plt.ylabel('Perfectly recalled patterns')
     plt.xlabel('Set size')
@@ -232,20 +250,19 @@ def plot_avg_perfect_extraction_and_spurious_patterns(parsed_data):
     plt.xticks(x + width, ('2', '3', '4', '5'))
     plt.yticks(np.arange(0, 6, 1))
 
-    plt.legend((p1[0], p2[0], p3[0], p4[0], p1_e[0]), ('Async., turnover for new sets',
+    plt.legend((p1[0], p2[0], p3[0], p4[0]), ('Async., turnover for new sets',
                                                        'Async., turnover every iteration',
                                                        'Sync., turnover for new sets',
-                                                       'Sync., turnover every iteration',
-                                                       'Spuriously recalled patterns'))
+                                                       'Sync., turnover every iteration'))
                # bbox_to_anchor=(0.377, 1))
     plt.show()
 
 
 # format: [set_size, #sets, [convergence_num, distinct_patterns_recalled]
 # 10 trials for the current log
-outer_scope_parsed_data = Parser.get_data_from_log_file('log.txt')
-# plot_pattern_stats_from_parsed_data_v1(outer_scope_parsed_data)
+outer_scope_parsed_data = Parser.get_data_from_log_file('log-analysis.txt')
+# plot_pattern_stats_from_parsed_data_v1(outer_scope_parsed_data, 3)
 # plot_convergence_ratios_for_data(outer_scope_parsed_data)
-plot_convergence_iterations_for_data(outer_scope_parsed_data)
+# plot_convergence_iterations_for_data(outer_scope_parsed_data, 2)
 # plot_perfect_recall_rates_for_data(outer_scope_parsed_data)
-# plot_avg_perfect_extraction_and_spurious_patterns(outer_scope_parsed_data)
+plot_avg_perfect_extraction_and_spurious_patterns(outer_scope_parsed_data)
