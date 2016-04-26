@@ -68,17 +68,19 @@ def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
 
     # Generate pseudopatterns:
     chaotically_recalled_patterns = []
+    all_rand_ins = []
+
     pseudopatterns_I = []
     pseudopatterns_II = []
-
-    all_rand_ins = []
 
     for train_set_num in range(5):  # always five training sets
         current_set_hipp_chaotic_recall, current_set_random_ins = \
             training_and_recall_hpc_helper(hpc, training_set_size, train_set_num, original_training_patterns)
 
-        for curr_chaotic_p in current_set_hipp_chaotic_recall:
-            chaotically_recalled_patterns.append(curr_chaotic_p)
+        for p_ctr in range(len(current_set_hipp_chaotic_recall)):
+            if not Tools.set_contains_pattern(chaotically_recalled_patterns, current_set_hipp_chaotic_recall[p_ctr]):
+                chaotically_recalled_patterns.append(current_set_hipp_chaotic_recall[p_ctr])
+                all_rand_ins.append(current_set_random_ins[p_ctr])
 
         current_pseudopatterns_I = []
         current_pseudopatterns_II = []
@@ -126,8 +128,10 @@ def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
     for p in original_training_patterns[:5*training_set_size]:
         tar_patts.append(p[1])
 
-    save_experiment_4_1_results(hpc, all_rand_ins, chaotically_recalled_patterns, tar_patts, "exp_1_before2",
-                                training_set_size)
+    custom_name = "train_set_size_" + str(training_set_size) + "_exp_1" + "turnover_rate_" + str(hpc._turnover_rate) + \
+                  "weighting_" + str(hpc._weighting_dg)
+    Tools.save_experiment_4_1_results(hpc, all_rand_ins, chaotically_recalled_patterns, tar_patts, custom_name,
+                                      training_set_size)
 
     # Attempt to recall using the entire DNMM:
     sum_corr = 0.
