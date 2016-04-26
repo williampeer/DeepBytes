@@ -31,8 +31,8 @@ for letter_data in data_letters_lowercase:
     training_patterns_heterogeneous.append([uppercase_letter, lowercase_letter])
 
 turnover_rate = 0.5  #(Tools.get_parameter_counter() % 18) * 0.02 + 0.32
-weighting_dg = 25  # Tools.get_experiment_counter() % 26
-_ASYNC_FLAG = False
+weighting_dg = 1  # Tools.get_experiment_counter() % 26
+_ASYNC_FLAG = True
 _TURNOVER_MODE = 1  # 0 for between every new set. 1 for every set iteration.
 
 # print "TRIAL #", trial, "turnover rate:", turnover_rate
@@ -72,7 +72,7 @@ for turnover_rate_increment_ctr in range(30):
             # For now, this is the ONLY place where the counter is incremented.
             Tools.increment_experiment_counter()
 
-hpc._turnover_rate = 0.5
+hpc._turnover_rate = 0.04  # bio. "realistic" param.
 for dg_w_ctr in range(30):
     hpc._weighting_dg = dg_w_ctr
 

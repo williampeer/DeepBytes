@@ -48,8 +48,8 @@ hpc = HPC([io_dim, 240, 1600, 480, io_dim],
           _ASYNC_FLAG=_ASYNC_FLAG, _TURNOVER_MODE=_TURNOVER_MODE)
 
 
-for i in range(20):
-    for train_set_size_ctr in range(2, 6):
+for i in range(1):
+    for train_set_size_ctr in range(2, 3):
         Tools.append_line_to_log("INIT. EXPERIMENT #" + Tools.get_experiment_counter() + ": ASYNC-flag:" +
                                  str(_ASYNC_FLAG) + ". " + str(train_set_size_ctr) + "x5. " + "Turnover mode: " +
                                  str(_TURNOVER_MODE) + ". Turnover rate:" + str(turnover_rate) + ", DG-weighting: " +

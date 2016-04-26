@@ -72,7 +72,7 @@ for turnover_rate_increment_ctr in range(30):
             # For now, this is the ONLY place where the counter is incremented.
             Tools.increment_experiment_counter()
 
-hpc._turnover_rate = 0.5
+hpc._turnover_rate = 0.04
 for dg_w_ctr in range(30):
     hpc._weighting_dg = dg_w_ctr
 

@@ -194,8 +194,6 @@ def get_avg_convergence_for_x_and_set_size(set_size, buckets, x):
     stds_conv_ratios = []
 
     data_set = buckets[set_size-2]
-    if set_size == 3:
-        print data_set
     for x_value in x:
         data_points = data_set[str(x_value)]  # dict., 10 data points for each turnover rate and set size
 
@@ -207,6 +205,21 @@ def get_avg_convergence_for_x_and_set_size(set_size, buckets, x):
         stds_conv_ratios.append(std_ratio)
 
     return [x, y_conv_iters, stds_conv_iters, y_conv_ratios, stds_conv_ratios]
+
+
+def get_avg_perfect_recall_for_x_and_set_size(set_size, buckets, x):
+    y = []
+    stds = []
+
+    data_set = buckets[set_size-2]
+    for x_value in x:
+        data_points = data_set[str(x_value)]  # dict., 10 data points for each DG-weighting and set size
+
+        avg, std = get_perfect_recall_stats_from(data_points)
+        y.append(avg)
+        stds.append(std)
+
+    return [x, y, stds]
 
 
 def get_avg(values):
@@ -231,3 +244,12 @@ def get_convergence_stats_from_data_points(data_points):
     avg_convergence_iters = get_avg(conv_data)
     std_convergence_iters = get_standard_deviation(avg_convergence_iters, conv_data)
     return [avg_convergence_ratio, std_convergence_ratio, avg_convergence_iters, std_convergence_iters]
+
+
+def get_perfect_recall_stats_from(data_points):
+    values = []
+    for dp in data_points:
+        values.append(dp[3])
+    avg = get_avg(values)
+    std = get_standard_deviation(avg, values)
+    return [avg, std]

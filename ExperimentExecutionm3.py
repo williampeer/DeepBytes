@@ -33,7 +33,7 @@ for letter_data in data_letters_lowercase:
 turnover_rate = 0.5  #(Tools.get_parameter_counter() % 18) * 0.02 + 0.32
 weighting_dg = 25  # Tools.get_experiment_counter() % 26
 _ASYNC_FLAG = False
-_TURNOVER_MODE = 1  # 0 for between every new set. 1 for every set iteration.
+_TURNOVER_MODE = 0  # 0 for between every new set. 1 for every set iteration.
 
 # print "TRIAL #", trial, "turnover rate:", turnover_rate
 # dims,
