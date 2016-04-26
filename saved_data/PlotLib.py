@@ -258,11 +258,63 @@ def plot_avg_perfect_extraction_and_spurious_patterns(parsed_data):
     plt.show()
 
 
+def plot_convergence_stats_for_turnover_rates(parsed_data):
+    set_size_buckets = Parser.get_dictionary_list_of_convergence_and_perfect_recall_for_turnover_rates(
+    Parser.get_data_with_turnover_rates(outer_scope_parsed_data, 'log.txt'))
+
+    # x, y_iters, std_iters, y_ratios, std_ratios
+    results_2 = Parser.get_avg_convergence_for_x_and_set_size(2, set_size_buckets)
+    results_3 = Parser.get_avg_convergence_for_x_and_set_size(3, set_size_buckets)
+    results_4 = Parser.get_avg_convergence_for_x_and_set_size(4, set_size_buckets)
+    results_5 = Parser.get_avg_convergence_for_x_and_set_size(5, set_size_buckets)
+
+    plt.rcParams.update({'font.size': 20})
+    plt.ylabel('Convergence ratio')
+    plt.xlabel('Turnover rate')
+    plt.title('Average convergence rate by turnover rate, ASYNC., DG-weighting = 25')
+
+    p2 = plt.errorbar(results_2[0], results_2[3], results_2[4])
+    p3 = plt.errorbar(results_3[0], results_3[3], results_3[4])
+    p4 = plt.errorbar(results_4[0], results_4[3], results_4[4])
+    p5 = plt.errorbar(results_5[0], results_5[3], results_5[4])
+
+    plt.legend((p2[0], p3[0], p4[0], p5[0]), ('Set size = 2', 'Set size = 3', 'Set size = 4', 'Set size = 5'))
+
+    plt.show()
+
+
+def plot_convergence_stats_for_dg_weightings(parsed_data):
+    set_size_buckets = Parser.get_dictionary_list_of_convergence_and_perfect_recall_for_dg_weightings(parsed_data)
+
+    # x, y_iters, std_iters, y_ratios, std_ratios
+    x = range(30)
+    results_2 = Parser.get_avg_convergence_for_x_and_set_size(2, set_size_buckets, x)
+    results_3 = Parser.get_avg_convergence_for_x_and_set_size(3, set_size_buckets, x)
+    results_4 = Parser.get_avg_convergence_for_x_and_set_size(4, set_size_buckets, x)
+    results_5 = Parser.get_avg_convergence_for_x_and_set_size(5, set_size_buckets, x)
+
+    plt.rcParams.update({'font.size': 20})
+    plt.ylabel('Convergence ratio')
+    plt.xlabel('Turnover rate')
+    plt.title('Average convergence rate by DG-weighting, ASYNC., turnover rate = 0.5')
+
+    p2 = plt.errorbar(results_2[0], results_2[3], results_2[4])
+    p3 = plt.errorbar(results_3[0], results_3[3], results_3[4])
+    p4 = plt.errorbar(results_4[0], results_4[3], results_4[4])
+    p5 = plt.errorbar(results_5[0], results_5[3], results_5[4])
+
+    plt.legend((p2[0], p3[0], p4[0], p5[0]), ('Set size = 2', 'Set size = 3', 'Set size = 4', 'Set size = 5'))
+
+    plt.show()
+
+
 # format: [set_size, #sets, [convergence_num, distinct_patterns_recalled]
 # 10 trials for the current log
-outer_scope_parsed_data = Parser.get_data_from_log_file('log-analysis.txt')
+outer_scope_parsed_data = Parser.get_data_from_log_file('log.txt')
 # plot_pattern_stats_from_parsed_data_v1(outer_scope_parsed_data, 3)
 # plot_convergence_ratios_for_data(outer_scope_parsed_data)
 # plot_convergence_iterations_for_data(outer_scope_parsed_data, 2)
 # plot_perfect_recall_rates_for_data(outer_scope_parsed_data)
-plot_avg_perfect_extraction_and_spurious_patterns(outer_scope_parsed_data)
+# plot_avg_perfect_extraction_and_spurious_patterns(outer_scope_parsed_data)
+# plot_convergence_stats_for_turnover_rates(outer_scope_parsed_data)
+# plot_convergence_stats_for_dg_weightings(outer_scope_parsed_data)

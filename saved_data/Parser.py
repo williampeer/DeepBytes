@@ -42,6 +42,22 @@ def get_data_from_log_file(filename):
     return all_data
 
 
+def get_data_with_turnover_rates(parsed_data, log_file):
+    log_file = file(log_file, 'r')
+
+    contents = log_file.read()
+    log_file.close()
+    lines = contents.split('\n')
+    # print turnover_rate
+    for experiment_ctr in range(len(lines)/13):
+        current_line = lines[experiment_ctr * 13]
+        stage_1 = current_line.split('Turnover rate:')[-1]
+        turnover_rate = float(stage_1.split(', ')[0])
+        parsed_data[experiment_ctr].append(turnover_rate)
+
+    return parsed_data
+
+
 def get_convergence_and_distinct_patterns_from_log_v1(parsed_data):
     experiment_data_convergence = []
     experiment_data_distinct_patterns = []
@@ -143,3 +159,75 @@ def get_standard_deviation_from_values(values):
     for value in values:
         std += (value-avg_value) ** 2
     return np.sqrt(std / float(len(values) - 1))  # -1 degree of freedom
+
+
+def get_dictionary_list_of_convergence_and_perfect_recall_for_turnover_rates(parsed_data):
+    set_size_buckets = []
+    for i in range(4):
+        set_size_buckets.append({})
+        for j in range(30):
+            set_size_buckets[i][str(0.02*j)] = []
+    for exp_ctr in range(len(parsed_data)):
+        current_data = parsed_data[exp_ctr]
+        set_size_buckets[current_data[0]-2][str(current_data[-1])].append(current_data)
+
+    return set_size_buckets
+
+
+def get_dictionary_list_of_convergence_and_perfect_recall_for_dg_weightings(parsed_data):
+    set_size_buckets = []
+    for i in range(4):
+        set_size_buckets.append({})
+        for j in range(30):
+            set_size_buckets[i][str(j)] = []
+    for exp_ctr in range(len(parsed_data)):
+        current_data = parsed_data[exp_ctr]
+        set_size_buckets[current_data[0]-2][str(int(current_data[2]))].append(current_data)
+
+    return set_size_buckets
+
+
+def get_avg_convergence_for_x_and_set_size(set_size, buckets, x):
+    y_conv_iters = []
+    stds_conv_iters = []
+    y_conv_ratios = []
+    stds_conv_ratios = []
+
+    data_set = buckets[set_size-2]
+    if set_size == 3:
+        print data_set
+    for x_value in x:
+        data_points = data_set[str(x_value)]  # dict., 10 data points for each turnover rate and set size
+
+        avg_ratio, std_ratio, avg_iters, std_iters = get_convergence_stats_from_data_points(data_points)
+
+        y_conv_iters.append(avg_iters)
+        stds_conv_iters.append(std_iters)
+        y_conv_ratios.append(avg_ratio)
+        stds_conv_ratios.append(std_ratio)
+
+    return [x, y_conv_iters, stds_conv_iters, y_conv_ratios, stds_conv_ratios]
+
+
+def get_avg(values):
+    holder = 0
+    for val in values:
+        holder += val
+    return holder / float(len(values))
+
+
+def get_convergence_stats_from_data_points(data_points):
+    conv_data = []
+    dist_p_data = []
+    for dp in data_points:
+        for current_tuple in dp[5:10]:
+            conv_data.append(current_tuple[0])
+            dist_p_data.append(current_tuple[1])
+
+    conv_bools_as_floats = (np.asarray(conv_data) < 50).astype(np.float32)
+    avg_convergence_ratio = np.sum(conv_bools_as_floats) / float(len(conv_bools_as_floats))
+    std_convergence_ratio = get_standard_deviation(avg_convergence_ratio, conv_bools_as_floats)
+
+    avg_convergence_iters = get_avg(conv_data)
+    std_convergence_iters = get_standard_deviation(avg_convergence_iters, conv_data)
+    return [avg_convergence_ratio, std_convergence_ratio, avg_convergence_iters, std_convergence_iters]
