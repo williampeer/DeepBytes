@@ -54,7 +54,7 @@ for turnover_rate_increment_ctr in range(30):
 
     for i in range(10):
         for train_set_size_ctr in range(2, 6):
-            Tools.append_line_to_log("INIT. EXPERIMENT #" + Tools.get_experiment_counter() + ": ASYNC-flag:" +
+            Tools.append_line_to_log("INIT. EXPERIMENT #" + str(Tools.get_experiment_counter()) + ": ASYNC-flag:" +
                                      str(_ASYNC_FLAG) + ". " + str(train_set_size_ctr) + "x5. " + "Turnover mode: " +
                                      str(_TURNOVER_MODE) + ". Turnover rate:" + str(turnover_rate) +
                                      ", DG-weighting: " + str(weighting_dg) + ".")
