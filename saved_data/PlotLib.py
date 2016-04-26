@@ -259,9 +259,9 @@ def plot_avg_perfect_extraction_and_spurious_patterns(parsed_data):
 
 
 # ================================== STRUCTURED BY TURNOVER RATE OR DG-WEIGHTING ======================================
-def plot_convergence_stats_for_turnover_rates(parsed_data):
+def plot_convergence_stats_for_turnover_rates(parsed_data, log_filename):
     set_size_buckets = Parser.get_dictionary_list_of_convergence_and_perfect_recall_for_turnover_rates(
-        Parser.get_data_with_turnover_rates(parsed_data, 'log.txt'))
+        Parser.get_data_with_turnover_rates(parsed_data, log_filename))
 
     # x, y_iters, std_iters, y_ratios, std_ratios
     x = [x * 0.02 for x in range(30)]
@@ -280,14 +280,17 @@ def plot_convergence_stats_for_turnover_rates(parsed_data):
     p4 = plt.errorbar(results_4[0], results_4[3], results_4[4])
     p5 = plt.errorbar(results_5[0], results_5[3], results_5[4])
 
-    plt.legend((p2[0], p3[0], p4[0], p5[0]), ('Set size = 2', 'Set size = 3', 'Set size = 4', 'Set size = 5'))
+    plt.xticks([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.58])
+    plt.legend((p2[0], p3[0], p4[0], p5[0]), ('2x5', '3x5', '4x5', '5x5'),
+               bbox_to_anchor=(1, 1.0155), ncol=4, fancybox=True, shadow=True)
+    plt.margins(0.08)
 
     plt.show()
 
 
-def plot_perfect_recall_rates_for_turnover_rates(parsed_data):
+def plot_perfect_recall_rates_for_turnover_rates(parsed_data, log_filename):
     set_size_buckets = Parser.get_dictionary_list_of_convergence_and_perfect_recall_for_turnover_rates(
-        Parser.get_data_with_turnover_rates(parsed_data, 'log.txt'))
+        Parser.get_data_with_turnover_rates(parsed_data, log_filename))
 
     # x, y_iters, std_iters, y_ratios, std_ratios
     x = [x * 0.02 for x in range(30)]
@@ -306,8 +309,9 @@ def plot_perfect_recall_rates_for_turnover_rates(parsed_data):
     p4 = plt.errorbar(results_4[0], results_4[1], results_4[2])
     p5 = plt.errorbar(results_5[0], results_5[1], results_5[2])
 
-    plt.legend((p2[0], p3[0], p4[0], p5[0]), ('Set size = 2', 'Set size = 3', 'Set size = 4', 'Set size = 5'),
-               bbox_to_anchor=(0.13, 1))
+    plt.legend((p2[0], p3[0], p4[0], p5[0]), ('2x5', '3x5', '4x5', '5x5'), bbox_to_anchor=(1, 1.0155), ncol=4, fancybox=True, shadow=True)
+    plt.xticks([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.58])
+    plt.margins(0.075)
 
     plt.show()
 
@@ -332,19 +336,20 @@ def plot_convergence_stats_for_dg_weightings(parsed_data):
     p4 = plt.errorbar(results_4[0], results_4[3], results_4[4])
     p5 = plt.errorbar(results_5[0], results_5[3], results_5[4])
 
-    plt.legend((p2[0], p3[0], p4[0], p5[0]), ('Set size = 2', 'Set size = 3', 'Set size = 4', 'Set size = 5'))
+    plt.legend((p2[0], p3[0], p4[0], p5[0]), ('2x5', '3x5', '4x5', '5x5'))
 
     plt.show()
 
 
 # format: [set_size, #sets, [convergence_num, distinct_patterns_recalled]
 # 10 trials for the current log
-outer_scope_parsed_data = Parser.get_data_from_log_file('log.txt')
+log_filename = 'log-25.04-turnover-rates_async_m0_dgw25.txt'
+outer_scope_parsed_data = Parser.get_data_from_log_file(log_filename)
 # plot_pattern_stats_from_parsed_data_v1(outer_scope_parsed_data, 3)
 # plot_convergence_ratios_for_data(outer_scope_parsed_data)
 # plot_convergence_iterations_for_data(outer_scope_parsed_data, 2)
 # plot_perfect_recall_rates_for_data(outer_scope_parsed_data)
 # plot_avg_perfect_extraction_and_spurious_patterns(outer_scope_parsed_data)
-# plot_convergence_stats_for_turnover_rates(outer_scope_parsed_data)
-plot_perfect_recall_rates_for_turnover_rates(outer_scope_parsed_data)
+plot_convergence_stats_for_turnover_rates(outer_scope_parsed_data, log_filename)
+# plot_perfect_recall_rates_for_turnover_rates(outer_scope_parsed_data, log_filename)
 # plot_convergence_stats_for_dg_weightings(outer_scope_parsed_data)
