@@ -115,13 +115,16 @@ def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
         ann.train(ann_current_training_set)
 
         # generate p_I's; should reverse outputs, and get IO's from ANN as p_I
+        pattern_length = len(tmp_p_I_set[0][0])
         for i in range(len(tmp_p_I_set)):
-            flip_bits = Tools.binomial_f(pseudopattern_I_set_size, 1, 0.5)
-            pattern = np.abs(tmp_p_I_set[i] - flip_bits)
-            current_pseudopatterns_I.append(ann.get_IO(pattern))
+            flip_bits = np.ones_like(tmp_p_I_set[0], dtype=np.float32) - 2 * Tools.binomial_f(1, pattern_length, 0.5)
+            pattern = tmp_p_I_set[i] * flip_bits  # binomial_f returns a 2-dim. array
+            I, O = ann.get_IO(pattern)
+            current_pseudopatterns_I.append([O, I])
         # generate p_II's
         while len(current_pseudopatterns_II) < pseudopattern_II_set_size:
-            current_pseudopatterns_II.append(ann.get_random_IO())
+            I, O = ann.get_random_IO()
+            current_pseudopatterns_II.append([I, O])
 
         ann.train(current_pseudopatterns_I)
         ann.train(current_pseudopatterns_II)
