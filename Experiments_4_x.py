@@ -110,7 +110,7 @@ def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
         # train on currently extracted patterns
         ann_current_training_set = []
         for i in range(len(current_set_hipp_chaotic_recall)):
-            ann_current_training_set.append([current_set_hipp_chaotic_recall[i], current_set_random_ins[i]])
+            ann_current_training_set.append([current_set_random_ins[i], current_set_hipp_chaotic_recall[i]])
 
         ann.train(ann_current_training_set)
 
@@ -120,7 +120,7 @@ def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
             flip_bits = np.ones_like(tmp_p_I_set[0], dtype=np.float32) - 2 * Tools.binomial_f(1, pattern_length, 0.5)
             pattern = tmp_p_I_set[i] * flip_bits  # binomial_f returns a 2-dim. array
             I, O = ann.get_IO(pattern)
-            current_pseudopatterns_I.append([O, I])
+            current_pseudopatterns_I.append([I, O])
         # generate p_II's
         while len(current_pseudopatterns_II) < pseudopattern_II_set_size:
             I, O = ann.get_random_IO()
