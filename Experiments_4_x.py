@@ -1,5 +1,5 @@
 import time
-from HPCWrappers import hpc_learn_patterns_wrapper, hpc_chaotic_recall_wrapper, generate_pseudopattern_II_hpc_outputs
+from HPCWrappers import hpc_learn_patterns_wrapper, hpc_chaotic_recall_wrapper
 from Tools import set_contains_pattern, get_pattern_correlation, save_experiment_4_1_results, save_images_from
 import Tools
 import numpy as np
@@ -10,6 +10,11 @@ next_experiment_im[0].append(-1)
 
 
 def experiment_4_x_1(hpc, training_set_size, original_training_patterns):
+    Tools.append_line_to_log("INIT. EXPERIMENT #" + str(Tools.get_experiment_counter()) + ". Type: 4_x_1" +
+                             ": ASYNC-flag:" + str(hpc._ASYNC_FLAG) + ". " + str(training_set_size) + "x5. " +
+                             "Turnover mode: " + str(hpc._TURNOVER_MODE) + ". Turnover rate:" +
+                             str(hpc._turnover_rate) + ", DG-weighting: " + str(hpc._weighting_dg) + ".")
+
     hippocampal_chaotic_recall_patterns = []
     random_ins = []
 
@@ -64,9 +69,16 @@ def training_and_recall_hpc_helper(hpc, training_set_size, train_set_num, origin
 
 
 def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
-    pseudopattern_set_size = 20  # this should be set to 20. debugging mode: small value.
+    Tools.append_line_to_log("INIT. EXPERIMENT #" + str(Tools.get_experiment_counter()) + ". Type: 4_x_2" +
+                             ": ASYNC-flag:" + str(hpc._ASYNC_FLAG) + ". " + str(training_set_size) + "x5. " +
+                             "Turnover mode: " + str(hpc._TURNOVER_MODE) + ". Turnover rate:" +
+                             str(hpc._turnover_rate) + ", DG-weighting: " + str(hpc._weighting_dg) + ".")
 
-    # Generate pseudopatterns:
+
+    pseudopattern_set_size = 20  # this should be set to 20. debugging mode: small value.
+    pseudopattern_I_set_size = pseudopattern_set_size/2
+    pseudopattern_II_set_size = pseudopattern_set_size - pseudopattern_I_set_size
+
     chaotically_recalled_patterns = []
     all_rand_ins = []
 
@@ -78,52 +90,43 @@ def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
             training_and_recall_hpc_helper(hpc, training_set_size, train_set_num, original_training_patterns)
 
         for p_ctr in range(len(current_set_hipp_chaotic_recall)):
-            if not Tools.set_contains_pattern(chaotically_recalled_patterns, current_set_hipp_chaotic_recall[p_ctr]):
-                chaotically_recalled_patterns.append(current_set_hipp_chaotic_recall[p_ctr])
-                all_rand_ins.append(current_set_random_ins[p_ctr])
+            # if not Tools.set_contains_pattern(chaotically_recalled_patterns, current_set_hipp_chaotic_recall[p_ctr]):
+            chaotically_recalled_patterns.append(current_set_hipp_chaotic_recall[p_ctr])
+            all_rand_ins.append(current_set_random_ins[p_ctr])
 
         current_pseudopatterns_I = []
         current_pseudopatterns_II = []
 
-        # using the same temporarily constant random input and output as in the chaotic recall session:
-        if len(current_set_random_ins) > 0:
-            # for pattern_ctr in range(pseudopattern_set_size):
-            #     current_random_in = current_set_random_ins[pattern_ctr % len(current_set_random_ins)]
-            #     current_hipp_recall = current_set_hipp_chaotic_recall[pattern_ctr % len(current_set_hipp_chaotic_recall)]
-            #     current_pseudopatterns_I.append([current_random_in, current_hipp_recall])
+        tmp_p_I_set = []
+        if len(current_set_hipp_chaotic_recall) >= pseudopattern_I_set_size:
+            tmp_p_I_set += current_set_hipp_chaotic_recall
+        else:
+            tmp_p_I_set += current_set_hipp_chaotic_recall
+            while len(current_pseudopatterns_I) < pseudopattern_I_set_size:
+                _, _, cur_p_recallled = hpc.recall_until_stability_criteria(should_display_image=False, max_iterations=300)
+                tmp_p_I_set += cur_p_recallled
 
-            # Reflecting HPC config.:
-            for pattern_ctr in range(pseudopattern_set_size):
-                # generate random input:
-                random_hpc_input = Tools.binomial_f(1, hpc.dims[0], 0.5) * 2 - np.ones_like(hpc.input_values,
-                                                                                            dtype=np.float32)
-                hpc.setup_input(random_hpc_input)
-                hpc.recall()
-                # hpc_output = hpc.output_values.get_value()  # first output from random input.
-                # gets the first stable or timed out output:
-                _, _, hpc_output = hpc.recall_until_stability_criteria(False, 300)
-                current_pseudopatterns_I.append([random_hpc_input, hpc_output])
+        # train on currently extracted patterns
+        ann_current_training_set = []
+        for i in range(len(current_set_hipp_chaotic_recall)):
+            ann_current_training_set.append([current_set_hipp_chaotic_recall[i], current_set_random_ins[i]])
 
-            pseudopatterns_I += current_pseudopatterns_I
-            # ann.train(current_pseudopatterns_I)
+        ann.train(ann_current_training_set)
 
-            # current_pseudopatterns_II_inputs = \
-            #     generate_pseudopattern_II_hpc_outputs(hpc.dims[0], current_set_hipp_chaotic_recall, 0.5,
-            #                                           pseudopattern_set_size)
-            # for current_pseudo_input in current_pseudopatterns_II_inputs:
-            #     current_pseudopatterns_II += [ann.get_IO(current_pseudo_input)]
-            #
-            # pseudopatterns_II += current_pseudopatterns_II
-            ann.train(current_pseudopatterns_I)
-            # ann.train(current_pseudopatterns_II)
+        # generate p_I's; should reverse outputs, and get IO's from ANN as p_I
+        for i in range(len(tmp_p_I_set)):
+            flip_bits = Tools.binomial_f(pseudopattern_I_set_size, 1, 0.5)
+            pattern = np.abs(np.subtract(tmp_p_I_set[i], flip_bits))
+            current_pseudopatterns_I.append(ann.get_IO(pattern))
+        # generate p_II's
+        while len(current_pseudopatterns_II) < pseudopattern_II_set_size:
+            current_pseudopatterns_II.append(ann.get_random_IO())
 
-        all_rand_ins.append(current_set_random_ins)
+        ann.train(current_pseudopatterns_I)
+        ann.train(current_pseudopatterns_II)
 
-    # ann.train(pseudopatterns_I)
-    # ann.train(pseudopatterns_II)
 
-    #hpc, rand_ins, all_chaotically_recalled_patterns, unique_chaotically_recalled_patterns,
-                                # custom_name, train_set_size
+    # Store 4.1-specific material:
     tar_patts = []
     for p in original_training_patterns[:5*training_set_size]:
         tar_patts.append(p[1])
@@ -143,6 +146,9 @@ def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
         corr_ctr += 1
         neocortically_recalled_pairs.append([obtained_in, obtained_out])
     g = sum_corr / corr_ctr
-    print "goodness of fit, g=", g
+
+    goodness_str = "goodness of fit, g=", g
+    print goodness_str
+    Tools.append_line_to_log(goodness_str)
 
     return [pseudopatterns_I, pseudopatterns_II, neocortically_recalled_pairs, ann, g]
