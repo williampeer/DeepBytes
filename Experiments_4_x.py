@@ -46,9 +46,9 @@ def training_and_recall_hpc_helper(hpc, training_set_size, train_set_num, origin
     [patterns_extracted_for_current_set, random_in] = \
         hpc_chaotic_recall_wrapper(hpc, display_images_of_stable_output=False, recall_iterations=chaotic_recall_iters)
     for pat in patterns_extracted_for_current_set:
-        if not set_contains_pattern(hippocampal_chaotic_recall_patterns, pat):
-            hippocampal_chaotic_recall_patterns.append(pat)  # append unique pattern
-            random_ins.append(random_in)
+        # if not set_contains_pattern(hippocampal_chaotic_recall_patterns, pat):
+        hippocampal_chaotic_recall_patterns.append(pat)  # append unique pattern
+        random_ins.append(random_in)
     t3 = time.time()
     print "Set size for hippocampal_chaotic_recall_patterns:", len(hippocampal_chaotic_recall_patterns)
     print "Chaotic recall completed in", "{:8.3f}".format(t3-t2), "seconds, for t=300."
@@ -91,20 +91,21 @@ def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
 
         for p_ctr in range(len(current_set_hipp_chaotic_recall)):
             # if not Tools.set_contains_pattern(chaotically_recalled_patterns, current_set_hipp_chaotic_recall[p_ctr]):
-            chaotically_recalled_patterns.append(current_set_hipp_chaotic_recall[p_ctr])
-            all_rand_ins.append(current_set_random_ins[p_ctr])
+            chaotically_recalled_patterns.append([current_set_hipp_chaotic_recall[p_ctr]])
+            all_rand_ins.append([current_set_random_ins[p_ctr]])
 
         current_pseudopatterns_I = []
         current_pseudopatterns_II = []
 
         tmp_p_I_set = []
         if len(current_set_hipp_chaotic_recall) >= pseudopattern_I_set_size:
-            tmp_p_I_set += current_set_hipp_chaotic_recall
+            tmp_p_I_set += current_set_hipp_chaotic_recall[:pseudopattern_I_set_size]
         else:
             tmp_p_I_set += current_set_hipp_chaotic_recall
-            while len(current_pseudopatterns_I) < pseudopattern_I_set_size:
+            while len(tmp_p_I_set) < pseudopattern_I_set_size:
+                print "len(tmp_p_I_set):", len(tmp_p_I_set)
                 _, _, cur_p_recallled = hpc.recall_until_stability_criteria(should_display_image=False, max_iterations=300)
-                tmp_p_I_set += cur_p_recallled
+                tmp_p_I_set.append(cur_p_recallled)
 
         # train on currently extracted patterns
         ann_current_training_set = []
@@ -116,7 +117,7 @@ def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
         # generate p_I's; should reverse outputs, and get IO's from ANN as p_I
         for i in range(len(tmp_p_I_set)):
             flip_bits = Tools.binomial_f(pseudopattern_I_set_size, 1, 0.5)
-            pattern = np.abs(np.subtract(tmp_p_I_set[i], flip_bits))
+            pattern = np.abs(tmp_p_I_set[i] - flip_bits)
             current_pseudopatterns_I.append(ann.get_IO(pattern))
         # generate p_II's
         while len(current_pseudopatterns_II) < pseudopattern_II_set_size:
@@ -124,6 +125,9 @@ def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
 
         ann.train(current_pseudopatterns_I)
         ann.train(current_pseudopatterns_II)
+
+        pseudopatterns_I += current_pseudopatterns_I
+        pseudopatterns_II += current_pseudopatterns_II
 
 
     # Store 4.1-specific material:
@@ -147,7 +151,7 @@ def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
         neocortically_recalled_pairs.append([obtained_in, obtained_out])
     g = sum_corr / corr_ctr
 
-    goodness_str = "goodness of fit, g=", g
+    goodness_str = "goodness of fit, g=" + "{:6.4f}".format(g)
     print goodness_str
     Tools.append_line_to_log(goodness_str)
 

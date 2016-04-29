@@ -30,13 +30,13 @@ def save_images_from(single_patterns, img_path):
 
 
 def save_images_from_pairs(pattern_pairs, img_path):
-    img_ctr = 0
-
+    # print "Log: len(pattern_pairs):", len(pattern_pairs)
     if not os.path.exists(img_path):
         os.mkdir(img_path)
     else:
         print "Error: Img-path already exists."
 
+    img_ctr = 0
     for pattern in pattern_pairs:
         img_in = create_image_helper(pattern[0])
         img_out = create_image_helper(pattern[1])
