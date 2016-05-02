@@ -1,9 +1,8 @@
 import Tools
-import numpy as np
-import theano
+import cPickle
 from NeocorticalNetwork import NeocorticalNetwork
 from DataWrapper import training_patterns_associative
-from DataWrapper import training_patterns_heterogeneous
+# from DataWrapper import training_patterns_heterogeneous
 
 def traditional_training():
     io_dim = 49
@@ -16,5 +15,38 @@ def traditional_training():
     for j in range(ss*5):
         Tools.show_image_from(ann.get_IO(training_set[j][0])[1])
 
+
+def retrieve_chaotic_patterns():
+    prefix = 'saved_data/chaotic_pattern_recalls_set_size_2/'
+    chaotic_out_filename = '_chaotically_recalled_patterns_exp#0.save'
+    rand_in_filename = '_corresponding_random_ins_exp#0.save'
+
+    chaotic_out_file = file(prefix+chaotic_out_filename, 'rb')
+    chaotic_out = cPickle.load(chaotic_out_file)
+    chaotic_out_file.close()
+
+    rand_in_file = file(prefix+rand_in_filename, 'rb')
+    rand_ins = cPickle.load(rand_in_file)
+    rand_in_file.close()
+
+    return [chaotic_out, rand_ins]
+
+
+def train_on_chaotic_patterns():
+    chaotic_outs, rand_ins = retrieve_chaotic_patterns()
+    chaotic_patts = []
+    for i in range(len(chaotic_outs)):
+        chaotic_patts.append([])
+        for j in range(len(chaotic_outs[0])):
+            chaotic_patts[i].append([chaotic_outs[i][j], rand_ins[i][j]])
+
+    io_dim = 49
+    ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
+    training_set = chaotic_patts[0]  # first two
+    for training_iterations in range(15):
+        ann.train(training_set)
+        for j in range(2):
+            Tools.show_image_from(ann.get_IO(training_patterns_associative[j][0])[1])
 # Tools.show_image_from(training_patterns_associative[15][0])
-traditional_training()
+# traditional_training()
+train_on_chaotic_patterns()
