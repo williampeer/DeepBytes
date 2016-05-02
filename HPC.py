@@ -506,6 +506,11 @@ class HPC:
         print "Reached stability or max. #iterations during chaotic recall after", ctr, "iterations."
         return [ctr, found_stable_output, out_now]
 
+    def propagate(self, input_pattern):
+        self.setup_input(input_pattern=input_pattern)
+        self.recall()
+        return self.output_values.get_value()
+
     def get_bipolar_in_out_values(self, values):
         new_values = np.ones_like(values, dtype=np.float32)
         for value_index in xrange(values.shape[1]):
