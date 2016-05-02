@@ -120,9 +120,24 @@ def neuronal_turnover_helper(hpc):
           "{:6.3f}".format(t1-t0), "seconds."
 
 
-def hpc_generate_pseudopatterns_I_wrapper(hpc, num_of_pseudopatterns_I, pattern_length):
+def hpc_generate_pseudopatterns_I_wrapper(hpc, num_of_pseudopatterns, pattern_length):
     pseudopatterns = []
-    for i in range(num_of_pseudopatterns_I):
+    for i in range(num_of_pseudopatterns):
         random_input = 2 * Tools.binomial_f(1, pattern_length) - np.ones((1, pattern_length), dtype=np.float32)
         corresponding_output = hpc.propagate(random_input)
         pseudopatterns.append([random_input, corresponding_output])
+    return pseudopatterns
+
+
+def hpc_generate_pseudopatterns_II_wrapper(hpc, num_of_pseudopatterns, chaotically_recalled_patterns, flip_P):
+    pseudopatterns = []
+    if len(chaotically_recalled_patterns)==0:
+        print "ERROR: len(chaotically_recalled_patterns) is 0"
+        return []
+
+    chaotic_set_size = len(chaotically_recalled_patterns)
+    for i in range(num_of_pseudopatterns):
+        current_chaotically_recalled_pattern = chaotically_recalled_patterns[i % chaotic_set_size]
+        current_input = Tools.flip_bits_f(current_chaotically_recalled_pattern, flip_P)
+        pseudopatterns.append([current_input, hpc.propagate(current_input)])
+    return pseudopatterns
