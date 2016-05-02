@@ -91,7 +91,6 @@ uniform_f = theano.function([rows, columns], outputs=shared_random_generator.
 random_f = theano.function([rows, columns], outputs=shared_random_generator.random_integers(
     size=(rows, columns), low=0, high=10000, dtype='float32')/10000.)
 
-
 def set_contains_pattern(patterns_set, pattern):
     for pat in patterns_set:
         if get_pattern_correlation(pat, pattern) == 1:
@@ -268,3 +267,8 @@ def log_perfect_recall_rate(hipp_chao_patts, train_set):
     log_f = file(log_path, 'wb')
     log_f.write(file_contents)
     log_f.close()
+
+
+def flip_bits_f(input_vector, flip_P):
+    flip_bits = np.ones_like(input_vector[0], dtype=np.float32) - 2 * binomial_f(1, len(input_vector[0]), 0.5)
+    return input_vector * flip_bits  # binomial_f returns a 2-dim. array
