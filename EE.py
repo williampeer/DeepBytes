@@ -3,32 +3,11 @@ import numpy as np
 from HPC import HPC
 from NeocorticalNetwork import NeocorticalNetwork
 from Experiments_4_x import experiment_4_x_1, experiment_4_x_2
-from data_capital import data_letters_capital
-from data_lowercase import data_letters_lowercase
+from DataWrapper import training_patterns_associative
+from DataWrapper import training_patterns_heterogeneous
 import Tools
 
 io_dim = 49
-
-training_patterns_associative = []
-# Setup all training patterns:
-for letter_data in data_letters_capital:
-    io = [[]]
-    for row in letter_data:
-        for el in row:
-            io[0].append(el)
-    new_array = np.asarray(io, dtype=np.float32)
-    training_patterns_associative.append([new_array, new_array])
-
-training_patterns_heterogeneous = []
-letter_ctr = 0
-for letter_data in data_letters_lowercase:
-    io_lowercase = [[]]
-    for row in letter_data:
-        for el in row:
-            io_lowercase[0].append(el)
-    lowercase_letter = np.asarray(io_lowercase, dtype=np.float32)
-    uppercase_letter = training_patterns_associative[letter_ctr][0]
-    training_patterns_heterogeneous.append([uppercase_letter, lowercase_letter])
 
 turnover_rate = 0.5  #(Tools.get_parameter_counter() % 18) * 0.02 + 0.32
 weighting_dg = 25  # Tools.get_experiment_counter() % 26
