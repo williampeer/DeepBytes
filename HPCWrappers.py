@@ -118,3 +118,11 @@ def neuronal_turnover_helper(hpc):
     t1 = time.time()
     print "Completed neuronal turnover for " + str(hpc._turnover_rate * 100) + " % of the neurons in " + \
           "{:6.3f}".format(t1-t0), "seconds."
+
+
+def hpc_generate_pseudopatterns_I_wrapper(hpc, num_of_pseudopatterns_I, pattern_length):
+    pseudopatterns = []
+    for i in range(num_of_pseudopatterns_I):
+        random_input = 2 * Tools.binomial_f(1, pattern_length) - np.ones((1, pattern_length), dtype=np.float32)
+        corresponding_output = hpc.propagate(random_input)
+        pseudopatterns.append([random_input, corresponding_output])
