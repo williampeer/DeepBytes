@@ -270,5 +270,5 @@ def log_perfect_recall_rate(hipp_chao_patts, train_set):
 
 
 def flip_bits_f(input_vector, flip_P):
-    flip_bits = np.ones_like(input_vector[0], dtype=np.float32) - 2 * binomial_f(1, len(input_vector[0]), 0.5)
+    flip_bits = np.ones_like(input_vector[0], dtype=np.float32) - 2 * binomial_f(1, len(input_vector[0]), flip_P)
     return input_vector * flip_bits  # binomial_f returns a 2-dim. array

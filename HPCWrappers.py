@@ -140,9 +140,9 @@ def hpc_generate_pseudopatterns_II_wrapper(hpc, num_of_pseudopatterns, chaotical
         print "ERROR: len(chaotically_recalled_patterns) is 0"
         return []
 
-    chaotic_set_size = len(chaotically_recalled_patterns)
+    chaotic_set_size = len(distinct_chaotically_recalled_patts)
     for i in range(num_of_pseudopatterns):
-        current_chaotically_recalled_pattern = chaotically_recalled_patterns[i % chaotic_set_size]
+        current_chaotically_recalled_pattern = distinct_chaotically_recalled_patts[i % chaotic_set_size]
         current_input = Tools.flip_bits_f(current_chaotically_recalled_pattern, flip_P)
         pseudopatterns.append([current_input, hpc.propagate_until_stable(current_input)])
     return pseudopatterns

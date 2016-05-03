@@ -190,7 +190,7 @@ def experiment_4_2_hpc_version(hpc, ann, training_set_size, original_training_pa
         # current_pseudopatterns_I = HPCWrappers.hpc_generate_pseudopatterns_I_wrapper(hpc, pseudopattern_I_set_size)
         current_pseudopatterns_II = HPCWrappers.hpc_generate_pseudopatterns_II_wrapper(hpc, pseudopattern_II_set_size,
                                                                                        current_set_hipp_chaotic_recall,
-                                                                                       flip_P=0.)
+                                                                                       flip_P=0.5)
 
         # ann.train(current_pseudopatterns_I)
         ann.train(current_pseudopatterns_II)
