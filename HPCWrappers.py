@@ -120,7 +120,8 @@ def neuronal_turnover_helper(hpc):
           "{:6.3f}".format(t1-t0), "seconds."
 
 
-def hpc_generate_pseudopatterns_I_wrapper(hpc, num_of_pseudopatterns, pattern_length):
+def hpc_generate_pseudopatterns_I_wrapper(hpc, num_of_pseudopatterns):
+    pattern_length = hpc.input_values.get_value().shape[1]
     pseudopatterns = []
     for i in range(num_of_pseudopatterns):
         random_input = 2 * Tools.binomial_f(1, pattern_length) - np.ones((1, pattern_length), dtype=np.float32)
