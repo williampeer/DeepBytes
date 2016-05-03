@@ -506,6 +506,11 @@ class HPC:
         print "Reached stability or max. #iterations during chaotic recall after", ctr, "iterations."
         return [ctr, found_stable_output, out_now]
 
+    def propagate_until_stable(self, input_pattern):
+        self.setup_input(input_pattern=input_pattern)
+        self.recall_until_stability_criteria(should_display_image=False, max_iterations=50)
+        return self.output_values.get_value()
+
     def propagate(self, input_pattern):
         self.setup_input(input_pattern=input_pattern)
         self.recall()

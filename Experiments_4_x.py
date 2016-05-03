@@ -168,9 +168,9 @@ def experiment_4_2_hpc_version(hpc, ann, training_set_size, original_training_pa
                              "Turnover mode: " + str(hpc._TURNOVER_MODE) + ". Turnover rate:" +
                              str(hpc._turnover_rate) + ", DG-weighting: " + str(hpc._weighting_dg) + ".")
 
-    pseudopattern_set_size = 20  # this should be set to 20. debugging mode: Small value.
-    pseudopattern_I_set_size = pseudopattern_set_size/2
-    pseudopattern_II_set_size = pseudopattern_set_size - pseudopattern_I_set_size
+    pseudopattern_set_size = 10  # this should be set to 20. debugging mode: Small value.
+    pseudopattern_I_set_size = pseudopattern_set_size
+    pseudopattern_II_set_size = pseudopattern_set_size
 
     chaotically_recalled_patterns = []
     all_rand_ins = []
@@ -187,15 +187,15 @@ def experiment_4_2_hpc_version(hpc, ann, training_set_size, original_training_pa
             chaotically_recalled_patterns.append([current_set_hipp_chaotic_recall[p_ctr]])
             all_rand_ins.append([current_set_random_ins[p_ctr]])
 
-        current_pseudopatterns_I = HPCWrappers.hpc_generate_pseudopatterns_I_wrapper(hpc, pseudopattern_I_set_size)
+        # current_pseudopatterns_I = HPCWrappers.hpc_generate_pseudopatterns_I_wrapper(hpc, pseudopattern_I_set_size)
         current_pseudopatterns_II = HPCWrappers.hpc_generate_pseudopatterns_II_wrapper(hpc, pseudopattern_II_set_size,
                                                                                        current_set_hipp_chaotic_recall,
-                                                                                       flip_P=0.5)
+                                                                                       flip_P=0.)
 
-        ann.train(current_pseudopatterns_I)
+        # ann.train(current_pseudopatterns_I)
         ann.train(current_pseudopatterns_II)
 
-        pseudopatterns_I += current_pseudopatterns_I
+        # pseudopatterns_I += current_pseudopatterns_I
         pseudopatterns_II += current_pseudopatterns_II
 
     # Store 4.1-specific material:
