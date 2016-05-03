@@ -1,4 +1,4 @@
-import time
+import time, HPCWrappers
 from HPCWrappers import hpc_learn_patterns_wrapper, hpc_chaotic_recall_wrapper
 from Tools import set_contains_pattern, get_pattern_correlation, save_experiment_4_1_results, save_images_from
 import Tools
@@ -133,6 +133,70 @@ def experiment_4_x_2(hpc, ann, training_set_size, original_training_patterns):
         pseudopatterns_I += current_pseudopatterns_I
         pseudopatterns_II += current_pseudopatterns_II
 
+
+    # Store 4.1-specific material:
+    tar_patts = []
+    for p in original_training_patterns[:5*training_set_size]:
+        tar_patts.append(p[1])
+
+    custom_name = "train_set_size_" + str(training_set_size) + "_exp_1" + "turnover_rate_" + str(hpc._turnover_rate) + \
+                  "weighting_" + str(hpc._weighting_dg)
+    Tools.save_experiment_4_1_results(hpc, all_rand_ins, chaotically_recalled_patterns, tar_patts, custom_name,
+                                      training_set_size)
+
+    # Attempt to recall using the entire DNMM:
+    sum_corr = 0.
+    corr_ctr = 0.
+    neocortically_recalled_pairs = []
+    for [target_in, target_out] in original_training_patterns:
+        obtained_in, obtained_out = ann.get_IO(target_in)
+        sum_corr += get_pattern_correlation(target_out, obtained_out)
+        corr_ctr += 1
+        neocortically_recalled_pairs.append([obtained_in, obtained_out])
+    g = sum_corr / corr_ctr
+
+    goodness_str = "goodness of fit, g=" + "{:6.4f}".format(g)
+    print goodness_str
+    Tools.append_line_to_log(goodness_str)
+
+    return [pseudopatterns_I, pseudopatterns_II, neocortically_recalled_pairs, ann, g]
+
+
+def experiment_4_2_hpc_version(hpc, ann, training_set_size, original_training_patterns):
+    Tools.append_line_to_log("INIT. EXPERIMENT #" + str(Tools.get_experiment_counter()) + ". Type: HPC ver. 4.2" +
+                             ": ASYNC-flag:" + str(hpc._ASYNC_FLAG) + ". " + str(training_set_size) + "x5. " +
+                             "Turnover mode: " + str(hpc._TURNOVER_MODE) + ". Turnover rate:" +
+                             str(hpc._turnover_rate) + ", DG-weighting: " + str(hpc._weighting_dg) + ".")
+
+    pseudopattern_set_size = 20  # this should be set to 20. debugging mode: Small value.
+    pseudopattern_I_set_size = pseudopattern_set_size/2
+    pseudopattern_II_set_size = pseudopattern_set_size - pseudopattern_I_set_size
+
+    chaotically_recalled_patterns = []
+    all_rand_ins = []
+
+    pseudopatterns_I = []
+    pseudopatterns_II = []
+
+    for train_set_num in range(5):  # always five training sets
+        current_set_hipp_chaotic_recall, current_set_random_ins = \
+            training_and_recall_hpc_helper(hpc, training_set_size, train_set_num, original_training_patterns)
+
+        for p_ctr in range(len(current_set_hipp_chaotic_recall)):
+            # if not Tools.set_contains_pattern(chaotically_recalled_patterns, current_set_hipp_chaotic_recall[p_ctr]):
+            chaotically_recalled_patterns.append([current_set_hipp_chaotic_recall[p_ctr]])
+            all_rand_ins.append([current_set_random_ins[p_ctr]])
+
+        current_pseudopatterns_I = HPCWrappers.hpc_generate_pseudopatterns_I_wrapper(hpc, pseudopattern_I_set_size)
+        current_pseudopatterns_II = HPCWrappers.hpc_generate_pseudopatterns_II_wrapper(hpc, pseudopattern_II_set_size,
+                                                                                       current_set_hipp_chaotic_recall,
+                                                                                       flip_P=0.5)
+
+        ann.train(current_pseudopatterns_I)
+        ann.train(current_pseudopatterns_II)
+
+        pseudopatterns_I += current_pseudopatterns_I
+        pseudopatterns_II += current_pseudopatterns_II
 
     # Store 4.1-specific material:
     tar_patts = []

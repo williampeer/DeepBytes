@@ -2,7 +2,7 @@ import numpy as np
 
 from HPC import HPC
 from NeocorticalNetwork import NeocorticalNetwork
-from Experiments_4_x import experiment_4_x_1, experiment_4_x_2
+from Experiments_4_x import experiment_4_x_1, experiment_4_x_2, experiment_4_2_hpc_version
 from DataWrapper import training_patterns_associative
 from DataWrapper import training_patterns_heterogeneous
 import Tools
@@ -38,7 +38,9 @@ for i in range(1):
 
         print "Starting experiment 4_2..."
         # This also saves the experiment_4_x_1 results!
-        information_vector = experiment_4_x_2(hpc, ann, train_set_size_ctr,
+        # information_vector = experiment_4_x_2(hpc, ann, train_set_size_ctr,
+        #                                       training_patterns_associative[:5 * train_set_size_ctr])
+        information_vector = experiment_4_2_hpc_version(hpc, ann, train_set_size_ctr,
                                               training_patterns_associative[:5 * train_set_size_ctr])
         print "Saving the results."
         Tools.save_experiment_4_2_results(information_vector, "train_set_size_" + str(train_set_size_ctr) +
