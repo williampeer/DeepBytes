@@ -9,6 +9,14 @@ import os
 theano.config.floatX = 'float32'
 
 
+def get_bipolar_in_out_values(values):
+    new_values = np.ones_like(values, dtype=np.float32)
+    for value_index in xrange(values.shape[1]):
+        if values[0][value_index] < 0:
+            new_values[0][value_index] = -1
+    return new_values
+
+
 def show_image_from(out_now):
     im = create_image_helper(out_now)
     im.show()
@@ -90,6 +98,7 @@ uniform_f = theano.function([rows, columns], outputs=shared_random_generator.
 
 random_f = theano.function([rows, columns], outputs=shared_random_generator.random_integers(
     size=(rows, columns), low=0, high=10000, dtype='float32')/10000.)
+
 
 def set_contains_pattern(patterns_set, pattern):
     for pat in patterns_set:

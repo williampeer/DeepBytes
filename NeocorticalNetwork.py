@@ -1,6 +1,7 @@
 import theano
 import theano.tensor as T
 import numpy as np
+import Tools
 from Tools import binomial_f, uniform_f
 theano.config.floatX = 'float32'
 
@@ -45,6 +46,8 @@ class NeocorticalNetwork:
 
         self.feed_forward = theano.function([new_input, input_hidden_Ws, hidden_output_Ws],
                                             updates=[(self._in, new_input), (self._h, next_h), (self._out, next_out)])
+
+        self.set_output = theano.function([new_input], updates=[(self._out, new_input)])
 
         Ws_h_out = T.fmatrix()
         Ws_in_h = T.fmatrix()

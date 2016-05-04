@@ -1,4 +1,4 @@
-import time, HPCWrappers
+import time, HPCWrappers, NeocorticalModuleTraining
 from HPCWrappers import hpc_learn_patterns_wrapper, hpc_chaotic_recall_wrapper
 from Tools import set_contains_pattern, get_pattern_correlation, save_experiment_4_1_results, save_images_from
 import Tools
@@ -167,36 +167,30 @@ def experiment_4_2_hpc_version(hpc, ann, training_set_size, original_training_pa
                              ": ASYNC-flag:" + str(hpc._ASYNC_FLAG) + ". " + str(training_set_size) + "x5. " +
                              "Turnover mode: " + str(hpc._TURNOVER_MODE) + ". Turnover rate:" +
                              str(hpc._turnover_rate) + ", DG-weighting: " + str(hpc._weighting_dg) + ".")
-
-    pseudopattern_set_size = 10  # this should be set to 20. debugging mode: Small value.
-    pseudopattern_I_set_size = pseudopattern_set_size
-    pseudopattern_II_set_size = pseudopattern_set_size
-
-    chaotically_recalled_patterns = []
-    all_rand_ins = []
-
-    pseudopatterns_I = []
-    pseudopatterns_II = []
+    #
+    # chaotically_recalled_patterns = []
+    # all_rand_ins = []
+    #
+    # pseudopatterns_I = []
+    # pseudopatterns_II = []
 
     for train_set_num in range(5):  # always five training sets
-        current_set_hipp_chaotic_recall, current_set_random_ins = \
-            training_and_recall_hpc_helper(hpc, training_set_size, train_set_num, original_training_patterns)
+    #     current_set_hipp_chaotic_recall, current_set_random_ins = \
+    #         training_and_recall_hpc_helper(hpc, training_set_size, train_set_num, original_training_patterns)
 
-        for p_ctr in range(len(current_set_hipp_chaotic_recall)):
-            # if not Tools.set_contains_pattern(chaotically_recalled_patterns, current_set_hipp_chaotic_recall[p_ctr]):
-            chaotically_recalled_patterns.append([current_set_hipp_chaotic_recall[p_ctr]])
-            all_rand_ins.append([current_set_random_ins[p_ctr]])
+    #     chaotic_training_set = []
+    #     for p_ctr in range(len(current_set_hipp_chaotic_recall)):
+    #         # if not Tools.set_contains_pattern(chaotically_recalled_patterns, current_set_hipp_chaotic_recall[p_ctr]):
+    #         chaotically_recalled_patterns.append([current_set_hipp_chaotic_recall[p_ctr]])
+    #         all_rand_ins.append([current_set_random_ins[p_ctr]])
+    #         chaotic_training_set.append([current_set_random_ins[p_ctr], current_set_hipp_chaotic_recall[p_ctr]])
 
-        # current_pseudopatterns_I = HPCWrappers.hpc_generate_pseudopatterns_I_wrapper(hpc, pseudopattern_I_set_size)
-        current_pseudopatterns_II = HPCWrappers.hpc_generate_pseudopatterns_II_wrapper(hpc, pseudopattern_II_set_size,
-                                                                                       current_set_hipp_chaotic_recall,
-                                                                                       flip_P=0.5)
+        for i in range(5):
+            # ann.train(chaotic_training_set)
+            start_index = train_set_num*training_set_size
+            ann.train(original_training_patterns[start_index: start_index + training_set_size])
 
-        # ann.train(current_pseudopatterns_I)
-        ann.train(current_pseudopatterns_II)
-
-        # pseudopatterns_I += current_pseudopatterns_I
-        pseudopatterns_II += current_pseudopatterns_II
+    # ann = NeocorticalModuleTraining.global_sequential_FFBP_training()
 
     # Store 4.1-specific material:
     tar_patts = []
@@ -214,6 +208,19 @@ def experiment_4_2_hpc_version(hpc, ann, training_set_size, original_training_pa
     neocortically_recalled_pairs = []
     for [target_in, target_out] in original_training_patterns:
         obtained_in, obtained_out = ann.get_IO(target_in)
+        # obtained_out = Tools.get_bipolar_in_out_values(obtained_out)
+        # identical = True
+        # for i in range(len(obtained_out)):
+        #     for j in range(len(obtained_out[0])):
+        #         if obtained_out[i][j] != target_out[i][j]:
+        #             print "not identical, oo[i][j]:", obtained_out[i][j], ", taro[i][j]:", target_out[i][j]
+        #             identical = False
+        #             break
+        # if identical:
+        #     if get_pattern_correlation(target_out, obtained_out) != 1.0:
+        #         print "patterns are identical, but corr is:", get_pattern_correlation(target_out, obtained_out)
+        # else:
+        #     print "current corr:", get_pattern_correlation(target_out, obtained_out)
         sum_corr += get_pattern_correlation(target_out, obtained_out)
         corr_ctr += 1
         neocortically_recalled_pairs.append([obtained_in, obtained_out])

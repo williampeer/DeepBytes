@@ -479,7 +479,7 @@ class HPC:
                           self.ca3_out_weights.get_value(return_internal_type=True))
 
         # Bipolar output:
-        self.set_output(self.get_bipolar_in_out_values(self.output_values.get_value(return_internal_type=True)))
+        self.set_output(Tools.get_bipolar_in_out_values(self.output_values.get_value(return_internal_type=True)))
 
     def recall_until_stability_criteria(self, should_display_image, max_iterations):
         # recall until output unchanged three iterations
@@ -515,13 +515,6 @@ class HPC:
         self.setup_input(input_pattern=input_pattern)
         self.recall()
         return self.output_values.get_value()
-
-    def get_bipolar_in_out_values(self, values):
-        new_values = np.ones_like(values, dtype=np.float32)
-        for value_index in xrange(values.shape[1]):
-            if values[0][value_index] < 0:
-                new_values[0][value_index] = -1
-        return new_values
 
     def reset_eta_and_zeta_values(self):
         print "Resetting zeta and nu-values..."
