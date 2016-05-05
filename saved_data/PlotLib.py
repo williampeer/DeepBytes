@@ -93,7 +93,7 @@ def plot_convergence_ratios_for_data(parsed_data):
     p1 = plt.plot(x, convergence_stats_async_true_mode_0, color='y', marker='o', linestyle='--')
     p2 = plt.plot(x, convergence_stats_async_true_mode_1, color='g', marker='s', linestyle='--')
     p3 = plt.plot(x, convergence_stats_async_false_mode_0, color='b', marker='^', linestyle='--')
-    p4 = plt.plot(x, convergence_stats_async_false_mode_1, color='r', marker='o', linestyle='--')
+    p4 = plt.plot(x, convergence_stats_async_false_mode_1, color='c', marker='o', linestyle='--')
 
     plt.ylabel('Average convergence rate (%)')
     plt.xlabel('Set size')
@@ -176,7 +176,7 @@ def plot_perfect_recall_rates_for_data(parsed_data):
     p1 = plt.errorbar(x, perf_recall_stats_async_true_mode_0, stds_t_0, color='y', marker='o', linestyle='--')
     p2 = plt.errorbar(x, perf_recall_stats_async_true_mode_1, stds_t_1, color='g', marker='s', linestyle='--')
     p3 = plt.errorbar(x, perf_recall_stats_async_false_mode_0, stds_f_0, color='b', marker='^', linestyle='--')
-    p4 = plt.errorbar(x, perf_recall_stats_async_false_mode_1, stds_f_1, color='r', marker='o', linestyle='--')
+    p4 = plt.errorbar(x, perf_recall_stats_async_false_mode_1, stds_f_1, color='c', marker='o', linestyle='--')
 
     plt.ylabel('Perfect recall rate (%)')
     plt.xlabel('Set size')
@@ -236,13 +236,13 @@ def plot_avg_perfect_extraction_and_spurious_patterns(parsed_data):
     plt.rcParams.update({'font.size': 20})
 
     p1 = plt.bar(x, perf_recall_stats_async_true_mode_0, color='y', width=width/2)
-    # p1_e = plt.bar(x, spurpt0, color='r', width=width/2, bottom=perf_recall_stats_async_true_mode_0)
+    p1_e = plt.bar(x, spurpt0, color='r', width=width/2, bottom=perf_recall_stats_async_true_mode_0)
     p2 = plt.bar(x+width/2, perf_recall_stats_async_true_mode_1, color='g', width=width/2)
-    # p2_2 = plt.bar(x+width/2, spurpt1, color='r', width=width/2, bottom=perf_recall_stats_async_true_mode_1)
+    p2_2 = plt.bar(x+width/2, spurpt1, color='r', width=width/2, bottom=perf_recall_stats_async_true_mode_1)
     p3 = plt.bar(x+width, perf_recall_stats_async_false_mode_0, color='b', width=width/2)
-    # p3_e = plt.bar(x+width, spurpf0, color='r', width=width/2, bottom=perf_recall_stats_async_false_mode_0)
+    p3_e = plt.bar(x+width, spurpf0, color='r', width=width/2, bottom=perf_recall_stats_async_false_mode_0)
     p4 = plt.bar(x+3*width/2, perf_recall_stats_async_false_mode_1, color='c', width=width/2)
-    # p4_e = plt.bar(x+3*width/2, spurpf1, color='r', width=width/2, bottom=perf_recall_stats_async_false_mode_1)
+    p4_e = plt.bar(x+3*width/2, spurpf1, color='r', width=width/2, bottom=perf_recall_stats_async_false_mode_1)
 
     plt.ylabel('Perfectly recalled patterns')
     plt.xlabel('Set size')
@@ -250,10 +250,9 @@ def plot_avg_perfect_extraction_and_spurious_patterns(parsed_data):
     plt.xticks(x + width, ('2', '3', '4', '5'))
     plt.yticks(np.arange(0, 6, 1))
 
-    plt.legend((p1[0], p2[0], p3[0], p4[0]), ('Async., turnover for new sets',
-                                                       'Async., turnover every iteration',
-                                                       'Sync., turnover for new sets',
-                                                       'Sync., turnover every iteration'))
+    plt.legend((p1[0], p2[0], p3[0], p4[0], p4_e[0]), ('Async., turnover for new sets', 'Async., turnover every iteration',
+                                              'Sync., turnover for new sets', 'Sync., turnover every iteration',
+                                              'Imperfectly recalled patterns'))
                # bbox_to_anchor=(0.377, 1))
     plt.show()
 
@@ -353,13 +352,13 @@ def plot_convergence_stats_for_dg_weightings(parsed_data):
 
 # format: [set_size, #sets, [convergence_num, distinct_patterns_recalled]
 # 10 trials for the current log
-log_filename = 'current-log.txt'
+log_filename = 'log.txt'
 outer_scope_parsed_data = Parser.get_data_from_log_file(log_filename)
 # plot_pattern_stats_from_parsed_data_v1(outer_scope_parsed_data, 3)
 # plot_convergence_ratios_for_data(outer_scope_parsed_data)
 # plot_convergence_iterations_for_data(outer_scope_parsed_data, 2)
 # plot_perfect_recall_rates_for_data(outer_scope_parsed_data)
 # plot_avg_perfect_extraction_and_spurious_patterns(outer_scope_parsed_data)
-plot_convergence_stats_for_turnover_rates(outer_scope_parsed_data, log_filename)
-plot_perfect_recall_rates_for_turnover_rates(outer_scope_parsed_data, log_filename)
+# plot_convergence_stats_for_turnover_rates(outer_scope_parsed_data, log_filename)
+# plot_perfect_recall_rates_for_turnover_rates(outer_scope_parsed_data, log_filename)
 # plot_convergence_stats_for_dg_weightings(outer_scope_parsed_data)
