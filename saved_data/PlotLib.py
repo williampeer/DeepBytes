@@ -343,7 +343,7 @@ def plot_convergence_stats_for_dg_weightings(parsed_data):
 
 # format: [set_size, #sets, [convergence_num, distinct_patterns_recalled]
 # 10 trials for the current log
-log_filename = 'log-25.04-turnover-rates_async_m0_dgw25.txt'
+log_filename = 'combined-logs.txt'
 outer_scope_parsed_data = Parser.get_data_from_log_file(log_filename)
 # plot_pattern_stats_from_parsed_data_v1(outer_scope_parsed_data, 3)
 # plot_convergence_ratios_for_data(outer_scope_parsed_data)
