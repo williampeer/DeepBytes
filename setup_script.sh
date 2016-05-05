@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 
 # Assuming that Python 2.7 is installed and the default version, this script is created for Ubuntu 14.04 LTS,
 #   and sets up Theano, along with imagemagick, which should be sufficient for executing the experimental suite on the
