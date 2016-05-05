@@ -9,5 +9,4 @@ saved_data/*
 !.gitignore
 !saved_data/counters_reset_copy.py
 !saved_data/Parser.py
-!saved_data/Plotting.py
 !saved_data/PlotLib.py
