@@ -53,7 +53,7 @@ for dg_w_ctr in range(30):
 
     for j in range(10):
         for train_set_size_ctr in range(2, 6):
-            Tools.append_line_to_log("INIT. EXPERIMENT #" + Tools.get_experiment_counter() + ": ASYNC-flag:" +
+            Tools.append_line_to_log("INIT. EXPERIMENT #" + str(Tools.get_experiment_counter()) + ": ASYNC-flag:" +
                                      str(hpc._ASYNC_FLAG) + ". " + str(train_set_size_ctr) + "x5. " + "Turnover mode: " +
                                      str(hpc._TURNOVER_MODE) + ". Turnover rate:" + str(hpc._turnover_rate) +
                                      ", DG-weighting: " + str(hpc._weighting_dg) + ".")
