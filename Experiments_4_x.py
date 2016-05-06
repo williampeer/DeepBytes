@@ -246,7 +246,10 @@ def experiment_4_2_neo_pseudorehearsal_with_chaotic_patterns(hpc, ann, training_
         ann.train(current_chaotic_patterns)
         # ann.train(current_p_I + current_p_II)
 
-    Tools.save_experiment_4_1_results(hpc, all_rand_ins, all_chaotic_outs, original_training_patterns,
+    tar_patts = []
+    for pair in original_training_patterns:
+        tar_patts.append(pair[1])
+    Tools.save_experiment_4_1_results(hpc, all_rand_ins, all_chaotic_outs, tar_patts,
                                       "Exp. 4_2 chaotic pattern results.", training_set_size)
 
     sum_corr = 0.
