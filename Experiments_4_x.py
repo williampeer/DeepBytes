@@ -212,6 +212,8 @@ def experiment_4_2_neo_pseudorehearsal_with_chaotic_patterns(hpc, ann, training_
     Tools.append_line_to_log("INIT. EXPERIMENT #" + str(Tools.get_experiment_counter()) + ". Type: NEO ver. 4.2.")
 
     chaotically_recalled_patterns = []
+    all_rand_ins = []
+    all_chaotic_outs = []
     pseudo_set_size = 10
     pseudopatterns_I = []
     pseudopatterns_II = []
@@ -222,6 +224,8 @@ def experiment_4_2_neo_pseudorehearsal_with_chaotic_patterns(hpc, ann, training_
 
         chaotically_recalled_outputs, current_random_ins = training_and_recall_hpc_helper(
                 hpc, training_set_size, train_set_num, original_training_patterns)
+        all_rand_ins += current_random_ins
+        all_chaotic_outs += chaotically_recalled_outputs
 
         for i in range(pseudo_set_size):
             current_p_I.append(ann.get_random_IO())
@@ -241,6 +245,9 @@ def experiment_4_2_neo_pseudorehearsal_with_chaotic_patterns(hpc, ann, training_
         # for i in range(5):
         ann.train(current_chaotic_patterns)
         # ann.train(current_p_I + current_p_II)
+
+    Tools.save_experiment_4_1_results(hpc, all_rand_ins, all_chaotic_outs, original_training_patterns,
+                                      "Exp. 4_2 chaotic pattern results.", training_set_size)
 
     sum_corr = 0.
     corr_ctr = 0.
