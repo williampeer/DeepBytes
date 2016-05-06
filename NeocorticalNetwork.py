@@ -88,6 +88,7 @@ class NeocorticalNetwork:
             # no learning criteria, only propagate once?
             self.feed_forward(input_pattern, self.in_h_Ws.get_value(return_internal_type=True),
                               self.h_out_Ws.get_value(return_internal_type=True))
+            # self.set_output(Tools.get_bipolar_in_out_values(self._out.get_value()))
             self.back_propagate(self.in_h_Ws.get_value(return_internal_type=True),
                                 self.h_out_Ws.get_value(return_internal_type=True),
                                 self._in.get_value(return_internal_type=True),
@@ -106,6 +107,7 @@ class NeocorticalNetwork:
 
     def get_IO(self, input_pattern):
         self.feed_forward(input_pattern, self.in_h_Ws.get_value(), self.h_out_Ws.get_value())
+        # self.set_output(Tools.get_bipolar_in_out_values(self._out.get_value()))
 
         corresponding_output = self._out.get_value()
         return [input_pattern, corresponding_output]
