@@ -47,20 +47,37 @@ def retrieve_chaotic_patterns_from_exp_num(exp_num):
 
 
 def train_on_chaotic_patterns():
-    chaotic_outs, rand_ins = retrieve_chaotic_patterns_from_exp_num(515)
+    chaotic_outs, rand_ins = retrieve_chaotic_patterns_from_exp_num(0)
+    print "len(chaotic_outs):", len(chaotic_outs)
     chaotic_patts = []
     for i in range(len(chaotic_outs)):
         chaotic_patts.append([])
-        for j in range(len(chaotic_outs[0])):
-            chaotic_patts[i].append([chaotic_outs[i][j], rand_ins[i][j]])
+        for j in range(len(chaotic_outs[i])):
+            chaotic_patts[i].append([rand_ins[i][j], chaotic_outs[i][j]])
 
     io_dim = 49
     ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
-    training_set = chaotic_patts[0]  # first two
-    for training_iterations in range(15):
-        ann.train(training_set)
-        for j in range(2):
-            Tools.show_image_from(ann.get_IO(training_patterns_associative[j][0])[1])
+
+    for i in range(1):
+        for train_iters in range(100):
+            training_set = chaotic_patts[i]
+            ann.train(training_set)
+            for j in range(2):
+                Tools.show_image_from(ann.get_IO(training_patterns_associative[j][0])[1])
+
+    sum_corr = 0.
+    corr_ctr = 0.
+    neocortically_recalled_pairs = []
+    for [target_in, target_out] in training_patterns_associative:
+        obtained_in, obtained_out = ann.get_IO(target_in)
+        sum_corr += Tools.get_pattern_correlation(target_out, obtained_out)
+        corr_ctr += 1
+        neocortically_recalled_pairs.append([obtained_in, obtained_out])
+    g = sum_corr / corr_ctr
+
+    goodness_str = "goodness of fit, g=" + "{:6.4f}".format(g)
+    print goodness_str
+
 # Tools.show_image_from(training_patterns_associative[15][0])
 # traditional_training()
-# train_on_chaotic_patterns()
+train_on_chaotic_patterns()
