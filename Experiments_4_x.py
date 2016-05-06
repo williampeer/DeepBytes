@@ -242,9 +242,9 @@ def experiment_4_2_neo_pseudorehearsal_with_chaotic_patterns(hpc, ann, training_
         pseudopatterns_II += current_p_II
         chaotically_recalled_patterns += current_chaotic_patterns
 
-        # for i in range(5):
-        ann.train(current_chaotic_patterns)
-        # ann.train(current_p_I + current_p_II)
+        for i in range(5):
+            ann.train(current_p_I + current_p_II)
+            ann.train(current_chaotic_patterns)
 
     tar_patts = []
     for pair in original_training_patterns:
