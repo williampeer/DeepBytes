@@ -30,10 +30,10 @@ def global_sequential_FFBP_training():
     return ann
 
 
-def retrieve_chaotic_patterns():
+def retrieve_chaotic_patterns_from_exp_num(exp_num):
     prefix = 'saved_data/chaotic_pattern_recalls_set_size_2/'
-    chaotic_out_filename = '_chaotically_recalled_patterns_exp#0.save'
-    rand_in_filename = '_corresponding_random_ins_exp#0.save'
+    chaotic_out_filename = '_chaotically_recalled_patterns_exp#' + str(exp_num) + '.save'
+    rand_in_filename = '_corresponding_random_ins_exp#' + str(exp_num) + '.save'
 
     chaotic_out_file = file(prefix+chaotic_out_filename, 'rb')
     chaotic_out = cPickle.load(chaotic_out_file)
@@ -47,7 +47,7 @@ def retrieve_chaotic_patterns():
 
 
 def train_on_chaotic_patterns():
-    chaotic_outs, rand_ins = retrieve_chaotic_patterns()
+    chaotic_outs, rand_ins = retrieve_chaotic_patterns_from_exp_num(515)
     chaotic_patts = []
     for i in range(len(chaotic_outs)):
         chaotic_patts.append([])

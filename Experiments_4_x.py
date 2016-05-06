@@ -224,8 +224,8 @@ def experiment_4_2_neo_pseudorehearsal_with_chaotic_patterns(hpc, ann, training_
 
         chaotically_recalled_outputs, current_random_ins = training_and_recall_hpc_helper(
                 hpc, training_set_size, train_set_num, original_training_patterns)
-        all_rand_ins += current_random_ins
-        all_chaotic_outs += chaotically_recalled_outputs
+        all_rand_ins.append(current_random_ins)
+        all_chaotic_outs.append(chaotically_recalled_outputs)
 
         for i in range(pseudo_set_size):
             current_p_I.append(ann.get_random_IO())
