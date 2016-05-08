@@ -26,8 +26,8 @@ hpc = HPC([io_dim, 240, 1600, 480, io_dim],
           0.10, 0.95, 0.8, 2.0, weighting_dg,  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
           _ASYNC_FLAG=_ASYNC_FLAG, _TURNOVER_MODE=_TURNOVER_MODE)
 
-for i in range(1):
-    for train_set_size_ctr in range(2, 3):
+for i in range(20):
+    for train_set_size_ctr in range(2, 6):
         hpc.reset_hpc_module()
 
         tar_patts = []
