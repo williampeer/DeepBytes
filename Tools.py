@@ -100,6 +100,10 @@ random_f = theano.function([rows, columns], outputs=shared_random_generator.rand
     size=(rows, columns), low=0, high=10000, dtype='float32')/10000.)
 
 
+def get_random_input(in_dim):
+    return 2 * binomial_f(1, in_dim, 0.5) - np.ones((1, in_dim), dtype=np.float32)
+
+
 def set_contains_pattern(patterns_set, pattern):
     for pat in patterns_set:
         if get_pattern_correlation(pat, pattern) == 1:
@@ -175,6 +179,43 @@ def save_experiment_4_2_results(information_vector, custom_name):
     # f = file(experiment_dir+'/information_vector'+custom_name+'.save', 'wb')
     # cPickle.dump(information_vector, f, protocol=cPickle.HIGHEST_PROTOCOL)
     # f.close()
+
+
+def save_chaotic_recall_results(chaotically_recalled_patterns, pseudopatterns_I, pseudopatterns_II, original_patterns):
+    experiment_dir = get_experiment_dir()
+
+    unique_chaotically_recalled_outputs = []
+    for pattern_set in chaotically_recalled_patterns:
+        for pair in pattern_set:
+            if not set_contains_pattern(unique_chaotically_recalled_outputs, pair[1]):
+                unique_chaotically_recalled_outputs.append(pair[1])
+
+    tar_patts = []
+    for patt in original_patterns:
+        tar_patts.append(patt[1])
+    # write perfect recall rate to log:
+    log_perfect_recall_rate(unique_chaotically_recalled_outputs, tar_patts)
+    save_images_from(unique_chaotically_recalled_outputs, experiment_dir+'/images')
+
+    f2 = file(get_chaotic_pat_dir(len(original_patterns)/5)+'/full_chaotically_recalled_patterns_exp#' +
+              str(get_experiment_counter()) + '.save', 'wb')
+    cPickle.dump(chaotically_recalled_patterns, f2, protocol=cPickle.HIGHEST_PROTOCOL)
+    f2.close()
+
+    f3 = file(get_chaotic_pat_dir(len(original_patterns)/5)+'/pseudopatterns_exp#' +
+              str(get_experiment_counter()) + '.save', 'wb')
+    cPickle.dump([pseudopatterns_I, pseudopatterns_II], f3, protocol=cPickle.HIGHEST_PROTOCOL)
+    f3.close()
+
+    p_I_unwrapped = []
+    p_II_unwrapped = []
+    for p_I_set in pseudopatterns_I:
+        p_I_unwrapped += p_I_set
+    for p_II_set in pseudopatterns_II:
+        p_II_unwrapped += p_II_set
+
+    save_images_from_pairs(p_I_unwrapped, experiment_dir+'/pseudopatterns_I')
+    save_images_from_pairs(p_II_unwrapped, experiment_dir+'/pseudopatterns_II')
 
 
 def get_experiment_counter():
@@ -254,7 +295,7 @@ def append_line_to_log(line):
     log_f.close()
 
 
-def log_perfect_recall_rate(hipp_chao_patts, train_set):
+def log_perfect_recall_rate(hipp_chaotic_outputs, train_set):
     log_path = 'saved_data/log.txt'
     file_contents = ""
 
@@ -264,14 +305,14 @@ def log_perfect_recall_rate(hipp_chao_patts, train_set):
         log_f.close()
 
     perf_recalls = 0
-    for p in hipp_chao_patts:
+    for p in hipp_chaotic_outputs:
         if set_contains_pattern(train_set, p):
             perf_recalls += 1
 
     perfect_recall_rate = perf_recalls / float(len(train_set))
 
     file_contents += "Perfect recall rate: " + "{:6.3f}".format(perfect_recall_rate) + '\n'
-    file_contents += "Spurious patterns: " + str(len(hipp_chao_patts) - perf_recalls) + '\n'
+    file_contents += "Spurious patterns: " + str(len(hipp_chaotic_outputs) - perf_recalls) + '\n'
 
     log_f = file(log_path, 'wb')
     log_f.write(file_contents)
@@ -281,3 +322,14 @@ def log_perfect_recall_rate(hipp_chao_patts, train_set):
 def flip_bits_f(input_vector, flip_P):
     flip_bits = np.ones_like(input_vector[0], dtype=np.float32) - 2 * binomial_f(1, len(input_vector[0]), flip_P)
     return input_vector * flip_bits  # binomial_f returns a 2-dim. array
+
+
+def set_to_equal_parameters(hpc, test_hpc):
+    test_hpc.in_ec_weights = hpc.in_ec_weights
+    test_hpc.ec_dg_weights = hpc.ec_dg_weights
+    test_hpc.ec_ca3_weights = hpc.ec_ca3_weights
+    test_hpc.dg_ca3_weights = hpc.dg_ca3_weights
+    test_hpc.ca3_ca3_weights = hpc.ca3_ca3_weights
+    test_hpc.ca3_out_weights = hpc.ca3_out_weights
+
+    return test_hpc
