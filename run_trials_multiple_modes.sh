@@ -18,5 +18,5 @@ theano-cache clear
 echo python ExperimentExecutionm5.py
 python ExperimentExecutionm5.py
 
-#sleep 5m  # while syncing
-#poweroff
+sleep 5m  # while syncing
+poweroff
