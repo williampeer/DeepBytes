@@ -289,8 +289,8 @@ def experiment_4_2_hpc_recall_every_i_iters(hpc, ann, training_set_size, origina
                    hpc._k_m, hpc._k_r, hpc._a_i.get_value()[0][0], hpc._alpha, hpc._weighting_dg,  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
                    _ASYNC_FLAG=hpc._ASYNC_FLAG, _TURNOVER_MODE=hpc._TURNOVER_MODE)
 
-    for i in range(5):
-        current_training_set = original_training_patterns[i*training_set_size: i*training_set_size + training_set_size]
+    for i in range(1):
+        current_training_set = original_training_patterns
         HPCWrappers.learn_patterns_for_i_iters_hpc_wrapper(hpc, current_training_set, train_iters)
 
         # append 20 chaotically recalled patterns, takes output after 15 iters of recall

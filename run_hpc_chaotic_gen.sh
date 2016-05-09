@@ -8,5 +8,5 @@ python EE.py
 
 echo sleep 5m
 sleep 5m
-echo sudo poweroff
-sudo poweroff
+echo poweroff
+poweroff
