@@ -49,12 +49,7 @@ def hpc_learn_patterns_wrapper(hpc, patterns, max_training_iterations):
         # test_hpc.reset_zeta_and_nu_values()
         for pattern_index in range(len(patterns)):
             print "Recalling pattern #", pattern_index
-            test_hpc.in_ec_weights = hpc.in_ec_weights
-            test_hpc.ec_dg_weights = hpc.ec_dg_weights
-            test_hpc.ec_ca3_weights = hpc.ec_ca3_weights
-            test_hpc.dg_ca3_weights = hpc.dg_ca3_weights
-            test_hpc.ca3_ca3_weights = hpc.ca3_ca3_weights
-            test_hpc.ca3_out_weights = hpc.ca3_out_weights
+            test_hpc = Tools.set_to_equal_parameters(hpc, test_hpc)
             test_hpc.setup_input(patterns[pattern_index][0])
 
             test_hpc.recall()
@@ -120,6 +115,35 @@ def neuronal_turnover_helper(hpc):
           "{:6.3f}".format(t1-t0), "seconds."
 
 
+def learn_patterns_for_i_iters_hpc_wrapper(hpc, patterns, num_of_iters):
+    print "Commencing learning of", len(patterns), "I/O patterns."
+    time_start_overall = time.time()
+
+    # scope: for every new set
+    if hpc._TURNOVER_MODE == 0:
+        neuronal_turnover_helper(hpc)
+
+    for i in range(num_of_iters):
+        # scope: for every training set iteration
+        if hpc._TURNOVER_MODE == 1:
+            neuronal_turnover_helper(hpc)
+
+        for [input_pattern, output_pattern] in patterns:
+            # setup_start = time.time()
+            hpc.setup_pattern(input_pattern, output_pattern)
+            # setup_end = time.time()
+            # print "Setup took:", "{:6.3f}".format(setup_end-setup_start), "seconds."
+
+            # one iteration of learning using Hebbian learning
+            hpc.learn()
+
+    time_stop_overall = time.time()
+    print "Terminated learning", len(patterns), "pattern-associations in ", num_of_iters, \
+        "iterations, which took" "{:8.3f}".format(time_stop_overall-time_start_overall), "seconds."
+    Tools.append_line_to_log("Learned for " + str(num_of_iters) + " iterations. Turnover: " + str(hpc._turnover_rate) +
+                             ". DG-weighting: " + str(hpc._weighting_dg))
+
+
 def hpc_generate_pseudopatterns_I_wrapper(hpc, num_of_pseudopatterns):
     pattern_length = hpc.input_values.get_value().shape[1]
     pseudopatterns = []
@@ -136,7 +160,7 @@ def hpc_generate_pseudopatterns_II_wrapper(hpc, num_of_pseudopatterns, chaotical
     for p in chaotically_recalled_patterns:
         if not Tools.set_contains_pattern(distinct_chaotically_recalled_patts, p):
             distinct_chaotically_recalled_patts.append(p)
-    if len(chaotically_recalled_patterns)==0:
+    if len(chaotically_recalled_patterns) == 0:
         print "ERROR: len(chaotically_recalled_patterns) is 0"
         return []
 
@@ -145,4 +169,26 @@ def hpc_generate_pseudopatterns_II_wrapper(hpc, num_of_pseudopatterns, chaotical
         current_chaotically_recalled_pattern = distinct_chaotically_recalled_patts[i % chaotic_set_size]
         current_input = Tools.flip_bits_f(current_chaotically_recalled_pattern, flip_P)
         pseudopatterns.append([current_input, hpc.propagate_until_stable(current_input)])
+    return pseudopatterns
+
+
+def hpc_generate_pseudopatterns_II_recall_i_iters_wrapper(hpc, num_of_pseudopatterns, chaotically_recalled_patterns, flip_P):
+    pseudopatterns = []
+    if len(chaotically_recalled_patterns) == 0:
+        print "ERROR: len(chaotically_recalled_patterns) is 0"
+        return []
+
+    chaotic_set_size = len(chaotically_recalled_patterns)
+    for i in range(num_of_pseudopatterns):
+        current_chaotically_recalled_pattern = chaotically_recalled_patterns[i % chaotic_set_size]
+        current_input = Tools.flip_bits_f(current_chaotically_recalled_pattern, flip_P)[0]
+        pseudopatterns.append([current_input, hpc.recall_for_i_iters_with_input(current_input, 15)])
+    return pseudopatterns
+
+
+def hpc_generate_pseudopatterns_I_recall_i_iters_wrapper(hpc, num_of_pseudopatterns, num_of_iters):
+    pseudopatterns = []
+    for i in range(num_of_pseudopatterns):
+        rand_in, output = hpc.recall_for_i_iters(should_display_image=False, num_of_iterations=num_of_iters)
+        pseudopatterns.append([rand_in, output])
     return pseudopatterns
