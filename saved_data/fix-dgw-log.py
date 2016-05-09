@@ -10,7 +10,7 @@ corrected_contents = ""
 
 for line_ctr in range(len(lines)):
     if line_ctr % 14 != 0:
-        corrected_contents += lines[line_ctr]
+        corrected_contents += lines[line_ctr] + '\n'
 
 log_f = file('dgw-exps-corrected.txt', 'wb')
 log_f.write(corrected_contents)
