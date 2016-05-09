@@ -289,17 +289,17 @@ def experiment_4_2_hpc_recall_every_i_iters(hpc, ann, training_set_size, origina
                    hpc._k_m, hpc._k_r, hpc._a_i.get_value()[0][0], hpc._alpha, hpc._weighting_dg,  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
                    _ASYNC_FLAG=hpc._ASYNC_FLAG, _TURNOVER_MODE=hpc._TURNOVER_MODE)
 
-    for i in range(1):
+    for i in range(train_iters):
         current_training_set = original_training_patterns
-        HPCWrappers.learn_patterns_for_i_iters_hpc_wrapper(hpc, current_training_set, train_iters)
+        HPCWrappers.learn_patterns_for_i_iters_hpc_wrapper(hpc, current_training_set, 1)
 
         # append 20 chaotically recalled patterns, takes output after 15 iters of recall
-        current_chaotic_recall_patts = HPCWrappers.hpc_generate_pseudopatterns_I_recall_i_iters_wrapper(hpc, 20, 15)
+        current_chaotic_recall_patts = HPCWrappers.hpc_generate_pseudopatterns_I_recall_i_iters_wrapper(hpc, 10, 15)
         chaotic_recall_patterns.append(current_chaotic_recall_patts)
 
         test_hpc = Tools.set_to_equal_parameters(hpc, test_hpc)
         # generate pseudopatterns:
-        pseudopatterns_I.append(HPCWrappers.hpc_generate_pseudopatterns_I_recall_i_iters_wrapper(test_hpc, 20, 1))
+        pseudopatterns_I.append(HPCWrappers.hpc_generate_pseudopatterns_I_recall_i_iters_wrapper(test_hpc, 10, 1))
         pseudopatterns_II.append(HPCWrappers.hpc_generate_pseudopatterns_II_recall_i_iters_wrapper(
                 test_hpc, num_of_pseudopatterns=20, chaotically_recalled_patterns=current_chaotic_recall_patts,
                 flip_P=0.5))
