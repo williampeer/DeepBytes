@@ -10,7 +10,7 @@ next_experiment_im[0].append(-1)
 
 
 def experiment_4_x_1(hpc, training_set_size, original_training_patterns):
-    Tools.append_line_to_log("INIT. EXPERIMENT #" + str(Tools.get_experiment_counter()) + ". Type: 4_x_1" +
+    Tools.append_line_to_log("INIT. EXPERIMENT #" + str(Tools.get_experiment_counter()) + ". Type: 4.1" +
                              ": ASYNC-flag:" + str(hpc._ASYNC_FLAG) + ". " + str(training_set_size) + "x5. " +
                              "Turnover mode: " + str(hpc._TURNOVER_MODE) + ". Turnover rate:" +
                              str(hpc._turnover_rate) + ", DG-weighting: " + str(hpc._weighting_dg) + ".")
