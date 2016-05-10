@@ -13,9 +13,10 @@ def get_data_from_log_file(filename):
     for experiment_ctr in range(len(lines)/13):
         experiment_data = []
 
-        sep = lines[13*experiment_ctr].split('x')
-        set_size = int(sep[0][len(sep[0])-1])
-        training_sets = int(sep[1][0])
+        first_line_in_experiment_split_on_x = lines[13*experiment_ctr].split('x')
+        # get last symbol of first sub-string
+        set_size = int(first_line_in_experiment_split_on_x[0][len(first_line_in_experiment_split_on_x[0])-1])
+        training_sets = int(first_line_in_experiment_split_on_x[1][0])
 
         words = lines[experiment_ctr * 13].split()
         dg_weighting = words[-1][:len(words[-1])-1]
@@ -25,7 +26,7 @@ def get_data_from_log_file(filename):
 
         experiment_data.append(set_size)
         experiment_data.append(training_sets)
-        experiment_data.append(float(dg_weighting))
+        experiment_data.append(int(dg_weighting))
         experiment_data.append(perfect_recall_rate)
         experiment_data.append(num_of_spurious_patterns)
 
@@ -174,6 +175,8 @@ def get_dictionary_list_of_convergence_and_perfect_recall_for_turnover_rates(par
     return set_size_buckets
 
 
+# Returns a data structure of the shape: a list of buckets (lists) per set size, containing a dictionary per
+#   DG-weighting.
 def get_dictionary_list_of_convergence_and_perfect_recall_for_dg_weightings(parsed_data):
     set_size_buckets = []
     for i in range(4):

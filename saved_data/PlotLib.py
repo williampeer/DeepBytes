@@ -65,6 +65,7 @@ def plot_pattern_stats_from_parsed_data_v1(parsed_data, exp_num):
     plt.legend((p1[0], p2[0]), ('avg. # patterns recalled per sub-set', 'avg. spurious recall per sub-set'),
                bbox_to_anchor=(0.42, 1))
 
+    plt.grid(True)
     plt.show()
 
 
@@ -101,8 +102,9 @@ def plot_convergence_ratios_for_data(parsed_data):
     plt.xticks(x, ('2', '3', '4', '5'))
 
     plt.legend((p1[0], p2[0], p3[0], p4[0]), ('Async., turnover for new sets', 'Async., turnover every iteration',
-                                              'Sync., turnover for new sets', 'Sync., turnover every iteration'),
-               bbox_to_anchor=(0.377, 0.23))
+                                              'Sync., turnover for new sets', 'Sync., turnover every iteration'))
+               # bbox_to_anchor=(0.377, 0.23))
+    plt.grid(True)
     plt.show()
 
 
@@ -132,6 +134,7 @@ def plot_convergence_iterations_for_data(parsed_data, exp_num):
 
     plt.legend((p1[0], p2[0]), ('Sync., turnover for every learnt set', 'Standard deviation'))
                # bbox_to_anchor=(0.445, 1))
+    plt.grid(True)
     plt.show()
 
 
@@ -187,6 +190,7 @@ def plot_perfect_recall_rates_for_data(parsed_data):
     plt.legend((p1[0], p2[0], p3[0], p4[0]), ('Async., turnover for new sets', 'Async., turnover every iteration',
                                               'Sync., turnover for new sets', 'Sync., turnover every iteration'))
                # bbox_to_anchor=(0.377, 0.23))
+    plt.grid(True)
     plt.show()
 
 
@@ -254,6 +258,7 @@ def plot_avg_perfect_extraction_and_spurious_patterns(parsed_data):
                                               'Sync., turnover for new sets', 'Sync., turnover every iteration',
                                               'Imperfectly recalled patterns'))
                # bbox_to_anchor=(0.377, 1))
+    plt.grid(True)
     plt.show()
 
 
@@ -288,6 +293,7 @@ def plot_convergence_stats_for_turnover_rates(parsed_data, log_filename):
     plt.legend((p2[0], p3[0], p4[0], p5[0]), ('2x5', '3x5', '4x5', '5x5'),
                bbox_to_anchor=(1, 1.0155), ncol=4, fancybox=True, shadow=True)
     plt.margins(0.08)
+    plt.grid(True)
 
     plt.show()
 
@@ -321,6 +327,7 @@ def plot_perfect_recall_rates_for_turnover_rates(parsed_data, log_filename):
     plt.legend((p2[0], p3[0], p4[0], p5[0]), ('2x5', '3x5', '4x5', '5x5'), bbox_to_anchor=(1, 1.0155), ncol=4, fancybox=True, shadow=True)
     plt.xticks([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.58])
     plt.margins(0.075)
+    plt.grid(True)
 
     plt.show()
 
@@ -346,13 +353,14 @@ def plot_convergence_stats_for_dg_weightings(parsed_data):
     p5 = plt.errorbar(results_5[0], results_5[3], results_5[4])
 
     plt.legend((p2[0], p3[0], p4[0], p5[0]), ('2x5', '3x5', '4x5', '5x5'))
+    plt.grid(True)
 
     plt.show()
 
 
 # format: [set_size, #sets, [convergence_num, distinct_patterns_recalled]
 # 10 trials for the current log
-log_filename = 'log.txt'
+log_filename = 'dgw-exps-corrected.txt'
 outer_scope_parsed_data = Parser.get_data_from_log_file(log_filename)
 # plot_pattern_stats_from_parsed_data_v1(outer_scope_parsed_data, 3)
 # plot_convergence_ratios_for_data(outer_scope_parsed_data)
@@ -361,4 +369,4 @@ outer_scope_parsed_data = Parser.get_data_from_log_file(log_filename)
 # plot_avg_perfect_extraction_and_spurious_patterns(outer_scope_parsed_data)
 # plot_convergence_stats_for_turnover_rates(outer_scope_parsed_data, log_filename)
 # plot_perfect_recall_rates_for_turnover_rates(outer_scope_parsed_data, log_filename)
-# plot_convergence_stats_for_dg_weightings(outer_scope_parsed_data)
+plot_convergence_stats_for_dg_weightings(outer_scope_parsed_data)
