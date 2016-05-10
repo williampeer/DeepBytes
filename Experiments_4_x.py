@@ -289,6 +289,48 @@ def experiment_4_2_hpc_recall_every_i_iters(hpc, ann, training_set_size, origina
                    hpc._k_m, hpc._k_r, hpc._a_i.get_value()[0][0], hpc._alpha, hpc._weighting_dg,  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
                    _ASYNC_FLAG=hpc._ASYNC_FLAG, _TURNOVER_MODE=hpc._TURNOVER_MODE)
 
+    for i in range(5):
+        current_training_set = original_training_patterns[training_set_size*i: training_set_size*i + training_set_size]
+        HPCWrappers.learn_patterns_for_i_iters_hpc_wrapper(hpc, current_training_set, 15)
+
+        # append 20 chaotically recalled patterns, takes output after 15 iters of recall
+        current_chaotic_recall_patts = HPCWrappers.hpc_generate_pseudopatterns_I_recall_i_iters_wrapper(
+                hpc, num_of_pseudopatterns=20, num_of_iters=15)
+        chaotic_recall_patterns.append(current_chaotic_recall_patts)
+
+        test_hpc = Tools.set_to_equal_parameters(hpc, test_hpc)
+        # generate pseudopatterns:
+        pseudopatterns_I.append(HPCWrappers.hpc_generate_pseudopatterns_I_recall_i_iters_wrapper(
+                test_hpc, num_of_pseudopatterns=20, num_of_iters=15))
+        pseudopatterns_II.append(HPCWrappers.hpc_generate_pseudopatterns_II_recall_i_iters_wrapper(
+                test_hpc, num_of_pseudopatterns=20, chaotically_recalled_patterns=current_chaotic_recall_patts,
+                flip_P=0.5))
+
+    # store experiment results for use in different neo. consolidation experiments
+    Tools.save_chaotic_recall_results(chaotic_recall_patterns, pseudopatterns_I, pseudopatterns_II,
+                                      original_training_patterns)
+
+
+
+def experiment_4_2_hpc_recall_every_i_iters_global_exposure(hpc, ann, training_set_size, original_training_patterns, train_iters):
+    # LOG:
+    Tools.append_line_to_log("INIT. EXPERIMENT #" + str(Tools.get_experiment_counter()) +
+                             ". Type: 4.2 Chaotic recall version" +
+                             ": ASYNC-flag:" + str(hpc._ASYNC_FLAG) + ". " + str(training_set_size) + "x5. " +
+                             "Turnover mode: " + str(hpc._TURNOVER_MODE) + ". Turnover rate:" +
+                             str(hpc._turnover_rate) + ", DG-weighting: " + str(hpc._weighting_dg) + ".")
+
+    chaotic_recall_patterns = []
+    pseudopatterns_I = []
+    pseudopatterns_II = []
+
+    test_hpc = HPC([hpc.dims[0], hpc.dims[1], hpc.dims[2], hpc.dims[3], hpc.dims[4]],
+                   hpc.connection_rate_input_ec, hpc.PP, hpc.MF,  # connection rates: (in_ec, ec_dg, dg_ca3)
+                   hpc.firing_rate_ec, hpc.firing_rate_dg, hpc.firing_rate_ca3,  # firing rates: (ec, dg, ca3)
+                   hpc._gamma, hpc._epsilon, hpc._nu, hpc._turnover_rate,  # gamma, epsilon, nu, turnover rate
+                   hpc._k_m, hpc._k_r, hpc._a_i.get_value()[0][0], hpc._alpha, hpc._weighting_dg,  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
+                   _ASYNC_FLAG=hpc._ASYNC_FLAG, _TURNOVER_MODE=hpc._TURNOVER_MODE)
+
     for i in range(train_iters):
         current_training_set = original_training_patterns
         HPCWrappers.learn_patterns_for_i_iters_hpc_wrapper(hpc, current_training_set, 1)

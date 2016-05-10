@@ -360,6 +360,7 @@ def plot_convergence_stats_for_dg_weightings(parsed_data, additional_plot_title)
 
     plt.show()
 
+
 def plot_convergence_stats_for_dg_weightings_no_err_bars(parsed_data, additional_plot_title):
     set_size_buckets = Parser.get_dictionary_list_of_convergence_and_perfect_recall_for_dg_weightings(parsed_data)
 
