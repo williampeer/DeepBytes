@@ -35,6 +35,10 @@ def get_data_from_log_file_hpc_chaotic_recall(filename, lines_of_learning_spam):
     return all_data
 
 
-log_filename = 'log-local-hpc-chaotic.txt'
-hpc_chaotic_parsed_data = get_data_from_log_file_hpc_chaotic_recall(log_filename, 5)
+log_filename_hpc_chaotic_local = 'log-local-hpc-chaotic.txt'
+hpc_chaotic_parsed_data = get_data_from_log_file_hpc_chaotic_recall(log_filename_hpc_chaotic_local, 5)
 print hpc_chaotic_parsed_data
+
+log_filename_hpc_global = 'log-hpc-recall-schemes.txt'
+hpc_chaotic_global_parsed_data = get_data_from_log_file_hpc_chaotic_recall(log_filename_hpc_global, 15)
+print hpc_chaotic_global_parsed_data
