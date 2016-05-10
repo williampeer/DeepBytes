@@ -255,7 +255,7 @@ def append_line_to_log(line):
 
 
 def log_perfect_recall_rate(hipp_chao_patts, train_set):
-    log_path = 'saved_data/dgw-exps-corrected.txt'
+    log_path = 'saved_data/log.txt'
     file_contents = ""
 
     if os.path.exists(log_path):
