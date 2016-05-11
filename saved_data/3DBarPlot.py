@@ -35,7 +35,7 @@ def process_3d_data(current_data):
         Parser.get_avg_perfect_recall_and_avg_spurious_recall_from_data_for_configs(current_data, iterations_per_config=10,
                                                                                     num_of_configs=30)
 
-    print "spurious_by_dgw_list:", spurious_by_dgw_list
+    # print "spurious_by_dgw_list:", spurious_by_dgw_list
     values_prrs = []
     values_spurious = []
 
@@ -80,8 +80,17 @@ def unwrap_values(values_3d):
 
     return [xpos, ypos, zpos]
 
-log_filename = 'dgw-exps-corrected.txt'
-parsed_data = Parser.get_data_from_log_file(log_filename)
-values_prrs, values_spurious = process_3d_data(parsed_data[2400:3600])
+# log_filename = 'log.txt'
+# parsed_data = Parser.get_data_from_log_file(log_filename)
+
+log_filename_hpc_chaotic_local = 'log-local-hpc-chaotic.txt'
+parsed_data = Parser.get_data_from_log_file_hpc_chaotic_recall(log_filename_hpc_chaotic_local, 5)
+# print parsed_data
+
+# log_filename_hpc_global = 'log-hpc-recall-schemes.txt'
+# parsed_data = Parser.get_data_from_log_file_hpc_chaotic_recall(log_filename_hpc_global, 15)
+# print parsed_data
+
+values_prrs, values_spurious = process_3d_data(parsed_data[:80])
 bar_plot_3d(values_prrs)
 bar_plot_3d(values_spurious)
