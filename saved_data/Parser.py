@@ -110,6 +110,8 @@ def get_avg_perfect_recall_and_avg_spurious_recall_from_data_for_dg_ws(parsed_da
             current_prr_stds.append(get_standard_deviation(cur_avg_prr, prr_values))
 
             spurious_values = current_spurious_patts_data[i]
+            for val_ctr in range(len(spurious_values)):
+                spurious_values[i] /= float(i+2)
             cur_avg_spurious = get_avg(spurious_values)
             current_spurious_avgs.append(cur_avg_spurious)
             current_spurious_stds.append(get_standard_deviation(cur_avg_spurious, spurious_values))
