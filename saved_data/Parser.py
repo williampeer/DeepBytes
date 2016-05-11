@@ -84,15 +84,16 @@ def get_convergence_and_distinct_patterns_from_log_v1(parsed_data):
 
 # returns 3d lists: [DGW1, DGW2, ... DGWN], where DGWI: [[setsize2avg, setsize3avg, .., setsize5avg]],
 #   for perfect recall rates, spurious recall rates, stds for the two.
-def get_avg_perfect_recall_and_avg_spurious_recall_from_data_for_dg_ws(parsed_data, iterations_per_dg_w, dg_ws):
+def get_avg_perfect_recall_and_avg_spurious_recall_from_data_for_configs(parsed_data, iterations_per_config,
+                                                                         num_of_configs):
     # for each DGW:
     avg_perfect_recall_rates_by_dgw = []
     prr_stds = []
     avg_spurious_recall_rates_by_dgw = []
     spurious_stds = []
 
-    one_dgw_data_len = iterations_per_dg_w*4
-    for dgw_ctr in range(dg_ws):
+    one_dgw_data_len = iterations_per_config * 4
+    for dgw_ctr in range(num_of_configs):
         current_data = parsed_data[dgw_ctr*one_dgw_data_len: dgw_ctr*one_dgw_data_len + one_dgw_data_len]
         current_perf_recall_data, current_spurious_patts_data = \
             get_perfect_recall_rates_and_spurious_patterns_from_data(current_data)

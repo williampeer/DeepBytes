@@ -32,8 +32,8 @@ def bar_plot_3d(values_3d):
 
 def process_3d_data(current_data):
     prr_by_dgw_list, spurious_by_dgw_list, stds_prr, stds_spurious = \
-        Parser.get_avg_perfect_recall_and_avg_spurious_recall_from_data_for_dg_ws(current_data, iterations_per_dg_w=10,
-                                                                                  dg_ws=30)
+        Parser.get_avg_perfect_recall_and_avg_spurious_recall_from_data_for_configs(current_data, iterations_per_config=10,
+                                                                                    num_of_configs=30)
 
     print "spurious_by_dgw_list:", spurious_by_dgw_list
     values_prrs = []
