@@ -344,7 +344,7 @@ def plot_convergence_stats_for_dg_weightings(parsed_data, additional_plot_title)
 
     plt.rcParams.update({'font.size': 20})
     plt.ylabel('Convergence ratio')
-    plt.xlabel('Turnover rate')
+    plt.xlabel('DG-weighting')
     plt.title('Average convergence rate by DG-weighting, ' + additional_plot_title)
 
     p2 = plt.errorbar(results_2[0], results_2[3], results_2[4])
@@ -373,7 +373,7 @@ def plot_convergence_stats_for_dg_weightings_no_err_bars(parsed_data, additional
 
     plt.rcParams.update({'font.size': 20})
     plt.ylabel('Convergence ratio')
-    plt.xlabel('Turnover rate')
+    plt.xlabel('DG-weighting')
     plt.title('Average convergence rate by DG-weighting, ' + additional_plot_title)
 
     p2 = plt.plot(results_2[0], results_2[3])
@@ -382,13 +382,48 @@ def plot_convergence_stats_for_dg_weightings_no_err_bars(parsed_data, additional
     p5 = plt.plot(results_5[0], results_5[3])
 
     plt.legend((p2[0], p3[0], p4[0], p5[0]), ('2x5', '3x5', '4x5', '5x5'),
-               bbox_to_anchor=(1, 0.7), ncol=1, fancybox=True, shadow=True)
+               bbox_to_anchor=(1, 0.8), ncol=1, fancybox=True, shadow=True)
     plt.grid(True)
     plt.margins(0.01)
 
     plt.yticks(np.arange(0, 1.1, .1))
 
     plt.show()
+
+
+def plot_perfect_recall_rates_for_dg_weightings_no_err_bars(parsed_data, additional_plot_title):
+    set_size_buckets = Parser.get_dictionary_list_of_convergence_and_perfect_recall_for_dg_weightings(parsed_data)
+
+    # x, y_iters, std_iters, y_ratios, std_ratios
+    x = range(30)
+    results_2 = Parser.get_avg_convergence_for_x_and_set_size(2, set_size_buckets, x)
+    results_3 = Parser.get_avg_convergence_for_x_and_set_size(3, set_size_buckets, x)
+    results_4 = Parser.get_avg_convergence_for_x_and_set_size(4, set_size_buckets, x)
+    results_5 = Parser.get_avg_convergence_for_x_and_set_size(5, set_size_buckets, x)
+
+    plt.rcParams.update({'font.size': 20})
+    plt.ylabel('Convergence ratio')
+    plt.xlabel('Turnover rate')
+    plt.title('Average convergence rate by DG-weighting, ' + additional_plot_title)
+
+    p2 = plt.plot(results_2[0], results_2[3])
+    p3 = plt.plot(results_3[0], results_3[3])
+    p4 = plt.plot(results_4[0], results_4[3])
+    p5 = plt.plot(results_5[0], results_5[3])
+
+    plt.legend((p2[0], p3[0], p4[0], p5[0]), ('2x5', '3x5', '4x5', '5x5'))
+               # bbox_to_anchor=(1, 0.9), ncol=1, fancybox=True, shadow=True)
+    plt.grid(True)
+    plt.margins(0.01)
+
+    plt.yticks(np.arange(0, 1.1, .1))
+
+    plt.show()
+
+
+def plot_3d_recall_vs_spurious_dgw_and_set_size(data_in, plot_title):
+
+    pass
 
 
 # format: [set_size, #sets, [convergence_num, distinct_patterns_recalled]
@@ -403,7 +438,7 @@ outer_scope_parsed_data = Parser.get_data_from_log_file(log_filename)
 # plot_convergence_stats_for_turnover_rates(outer_scope_parsed_data, log_filename)
 # plot_perfect_recall_rates_for_turnover_rates(outer_scope_parsed_data, log_filename)
 
-specific_plot_title = 'SYNC., turnover rate = 0.04, turnover mode 1'
-current_data = outer_scope_parsed_data[2400:3600]
+specific_plot_title = 'ASYNC., turnover rate = 0.04, turnover mode 1'
+current_data = outer_scope_parsed_data[:1200]
 # plot_convergence_stats_for_dg_weightings(current_data, specific_plot_title)
 plot_convergence_stats_for_dg_weightings_no_err_bars(current_data, specific_plot_title)

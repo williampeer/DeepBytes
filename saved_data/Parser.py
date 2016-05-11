@@ -82,6 +82,47 @@ def get_convergence_and_distinct_patterns_from_log_v1(parsed_data):
     return [experiment_data_convergence, experiment_data_distinct_patterns]
 
 
+# returns 3d lists: [DGW1, DGW2, ... DGWN], where DGWI: [[setsize2avg, setsize3avg, .., setsize5avg]],
+#   for perfect recall rates, spurious recall rates, stds for the two.
+def get_avg_perfect_recall_and_avg_spurious_recall_from_data_for_dg_ws(parsed_data, iterations_per_dg_w, dg_ws):
+    # for each DGW:
+    avg_perfect_recall_rates_by_dgw = []
+    prr_stds = []
+    avg_spurious_recall_rates_by_dgw = []
+    spurious_stds = []
+
+    one_dgw_data_len = iterations_per_dg_w*4
+    for dgw_ctr in range(dg_ws):
+        current_data = parsed_data[dgw_ctr*one_dgw_data_len: dgw_ctr*one_dgw_data_len + one_dgw_data_len]
+        current_perf_recall_data, current_spurious_patts_data = \
+            get_perfect_recall_rates_and_spurious_patterns_from_data(current_data)
+        # print "current_perf_recall_data:", current_perf_recall_data
+        # get avgs.
+        current_prr_avgs = []
+        current_prr_stds = []
+        current_spurious_avgs = []
+        current_spurious_stds = []
+        for i in range(4):
+            prr_values = current_perf_recall_data[i]
+            # print "prr_values:", prr_values
+            cur_avg_prr = get_avg(prr_values)
+            current_prr_avgs.append(cur_avg_prr)
+            current_prr_stds.append(get_standard_deviation(cur_avg_prr, prr_values))
+
+            spurious_values = current_spurious_patts_data[i]
+            cur_avg_spurious = get_avg(spurious_values)
+            current_spurious_avgs.append(cur_avg_spurious)
+            current_spurious_stds.append(get_standard_deviation(cur_avg_spurious, spurious_values))
+
+        # append to list
+        avg_perfect_recall_rates_by_dgw.append(current_prr_avgs)
+        prr_stds.append(current_prr_stds)
+        avg_spurious_recall_rates_by_dgw.append(current_spurious_avgs)
+        spurious_stds.append(current_spurious_stds)
+
+    return [avg_perfect_recall_rates_by_dgw, avg_spurious_recall_rates_by_dgw, prr_stds, spurious_stds]
+
+
 def get_perfect_recall_rates_and_spurious_patterns_from_data(parsed_data):
     perf_recall_data = []
     spurious_patts_data = []

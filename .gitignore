@@ -12,3 +12,4 @@ saved_data/*
 !saved_data/PlotLib.py
 !saved_data/fix-dgw-log.py
 !saved_data/PlotLibHpcRecallData.py
+!saved_data/3DBarPlot.py
