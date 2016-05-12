@@ -291,7 +291,7 @@ def experiment_4_2_hpc_recall_every_i_iters(hpc, ann, training_set_size, origina
 
     for i in range(5):
         current_training_set = original_training_patterns[training_set_size*i: training_set_size*i + training_set_size]
-        HPCWrappers.learn_patterns_for_i_iters_hpc_wrapper(hpc, current_training_set, 15)
+        HPCWrappers.learn_patterns_for_i_iters_hpc_wrapper(hpc, current_training_set, train_iters)
 
         # append 20 chaotically recalled patterns, takes output after 15 iters of recall
         current_chaotic_recall_patts = HPCWrappers.hpc_generate_pseudopatterns_I_recall_i_iters_wrapper(
@@ -309,7 +309,6 @@ def experiment_4_2_hpc_recall_every_i_iters(hpc, ann, training_set_size, origina
     # store experiment results for use in different neo. consolidation experiments
     Tools.save_chaotic_recall_results(chaotic_recall_patterns, pseudopatterns_I, pseudopatterns_II,
                                       original_training_patterns)
-
 
 
 def experiment_4_2_hpc_recall_every_i_iters_global_exposure(hpc, ann, training_set_size, original_training_patterns, train_iters):

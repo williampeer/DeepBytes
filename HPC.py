@@ -508,6 +508,7 @@ class HPC:
 
     def recall_for_i_iters(self, should_display_image, num_of_iterations):
         rand_in = Tools.get_random_input(49)
+        self.setup_input(rand_in)
         for i in range(num_of_iterations):
             # Attempt to set a random input for every iteration:
             self.recall()
@@ -524,6 +525,18 @@ class HPC:
 
         return self.output_values.get_value()
 
+    def recall_for_i_iters_random_stream_in(self, should_display_image, num_of_iterations):
+        rand_in = Tools.get_random_input(49)
+        for i in range(num_of_iterations):
+            rand_in = Tools.get_random_input(49)
+            self.setup_input(rand_in)
+            # Attempt to set a random input for every iteration:
+            self.recall()
+            if should_display_image:
+                Tools.show_image_from(out_now=self.output_values.get_value())
+
+        # print "Returning from chaotic recall after", num_of_iterations, "iterations."
+        return [rand_in, self.output_values.get_value()]
 
     def propagate_until_stable(self, input_pattern):
         self.setup_input(input_pattern=input_pattern)
