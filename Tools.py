@@ -48,8 +48,8 @@ def save_images_from_pairs(pattern_pairs, img_path):
     for pattern in pattern_pairs:
         img_in = create_image_helper(pattern[0])
         img_out = create_image_helper(pattern[1])
-        img_in.save(img_path+'/image#'+str(img_ctr)+'_input', 'BMP')
-        img_out.save(img_path+'/image#'+str(img_ctr)+'_output', 'BMP')
+        img_in.save(img_path+'/image#'+str(img_ctr)+'_input', 'PNG')
+        img_out.save(img_path+'/image#'+str(img_ctr)+'_output', 'PNG')
         img_ctr += 1
 
 
