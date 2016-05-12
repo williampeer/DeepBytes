@@ -26,7 +26,7 @@ hpc = HPC([io_dim, 240, 1600, 480, io_dim],
           0.10, 0.95, 0.8, 2.0, weighting_dg,  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
           _ASYNC_FLAG=_ASYNC_FLAG, _TURNOVER_MODE=_TURNOVER_MODE)
 
-# ============ Config. 1: ============
+# ============ Config. 1: ============ async, 0.04, tm 0, dg 25, local
 for i in range(20):
     for train_set_size_ctr in range(2, 6):
         hpc.reset_hpc_module()
@@ -46,7 +46,7 @@ for i in range(20):
         Tools.increment_experiment_counter()
 
 
-# ============ Config. 2: ============
+# ============ Config. 2: ============ async, 0.04, tm 0, dg 25, global
 for i in range(20):
     for train_set_size_ctr in range(2, 6):
         hpc.reset_hpc_module()
@@ -61,6 +61,211 @@ for i in range(20):
         # This also saves the experiment results:
         Experiments_4_x.experiment_4_2_hpc_recall_every_i_iters_global_exposure(
                 hpc, ann, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr], train_iters=15)
+
+        # For now, this is the ONLY place where the counter is incremented.
+        Tools.increment_experiment_counter()
+
+# ============ Config. 3: ============ async, 0.04, tm 0, dg 25, local, random stream in
+for i in range(20):
+    for train_set_size_ctr in range(2, 6):
+        hpc.reset_hpc_module()
+
+        tar_patts = []
+        for p in training_patterns_associative[:5*train_set_size_ctr]:
+            tar_patts.append(p[1])
+
+        ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
+
+        print "Starting experiment 4.2, HPC chaotic recall i iters and HPC pseudopatterns..."
+        # This also saves the experiment results:
+        Experiments_4_x.experiment_4_2_hpc_recall_every_i_iters_random_stream(
+                hpc, ann, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr], train_iters=15)
+
+        # For now, this is the ONLY place where the counter is incremented.
+        Tools.increment_experiment_counter()
+
+
+# ============ Config. 4: ============ async, 0.04, tm 0, dg 25, global, random stream in
+for i in range(20):
+    for train_set_size_ctr in range(2, 6):
+        hpc.reset_hpc_module()
+
+        tar_patts = []
+        for p in training_patterns_associative[:5*train_set_size_ctr]:
+            tar_patts.append(p[1])
+
+        ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
+
+        print "Starting experiment 4.2, HPC chaotic recall i iters and HPC pseudopatterns..."
+        # This also saves the experiment results:
+        Experiments_4_x.experiment_4_2_hpc_recall_every_i_iters_global_exposure_random_stream(
+                hpc, ann, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr], train_iters=15)
+
+        # For now, this is the ONLY place where the counter is incremented.
+        Tools.increment_experiment_counter()
+
+
+# ============ Config. 5: ============ sync, 0.50, tm 0, dgw 25, local
+hpc._ASYNC_FLAG = False
+hpc._turnover_rate = 0.5
+for i in range(20):
+    for train_set_size_ctr in range(2, 6):
+        hpc.reset_hpc_module()
+
+        tar_patts = []
+        for p in training_patterns_associative[:5*train_set_size_ctr]:
+            tar_patts.append(p[1])
+
+        ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
+
+        print "Starting experiment 4.2, HPC chaotic recall i iters and HPC pseudopatterns..."
+        # This also saves the experiment results:
+        Experiments_4_x.experiment_4_2_hpc_recall_every_i_iters(
+                hpc, ann, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr], train_iters=15)
+
+        # For now, this is the ONLY place where the counter is incremented.
+        Tools.increment_experiment_counter()
+
+
+# ============ Config. 6: ============ sync, 0.50, tm 0, dgw 25, global
+for i in range(20):
+    for train_set_size_ctr in range(2, 6):
+        hpc.reset_hpc_module()
+
+        tar_patts = []
+        for p in training_patterns_associative[:5*train_set_size_ctr]:
+            tar_patts.append(p[1])
+
+        ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
+
+        print "Starting experiment 4.2, HPC chaotic recall i iters and HPC pseudopatterns..."
+        # This also saves the experiment results:
+        Experiments_4_x.experiment_4_2_hpc_recall_every_i_iters_global_exposure(
+                hpc, ann, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr], train_iters=15)
+
+        # For now, this is the ONLY place where the counter is incremented.
+        Tools.increment_experiment_counter()
+
+# ============ Config. 7: ============ sync, 0.50, tm 0, dgw 25, local, random stream in
+hpc._ASYNC_FLAG = False
+hpc._turnover_rate = 0.5
+for i in range(20):
+    for train_set_size_ctr in range(2, 6):
+        hpc.reset_hpc_module()
+
+        tar_patts = []
+        for p in training_patterns_associative[:5*train_set_size_ctr]:
+            tar_patts.append(p[1])
+
+        ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
+
+        print "Starting experiment 4.2, HPC chaotic recall i iters and HPC pseudopatterns..."
+        # This also saves the experiment results:
+        Experiments_4_x.experiment_4_2_hpc_recall_every_i_iters_random_stream(
+                hpc, ann, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr], train_iters=15)
+
+        # For now, this is the ONLY place where the counter is incremented.
+        Tools.increment_experiment_counter()
+
+
+# ============ Config. 8: ============ sync, 0.50, tm 0, dgw 25, global, random stream in
+for i in range(20):
+    for train_set_size_ctr in range(2, 6):
+        hpc.reset_hpc_module()
+
+        tar_patts = []
+        for p in training_patterns_associative[:5*train_set_size_ctr]:
+            tar_patts.append(p[1])
+
+        ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
+
+        print "Starting experiment 4.2, HPC chaotic recall i iters and HPC pseudopatterns..."
+        # This also saves the experiment results:
+        Experiments_4_x.experiment_4_2_hpc_recall_every_i_iters_global_exposure_random_stream(
+                hpc, ann, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr], train_iters=15)
+
+        # For now, this is the ONLY place where the counter is incremented.
+        Tools.increment_experiment_counter()
+
+
+# ============ Config. 9: ============ sync, 0.04, tm 1, local
+hpc._ASYNC_FLAG = False
+hpc._turnover_rate = 0.04
+hpc._TURNOVER_MODE = 1
+for i in range(20):
+    for train_set_size_ctr in range(2, 6):
+        hpc.reset_hpc_module()
+
+        tar_patts = []
+        for p in training_patterns_associative[:5*train_set_size_ctr]:
+            tar_patts.append(p[1])
+
+        ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
+
+        print "Starting experiment 4.2, HPC chaotic recall i iters and HPC pseudopatterns..."
+        # This also saves the experiment results:
+        Experiments_4_x.experiment_4_2_hpc_recall_every_i_iters(
+                hpc, ann, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr], train_iters=15)
+
+        # For now, this is the ONLY place where the counter is incremented.
+        Tools.increment_experiment_counter()
+
+# ============ Config. 10: ============ sync, 0.50, tm 1, local
+hpc._turnover_rate = 0.50
+for i in range(20):
+    for train_set_size_ctr in range(2, 6):
+        hpc.reset_hpc_module()
+
+        tar_patts = []
+        for p in training_patterns_associative[:5*train_set_size_ctr]:
+            tar_patts.append(p[1])
+
+        ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
+
+        print "Starting experiment 4.2, HPC chaotic recall i iters and HPC pseudopatterns..."
+        # This also saves the experiment results:
+        Experiments_4_x.experiment_4_2_hpc_recall_every_i_iters(
+                hpc, ann, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr], train_iters=15)
+
+        # For now, this is the ONLY place where the counter is incremented.
+        Tools.increment_experiment_counter()
+
+
+# ============ Config. x: ============ async, 0.04, tm 0, dg 25, local, 50 train iters
+for i in range(20):
+    for train_set_size_ctr in range(2, 6):
+        hpc.reset_hpc_module()
+
+        tar_patts = []
+        for p in training_patterns_associative[:5*train_set_size_ctr]:
+            tar_patts.append(p[1])
+
+        ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
+
+        print "Starting experiment 4.2, HPC chaotic recall i iters and HPC pseudopatterns..."
+        # This also saves the experiment results:
+        Experiments_4_x.experiment_4_2_hpc_recall_every_i_iters(
+                hpc, ann, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr], train_iters=50)
+
+        # For now, this is the ONLY place where the counter is incremented.
+        Tools.increment_experiment_counter()
+
+
+# ============ Config. y: ============ async, 0.04, tm 0, dg 25, global, 50 train iters
+for i in range(20):
+    for train_set_size_ctr in range(2, 6):
+        hpc.reset_hpc_module()
+
+        tar_patts = []
+        for p in training_patterns_associative[:5*train_set_size_ctr]:
+            tar_patts.append(p[1])
+
+        ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
+
+        print "Starting experiment 4.2, HPC chaotic recall i iters and HPC pseudopatterns..."
+        # This also saves the experiment results:
+        Experiments_4_x.experiment_4_2_hpc_recall_every_i_iters_global_exposure(
+                hpc, ann, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr], train_iters=50)
 
         # For now, this is the ONLY place where the counter is incremented.
         Tools.increment_experiment_counter()

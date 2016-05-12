@@ -192,3 +192,12 @@ def hpc_generate_pseudopatterns_I_recall_i_iters_wrapper(hpc, num_of_pseudopatte
         rand_in, output = hpc.recall_for_i_iters(should_display_image=False, num_of_iterations=num_of_iters)
         pseudopatterns.append([rand_in, output])
     return pseudopatterns
+
+
+def hpc_generate_pseudopatterns_I_recall_i_iters_wrapper_random_stream(hpc, num_of_pseudopatterns, num_of_iters):
+    pseudopatterns = []
+    for i in range(num_of_pseudopatterns):
+        rand_in, output = hpc.recall_for_i_iters_random_stream_in(
+            should_display_image=False, num_of_iterations=num_of_iters)
+        pseudopatterns.append([rand_in, output])
+    return pseudopatterns
