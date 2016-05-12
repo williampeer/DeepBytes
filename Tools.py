@@ -333,3 +333,6 @@ def set_to_equal_parameters(hpc, test_hpc):
     test_hpc.ca3_out_weights = hpc.ca3_out_weights
 
     return test_hpc
+
+def network_visualization(hpc):
+    weights_image = Image.new('1', ())
