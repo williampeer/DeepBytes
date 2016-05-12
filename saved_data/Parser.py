@@ -127,9 +127,11 @@ def get_avg_perfect_recall_and_avg_spurious_recall_from_data_for_configs(parsed_
     avg_spurious_recall_rates_by_dgw = []
     spurious_stds = []
 
-    one_dgw_data_len = iterations_per_config * 4
-    for dgw_ctr in range(num_of_configs):
-        current_data = parsed_data[dgw_ctr*one_dgw_data_len: dgw_ctr*one_dgw_data_len + one_dgw_data_len]
+    one_config_data_len = iterations_per_config * 4  # for all set sizes, 2-5
+    for config_ctr in range(num_of_configs):
+        current_data = parsed_data[config_ctr*one_config_data_len: config_ctr*one_config_data_len + one_config_data_len]
+        print "current_data:", current_data
+        print "len(current_data):", len(current_data)
         current_perf_recall_data, current_spurious_patts_data = \
             get_perfect_recall_rates_and_spurious_patterns_from_data(current_data)
         # print "current_perf_recall_data:", current_perf_recall_data
@@ -147,7 +149,7 @@ def get_avg_perfect_recall_and_avg_spurious_recall_from_data_for_configs(parsed_
 
             spurious_values = current_spurious_patts_data[i]
             for val_ctr in range(len(spurious_values)):
-                spurious_values[i] /= float(i+2)
+                spurious_values[val_ctr] /= (float(i+2) * 5)
             cur_avg_spurious = get_avg(spurious_values)
             current_spurious_avgs.append(cur_avg_spurious)
             current_spurious_stds.append(get_standard_deviation(cur_avg_spurious, spurious_values))
