@@ -1,10 +1,8 @@
-import numpy as np
-
 from HPC import HPC
 from NeocorticalNetwork import NeocorticalNetwork
 import Experiments_4_x
 from DataWrapper import training_patterns_associative
-from DataWrapper import training_patterns_heterogeneous
+# from DataWrapper import training_patterns_heterogeneous
 import Tools
 
 io_dim = 49
