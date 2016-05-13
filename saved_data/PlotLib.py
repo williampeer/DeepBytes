@@ -421,11 +421,6 @@ def plot_perfect_recall_rates_for_dg_weightings_no_err_bars(parsed_data, additio
     plt.show()
 
 
-def plot_3d_recall_vs_spurious_dgw_and_set_size(data_in, plot_title):
-
-    pass
-
-
 # format: [set_size, #sets, [convergence_num, distinct_patterns_recalled]
 # 10 trials for the current log
 log_filename = 'dgw-exps-corrected.txt'
