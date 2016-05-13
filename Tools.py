@@ -341,23 +341,25 @@ def network_visualization(hpc):
 
 
 def generate_recall_attempt_results(hpc, training_patterns):
-    IO_trials = []
+    io_trials = []
     for pattern in training_patterns:
+        current_letter_ios = []
         for i in range(15):  # recall for 15 iterations, save IO every time
-            IO_trials.append([pattern[0], hpc.recall_for_i_iters_with_input(pattern[0], num_of_iterations=1)])
+            current_letter_ios.append([pattern[0], hpc.recall_for_i_iters_with_input(pattern[0], num_of_iterations=1)])
+        io_trials.append(current_letter_ios)
     # generate aggregate image of all outputs.
-    return IO_trials
+    return io_trials
 
 
-def save_aggregate_image_from_IOs(IOs, im_name, im_ctr):
-    num_of_ims = len(IOs)
+def save_aggregate_image_from_ios(ios, im_name, im_ctr):
+    num_of_ims = len(ios)
     aggregate_im = Image.new('1', (7 * 8 * num_of_ims + num_of_ims+2, 7 * 8 + 2))
     for IO_ctr in range(num_of_ims):
-        out = IOs[IO_ctr][1]
+        out = ios[IO_ctr][1]
         current_im = create_image_helper(out)
         aggregate_im.paste(current_im, (1 + 7 * 8 * IO_ctr + IO_ctr, 1))
-    aggregate_im.show()
+    # aggregate_im.show()
     # save to disk
     if not os.path.exists('saved_data/aggregate_output_images'):
         os.mkdir('saved_data/aggregate_output_images')
-    aggregate_im.save('saved_data/aggregate_output_images/'+im_name+'#'+im_ctr+'.png', 'PNG')
+    aggregate_im.save('saved_data/aggregate_output_images/'+im_name+'#'+str(im_ctr)+'.png', 'PNG')

@@ -288,6 +288,10 @@ def experiment_4_2_hpc_recall_every_i_iters(hpc, ann, training_set_size, origina
                    _ASYNC_FLAG=hpc._ASYNC_FLAG, _TURNOVER_MODE=hpc._TURNOVER_MODE)
 
     for i in range(5):
+        # scope: for every new set
+        if hpc._TURNOVER_MODE == 0:
+            HPCWrappers.neuronal_turnover_helper(hpc)
+
         current_training_set = original_training_patterns[training_set_size*i: training_set_size*i + training_set_size]
         HPCWrappers.learn_patterns_for_i_iters_hpc_wrapper(hpc, current_training_set, train_iters)
 
@@ -327,6 +331,10 @@ def experiment_4_2_hpc_recall_every_i_iters_global_exposure(hpc, ann, training_s
                    hpc._gamma, hpc._epsilon, hpc._nu, hpc._turnover_rate,  # gamma, epsilon, nu, turnover rate
                    hpc._k_m, hpc._k_r, hpc._a_i.get_value()[0][0], hpc._alpha, hpc._weighting_dg,  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
                    _ASYNC_FLAG=hpc._ASYNC_FLAG, _TURNOVER_MODE=hpc._TURNOVER_MODE)
+
+    # scope: for every new set
+    if hpc._TURNOVER_MODE == 0:
+        HPCWrappers.neuronal_turnover_helper(hpc)
 
     for i in range(train_iters):
         current_training_set = original_training_patterns
@@ -369,6 +377,10 @@ def experiment_4_2_hpc_recall_every_i_iters_random_stream(hpc, ann, training_set
                    _ASYNC_FLAG=hpc._ASYNC_FLAG, _TURNOVER_MODE=hpc._TURNOVER_MODE)
 
     for i in range(5):
+        # scope: for every new set
+        if hpc._TURNOVER_MODE == 0:
+            HPCWrappers.neuronal_turnover_helper(hpc)
+
         current_training_set = original_training_patterns[training_set_size*i: training_set_size*i + training_set_size]
         HPCWrappers.learn_patterns_for_i_iters_hpc_wrapper(hpc, current_training_set, train_iters)
 
@@ -409,6 +421,10 @@ def experiment_4_2_hpc_recall_every_i_iters_global_exposure_random_stream(hpc, a
                    hpc._k_m, hpc._k_r, hpc._a_i.get_value()[0][0], hpc._alpha, hpc._weighting_dg,  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
                    _ASYNC_FLAG=hpc._ASYNC_FLAG, _TURNOVER_MODE=hpc._TURNOVER_MODE)
 
+    # scope: for every new set
+    if hpc._TURNOVER_MODE == 0:
+        HPCWrappers.neuronal_turnover_helper(hpc)
+
     for i in range(train_iters):
         current_training_set = original_training_patterns
         HPCWrappers.learn_patterns_for_i_iters_hpc_wrapper(hpc, current_training_set, 1)
@@ -429,7 +445,8 @@ def experiment_4_2_hpc_recall_every_i_iters_global_exposure_random_stream(hpc, a
                                       original_training_patterns)
 
 
-def experiment_4_2_hpc_generate_output_images_for_every_learning_iteration(hpc, ann, training_set_size, original_training_patterns, train_iters):
+def experiment_4_2_hpc_generate_output_images_for_every_learning_iteration(
+        hpc, ann, training_set_size, original_training_patterns, train_iters, aggregate_start_ctr):
     # LOG:
     Tools.append_line_to_log("INIT. EXPERIMENT #" + str(Tools.get_experiment_counter()) +
                              ". Type: 4.2 Chaotic recall version" +
@@ -449,12 +466,17 @@ def experiment_4_2_hpc_generate_output_images_for_every_learning_iteration(hpc, 
                    _ASYNC_FLAG=hpc._ASYNC_FLAG, _TURNOVER_MODE=hpc._TURNOVER_MODE)
 
     io_trials = []
+
+    # scope: for every new set
+    if hpc._TURNOVER_MODE == 0:
+        HPCWrappers.neuronal_turnover_helper(hpc)
+
     for i in range(train_iters):
         current_training_set = original_training_patterns
         HPCWrappers.learn_patterns_for_i_iters_hpc_wrapper(hpc, current_training_set, 1)
 
         # append 20 chaotically recalled patterns, takes output after 15 iters of recall
-        current_chaotic_recall_patts = HPCWrappers.hpc_generate_pseudopatterns_I_recall_i_iters_wrapper(hpc, 10, 15)
+        current_chaotic_recall_patts = HPCWrappers.hpc_generate_pseudopatterns_I_recall_i_iters_wrapper(hpc, 15, 15)
         chaotic_recall_patterns.append(current_chaotic_recall_patts)
 
         test_hpc = Tools.set_to_equal_parameters(hpc, test_hpc)
@@ -463,17 +485,19 @@ def experiment_4_2_hpc_generate_output_images_for_every_learning_iteration(hpc, 
         # generate pseudopatterns:
         pseudopatterns_I.append(HPCWrappers.hpc_generate_pseudopatterns_I_recall_i_iters_wrapper(test_hpc, 10, 1))
         pseudopatterns_II.append(HPCWrappers.hpc_generate_pseudopatterns_II_recall_i_iters_wrapper(
-                test_hpc, num_of_pseudopatterns=20, chaotically_recalled_patterns=current_chaotic_recall_patts,
-                flip_P=0.5))
+            test_hpc, num_of_pseudopatterns=20, chaotically_recalled_patterns=current_chaotic_recall_patts,
+            flip_P=0.5))
 
     io_ctr = 0
-    for io_trial in io_trials:
-        Tools.save_aggregate_image_from_IOs(io_trial, 'recall_trial', io_ctr)
-        io_ctr += 1
+    for letter in io_trials:
+        for io_trial in letter:
+            Tools.save_aggregate_image_from_ios(io_trial, 'recall_trial', io_ctr+aggregate_start_ctr)
+            io_ctr += 1
 
     chaotic_ctr = 0
     for chaotically_recalled_pattern_set in chaotic_recall_patterns:
-        Tools.save_aggregate_image_from_IOs(chaotically_recalled_pattern_set, 'chaotically_recalled', chaotic_ctr)
+        Tools.save_aggregate_image_from_ios(chaotically_recalled_pattern_set, 'chaotically_recalled',
+                                            chaotic_ctr+aggregate_start_ctr)
         chaotic_ctr += 1
 
     # store experiment results for use in different neo. consolidation experiments

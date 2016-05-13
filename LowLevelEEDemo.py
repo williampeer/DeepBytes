@@ -25,7 +25,7 @@ hpc = HPC([io_dim, 240, 1600, 480, io_dim],
           _ASYNC_FLAG=_ASYNC_FLAG, _TURNOVER_MODE=_TURNOVER_MODE)
 
 # ============ LOW-LEVEL DEMO: ============ sync, 0.50, tm 0, dg 25, local
-hpc._ASYNC_FLAG = 0
+hpc._ASYNC_FLAG = 1
 hpc._turnover_rate = 0.50
 hpc._TURNOVER_MODE = 0
 hpc._weighting_dg = 25
@@ -42,7 +42,9 @@ for i in range(1):
         print "Starting experiment 4.2, HPC chaotic recall i iters and HPC pseudopatterns..."
         # This also saves the experiment results:
         Experiments_4_x.experiment_4_2_hpc_generate_output_images_for_every_learning_iteration(
-                hpc, ann, train_set_size_ctr, training_patterns_associative[:2], train_iters=15)
+            hpc, ann, train_set_size_ctr, training_patterns_associative[:2], train_iters=15, aggregate_start_ctr=0)
+        Experiments_4_x.experiment_4_2_hpc_generate_output_images_for_every_learning_iteration(
+            hpc, ann, train_set_size_ctr, training_patterns_associative[2:4], train_iters=15, aggregate_start_ctr=200)
 
         # For now, this is the ONLY place where the counter is incremented.
         Tools.increment_experiment_counter()

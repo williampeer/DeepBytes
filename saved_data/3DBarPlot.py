@@ -1,6 +1,5 @@
 # Based on the source: https://pythonprogramming.net/3d-bar-charts-python-matplotlib/
 
-from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import numpy as np
 import Parser
