@@ -1,5 +1,6 @@
 # Based on the source: https://pythonprogramming.net/3d-bar-charts-python-matplotlib/
 
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import numpy as np
 import Parser
@@ -81,30 +82,30 @@ def unwrap_values(values_3d):
 
     return [xpos, ypos, zpos]
 
-# log_filename = 'Logs/dgw-exps-corrected.txt'
-# parsed_data = Parser.get_data_from_log_file(log_filename)
+log_filename = 'Logs/dgw-exps-corrected.txt'
+parsed_data = Parser.get_data_from_log_file(log_filename)
 
-log_filename_hpc_chaotic_local = 'log-local-hpc-chaotic.txt'
+# log_filename_hpc_chaotic_local = 'log-local-hpc-chaotic.txt'
 # log_filename_hpc_chaotic_global = 'log-global-chaotic.txt'
-parsed_data = Parser.get_data_from_log_file_hpc_chaotic_recall(log_filename_hpc_chaotic_local, 5)
+# parsed_data = Parser.get_data_from_log_file_hpc_chaotic_recall(log_filename_hpc_chaotic_local, 5)
 # parsed_data = Parser.get_data_from_log_file_hpc_chaotic_recall(log_filename_hpc_chaotic_global, 15)
 
-values_prrs, values_spurious = process_3d_data(parsed_data, iterations_per_config=20, num_of_configs=3)
-title = 'Recall ratio by set size and configuration'
-title_spurious = 'Non-perfect recall ratio by set size and configuration'
-y_label = 'Configurations'
-y_ticks_values = np.arange(3)+np.ones(3)*0.5
-y_ticks_labels = ('Async., '+r'$\tau$=0.50', 'Async.,' + r'$\tau$'+'=0.04', 'Sync.,' + r'$\tau=0.50$')
-x_ticks_labels = ('2x5', '3x5', '4x5', '5x5')  # local
-# x_ticks_labels = ('10', '15', '20', '25')  # global
-# bar_plot_3d(values_prrs, title, x_ticks_labels, y_label, y_ticks_values, y_ticks_labels, opacity_value=0.5)
-bar_plot_3d(values_spurious, title_spurious, x_ticks_labels, y_label, y_ticks_values, y_ticks_labels, 0.5)
-
-# values_prrs, values_spurious = process_3d_data(parsed_data[2400:3600], iterations_per_config=10, num_of_configs=30)
-# title = 'Recall ratio by set size and DG-weighting'
+# values_prrs, values_spurious = process_3d_data(parsed_data, iterations_per_config=20, num_of_configs=3)
+# title = 'Recall ratio by set size and configuration'
 # title_spurious = 'Non-perfect recall ratio by set size and configuration'
-# y_label = 'DG-weighting'
-# y_ticks_values = np.arange(30)+np.ones(30)*0.5
-# y_ticks_labels = range(30)
-# bar_plot_3d(values_prrs, title, x_ticks_labels, y_label, y_ticks_values, y_ticks_labels, opacity_value=0.2)
-# bar_plot_3d(values_spurious, title_spurious, x_ticks_labels, y_label, y_ticks_values, y_ticks_labels, opacity_value=0.2)
+# y_label = 'Configurations'
+# y_ticks_values = np.arange(3)+np.ones(3)*0.5
+# y_ticks_labels = ('Async., '+r'$\tau$=0.50', 'Async.,' + r'$\tau$'+'=0.04', 'Sync.,' + r'$\tau=0.50$')
+x_ticks_labels = ('2x5', '3x5', '4x5', '5x5')  # local
+# # x_ticks_labels = ('10', '15', '20', '25')  # global
+# # bar_plot_3d(values_prrs, title, x_ticks_labels, y_label, y_ticks_values, y_ticks_labels, opacity_value=0.5)
+# bar_plot_3d(values_spurious, title_spurious, x_ticks_labels, y_label, y_ticks_values, y_ticks_labels, 0.5)
+
+values_prrs, values_spurious = process_3d_data(parsed_data[2400:3600], iterations_per_config=10, num_of_configs=30)
+title = 'Recall ratio by set size and DG-weighting'
+title_spurious = 'Non-perfect recall ratio by set size and configuration'
+y_label = 'DG-weighting'
+y_ticks_values = np.arange(30)+np.ones(30)*0.5
+y_ticks_labels = range(30)
+bar_plot_3d(values_prrs, title, x_ticks_labels, y_label, y_ticks_values, y_ticks_labels, opacity_value=0.2)
+bar_plot_3d(values_spurious, title_spurious, x_ticks_labels, y_label, y_ticks_values, y_ticks_labels, opacity_value=0.2)
