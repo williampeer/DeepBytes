@@ -140,7 +140,6 @@ class HPC:
         c_eta_ca3 = T.fmatrix()
         c_zeta_ca3 = T.fmatrix()
 
-        # ca3_input_sum = c_ec_vals.dot(c_ec_ca3_Ws) + c_dg_vals.dot(c_dg_ca3_Ws) + c_ca3_vals.dot(c_ca3_ca3_Ws)
         ca3_input_sum = c_ec_vals.dot(c_ec_ca3_Ws) + self._weighting_dg * c_dg_vals.dot(c_dg_ca3_Ws) + c_ca3_vals.dot(c_ca3_ca3_Ws)
         eta_ca3 = self._k_m * c_eta_ca3 + ca3_input_sum
         zeta_ca3 = self._k_r * c_zeta_ca3 - self._alpha * c_ca3_vals + self._a_i
@@ -273,7 +272,7 @@ class HPC:
 
     def async_ca3_wrapper(self, ec_vals, ec_ca3_Ws, dg_vals, dg_ca3_Ws, ca3_vals, ca3_ca3_Ws, eta_ca3, zeta_ca3):
         ec_val_products = self.product_func(ec_vals[0], ec_ca3_Ws)
-        dg_val_products = self.product_func(dg_vals[0], dg_ca3_Ws)
+        dg_val_products = self._weighting_dg * self.product_func(dg_vals[0], dg_ca3_Ws)
 
         index_set = range(len(ca3_vals))
         current_len = len(index_set)
