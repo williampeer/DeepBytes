@@ -14,8 +14,3 @@ echo theano-cache clear
 theano-cache clear
 echo python EEHeteroAsyncDgw25.py
 python EEHeteroAsyncDgw25.py
-
-echo sleep 5m
-sleep 5m
-echo sudo poweroff
-sudo poweroff
