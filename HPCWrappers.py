@@ -190,6 +190,17 @@ def hpc_generate_pseudopatterns_I_recall_i_iters_wrapper(hpc, num_of_pseudopatte
     return pseudopatterns
 
 
+def hpc_generate_pseudopatterns_I_recall_i_iters_wrapper_one_rand_in(hpc, num_of_pseudopatterns, num_of_iters):
+    pseudopatterns = []
+    if hpc.input_values.get_value().shape[1] != 49:
+        print "SHAPE NOT 49"
+    rand_in = Tools.get_random_input(hpc.input_values.get_value().shape[1])
+    for i in range(num_of_pseudopatterns):
+        output = hpc.recall_for_i_iters_with_input(input=rand_in, num_of_iterations=num_of_iters)
+        pseudopatterns.append([rand_in, output])
+    return pseudopatterns
+
+
 def hpc_generate_pseudopatterns_I_recall_i_iters_wrapper_random_stream(hpc, num_of_pseudopatterns, num_of_iters):
     pseudopatterns = []
     for i in range(num_of_pseudopatterns):

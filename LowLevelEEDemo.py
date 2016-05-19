@@ -7,9 +7,9 @@ import Tools
 
 io_dim = 49
 
-turnover_rate = 0.04  #(Tools.get_parameter_counter() % 18) * 0.02 + 0.32
+turnover_rate = 0.50  #(Tools.get_parameter_counter() % 18) * 0.02 + 0.32
 weighting_dg = 25  # Tools.get_experiment_counter() % 26
-_ASYNC_FLAG = True
+_ASYNC_FLAG = False
 _TURNOVER_MODE = 0  # 0 for between every new set. 1 for every set iteration.
 
 # print "TRIAL #", trial, "turnover rate:", turnover_rate
@@ -25,10 +25,6 @@ hpc = HPC([io_dim, 240, 1600, 480, io_dim],
           _ASYNC_FLAG=_ASYNC_FLAG, _TURNOVER_MODE=_TURNOVER_MODE)
 
 # ============ LOW-LEVEL DEMO: ============ async, 0.50, tm 0, dg 25, local
-hpc._ASYNC_FLAG = 0
-hpc._turnover_rate = 0.50
-hpc._TURNOVER_MODE = 1
-hpc._weighting_dg = 1
 for i in range(1):
     for train_set_size_ctr in range(2, 3):
         hpc.reset_hpc_module()
@@ -41,9 +37,9 @@ for i in range(1):
 
         print "Starting experiment 4.2, HPC chaotic recall i iters and HPC pseudopatterns..."
         # This also saves the experiment results:
-        Experiments_4_x.experiment_4_2_hpc_generate_output_images_for_every_learning_iteration(
+        Experiments_4_x.experiment_4_2_hpc_generate_output_images_for_every_learning_iteration_one_rand_in_per_recall(
             hpc, ann, train_set_size_ctr, training_patterns_associative[:2], train_iters=15, aggregate_start_ctr=0)
-        Experiments_4_x.experiment_4_2_hpc_generate_output_images_for_every_learning_iteration(
+        Experiments_4_x.experiment_4_2_hpc_generate_output_images_for_every_learning_iteration_one_rand_in_per_recall(
             hpc, ann, train_set_size_ctr, training_patterns_associative[2:4], train_iters=15, aggregate_start_ctr=200)
 
         # For now, this is the ONLY place where the counter is incremented.

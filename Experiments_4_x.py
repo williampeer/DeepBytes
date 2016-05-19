@@ -503,3 +503,65 @@ def experiment_4_2_hpc_generate_output_images_for_every_learning_iteration(
     # store experiment results for use in different neo. consolidation experiments
     Tools.save_chaotic_recall_results(chaotic_recall_patterns, pseudopatterns_I, pseudopatterns_II,
                                       original_training_patterns)
+
+
+def experiment_4_2_hpc_generate_output_images_for_every_learning_iteration_one_rand_in_per_recall(
+        hpc, ann, training_set_size, original_training_patterns, train_iters, aggregate_start_ctr):
+
+    # LOG:
+    Tools.append_line_to_log("INIT. EXPERIMENT #" + str(Tools.get_experiment_counter()) +
+                             ". Type: 4.2 Chaotic recall version" +
+                             ": ASYNC-flag:" + str(hpc._ASYNC_FLAG) + ". " + str(training_set_size) + "x5. " +
+                             "Turnover mode: " + str(hpc._TURNOVER_MODE) + ". Turnover rate:" +
+                             str(hpc._turnover_rate) + ", DG-weighting: " + str(hpc._weighting_dg) + ".")
+
+    chaotic_recall_patterns = []
+    pseudopatterns_I = []
+    pseudopatterns_II = []
+
+    test_hpc = HPC([hpc.dims[0], hpc.dims[1], hpc.dims[2], hpc.dims[3], hpc.dims[4]],
+                   hpc.connection_rate_input_ec, hpc.PP, hpc.MF,  # connection rates: (in_ec, ec_dg, dg_ca3)
+                   hpc.firing_rate_ec, hpc.firing_rate_dg, hpc.firing_rate_ca3,  # firing rates: (ec, dg, ca3)
+                   hpc._gamma, hpc._epsilon, hpc._nu, hpc._turnover_rate,  # gamma, epsilon, nu, turnover rate
+                   hpc._k_m, hpc._k_r, hpc._a_i.get_value()[0][0], hpc._alpha, hpc._weighting_dg,
+                   # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
+                   _ASYNC_FLAG=hpc._ASYNC_FLAG, _TURNOVER_MODE=hpc._TURNOVER_MODE)
+
+    io_trials = []
+
+    # scope: for every new set
+    if hpc._TURNOVER_MODE == 0:
+        HPCWrappers.neuronal_turnover_helper(hpc)
+
+    for i in range(train_iters):
+        current_training_set = original_training_patterns
+        HPCWrappers.learn_patterns_for_i_iters_hpc_wrapper(hpc, current_training_set, 1)
+
+        # append 20 chaotically recalled patterns, takes output after 15 iters of recall
+        current_chaotic_recall_patts = HPCWrappers.hpc_generate_pseudopatterns_I_recall_i_iters_wrapper_one_rand_in(hpc, 15, 15)
+        chaotic_recall_patterns.append(current_chaotic_recall_patts)
+
+        test_hpc = Tools.set_to_equal_parameters(hpc, test_hpc)
+        current_io_trials = Tools.generate_recall_attempt_results(test_hpc, current_training_set)
+        io_trials.append(current_io_trials)
+        # generate pseudopatterns:
+        pseudopatterns_I.append(HPCWrappers.hpc_generate_pseudopatterns_I_recall_i_iters_wrapper_one_rand_in(test_hpc, 10, 1))
+        pseudopatterns_II.append(HPCWrappers.hpc_generate_pseudopatterns_II_recall_i_iters_wrapper(
+            test_hpc, num_of_pseudopatterns=20, chaotically_recalled_patterns=current_chaotic_recall_patts,
+            flip_P=0.5))
+
+    io_ctr = 0
+    for letter in io_trials:
+        for io_trial in letter:
+            Tools.save_aggregate_image_from_ios(io_trial, 'recall_trial', io_ctr + aggregate_start_ctr)
+            io_ctr += 1
+
+    chaotic_ctr = 0
+    for chaotically_recalled_pattern_set in chaotic_recall_patterns:
+        Tools.save_aggregate_image_from_ios(chaotically_recalled_pattern_set, 'chaotically_recalled',
+                                            chaotic_ctr + aggregate_start_ctr)
+        chaotic_ctr += 1
+
+    # store experiment results for use in different neo. consolidation experiments
+    Tools.save_chaotic_recall_results(chaotic_recall_patterns, pseudopatterns_I, pseudopatterns_II,
+                                      original_training_patterns)
