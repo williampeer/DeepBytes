@@ -24,7 +24,7 @@ hpc = HPC([io_dim, 240, 1600, 480, io_dim],
           0.10, 0.95, 0.8, 2.0, weighting_dg,  # k_m, k_r, a_i, alpha. alpha is 2 in 4.1
           _ASYNC_FLAG=_ASYNC_FLAG, _TURNOVER_MODE=_TURNOVER_MODE)
 
-# ============ Config. 1: ============ async, 0.04, tm 0, dg 25, local
+# ============ Config. 1: ============ async, 0.50, tm 0, dg 25, local
 for i in range(30):
     weighting_dg = i
     hpc._weighting_dg = i
@@ -48,7 +48,7 @@ for i in range(30):
             # For now, this is the ONLY place where the counter is incremented.
             Tools.increment_experiment_counter()
 
-# ============ Config. 1: ============ async, 0.04, tm 0, dg 25, local
+# ============ Config. 1: ============ async, 0.04, tm 1, dg 25, local
 hpc._TURNOVER_MODE = 1
 hpc._turnover_rate = 0.04
 for i in range(30):
