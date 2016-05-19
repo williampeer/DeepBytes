@@ -37,9 +37,9 @@ for i in range(1):
 
         print "Starting experiment 4.2, HPC chaotic recall i iters and HPC pseudopatterns..."
         # This also saves the experiment results:
-        Experiments_4_x.experiment_4_2_hpc_generate_output_images_for_every_learning_iteration_one_rand_in_per_recall(
+        Experiments_4_x.experiment_4_2_hpc_generate_output_images_for_every_learning_iteration(
             hpc, ann, train_set_size_ctr, training_patterns_associative[:2], train_iters=15, aggregate_start_ctr=0)
-        Experiments_4_x.experiment_4_2_hpc_generate_output_images_for_every_learning_iteration_one_rand_in_per_recall(
+        Experiments_4_x.experiment_4_2_hpc_generate_output_images_for_every_learning_iteration(
             hpc, ann, train_set_size_ctr, training_patterns_associative[2:4], train_iters=15, aggregate_start_ctr=200)
 
         # For now, this is the ONLY place where the counter is incremented.
