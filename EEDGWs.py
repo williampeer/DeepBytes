@@ -38,7 +38,6 @@ for i in range(30):
                 tar_patts.append(p[1])
 
             print "Starting experiment 4.1, HPC chaotic recall i iters and HPC pseudopatterns..."
-            # This also saves the experiment results:
             hippocampal_chaotic_recall_patterns, random_ins = Experiments_4_x.experiment_4_x_1(
                     hpc, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr])
 
@@ -64,7 +63,6 @@ for i in range(30):
                 tar_patts.append(p[1])
 
             print "Starting experiment 4.1, HPC chaotic recall i iters and HPC pseudopatterns..."
-            # This also saves the experiment results:
             hippocampal_chaotic_recall_patterns, random_ins = Experiments_4_x.experiment_4_x_1(
                     hpc, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr])
 
