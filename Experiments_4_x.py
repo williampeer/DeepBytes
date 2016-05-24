@@ -34,13 +34,13 @@ def training_and_recall_hpc_helper(hpc, training_set_size, train_set_num, origin
     training_set = original_training_patterns[training_set_size * train_set_num : training_set_size +
                                                                            train_set_num*training_set_size]
 
-    print "Learning patterns in training set..."
+    # print "Learning patterns in training set..."
     hpc_learn_patterns_wrapper(hpc, patterns=training_set, max_training_iterations=50)  # when training is fixed,
     # convergence should occur after one or two iterations?
 
     # extract by chaotic recall:
     chaotic_recall_iters = 300
-    print "Recalling patterns for", chaotic_recall_iters, "time-steps by chaotic recall..."
+    # print "Recalling patterns for", chaotic_recall_iters, "time-steps by chaotic recall..."
     t2 = time.time()
     [patterns_extracted_for_current_set, random_in] = \
         hpc_chaotic_recall_wrapper(hpc, display_images_of_stable_output=False, recall_iterations=chaotic_recall_iters)
@@ -49,7 +49,7 @@ def training_and_recall_hpc_helper(hpc, training_set_size, train_set_num, origin
         hippocampal_chaotic_recall_patterns.append(pat)  # append unique pattern
         random_ins.append(random_in)
     t3 = time.time()
-    print "Set size for hippocampal_chaotic_recall_patterns:", len(hippocampal_chaotic_recall_patterns)
+    # print "Set size for hippocampal_chaotic_recall_patterns:", len(hippocampal_chaotic_recall_patterns)
     print "Chaotic recall completed in", "{:8.3f}".format(t3-t2), "seconds, for t=300."
     Tools.append_line_to_log("Recalled " + str(len(hippocampal_chaotic_recall_patterns)) +
                              " distinct patterns by chaotic recall.")

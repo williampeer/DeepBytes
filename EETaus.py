@@ -1,8 +1,6 @@
 from HPC import HPC
-from NeocorticalNetwork import NeocorticalNetwork
 import Experiments_4_x
 from DataWrapper import training_patterns_associative
-# from DataWrapper import training_patterns_heterogeneous
 import Tools
 
 io_dim = 49
@@ -26,8 +24,7 @@ hpc = HPC([io_dim, 240, 1600, 480, io_dim],
 
 # ============ Config. 1: ============ async, 0.50, tm 0, dg 25, local
 for i in range(30):
-    weighting_dg = i
-    hpc._weighting_dg = i
+    hpc._turnover_rate = float(i) * 0.02
     # remaining iterations:
     for j in range(10):
         for train_set_size_ctr in range(2, 6):
@@ -37,7 +34,7 @@ for i in range(30):
             for p in training_patterns_associative[:5*train_set_size_ctr]:
                 tar_patts.append(p[1])
 
-            print "Starting experiment 4.1, HPC chaotic recall i iters and HPC pseudopatterns..."
+            # print "Starting experiment 4.1..."
             hippocampal_chaotic_recall_patterns, random_ins = Experiments_4_x.experiment_4_x_1(
                     hpc, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr])
 
@@ -49,10 +46,8 @@ for i in range(30):
 
 # ============ Config. 1: ============ async, 0.04, tm 1, dg 25, local
 hpc._TURNOVER_MODE = 1
-hpc._turnover_rate = 0.04
 for i in range(30):
-    weighting_dg = i
-    hpc._weighting_dg = i
+    hpc._turnover_rate = float(i) * 0.02
     # remaining iterations:
     for j in range(10):
         for train_set_size_ctr in range(2, 6):
@@ -62,7 +57,32 @@ for i in range(30):
             for p in training_patterns_associative[:5*train_set_size_ctr]:
                 tar_patts.append(p[1])
 
-            print "Starting experiment 4.1, HPC chaotic recall i iters and HPC pseudopatterns..."
+            # print "Starting experiment 4.1..."
+            hippocampal_chaotic_recall_patterns, random_ins = Experiments_4_x.experiment_4_x_1(
+                    hpc, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr])
+
+            Tools.save_experiment_4_1_results(hpc, random_ins, hippocampal_chaotic_recall_patterns, tar_patts,
+                                              "async bug fixed", train_set_size_ctr)
+
+            # For now, this is the ONLY place where the counter is incremented.
+            Tools.increment_experiment_counter()
+
+# ============ Config. 1: ============ async, 0.04, tm 1, dg 25, local
+hpc._TURNOVER_MODE = 1
+hpc._weighting_dg = 1
+hpc._ASYNC_FLAG = False
+for i in range(30):
+    hpc._turnover_rate = float(i) * 0.02
+    # remaining iterations:
+    for j in range(10):
+        for train_set_size_ctr in range(2, 6):
+            hpc.reset_hpc_module()
+
+            tar_patts = []
+            for p in training_patterns_associative[:5*train_set_size_ctr]:
+                tar_patts.append(p[1])
+
+            # print "Starting experiment 4.1..."
             hippocampal_chaotic_recall_patterns, random_ins = Experiments_4_x.experiment_4_x_1(
                     hpc, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr])
 

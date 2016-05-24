@@ -320,7 +320,7 @@ def plot_perfect_recall_rates_for_turnover_rates(parsed_data, log_filename):
     plt.rcParams.update({'font.size': 25})
     plt.ylabel('Perfect recall rate')
     plt.xlabel('Turnover rate')
-    plt.title('Average perfect recall rate by turnover rate, ASYNC., DG-weighting = 25, turnover mode 1')
+    plt.title('Average perfect recall rate by turnover rate')
 
     p2 = plt.errorbar(results_2[0], results_2[1], results_2[2])
     p3 = plt.errorbar(results_3[0], results_3[1], results_3[2])
@@ -431,15 +431,15 @@ def plot_perfect_recall_rates_for_dg_weightings_no_err_bars(parsed_data, additio
 
 # format: [set_size, #sets, [convergence_num, distinct_patterns_recalled]
 # 10 trials for the current log
-log_filename = 'Logs/aggregate-log-dgws.txt'
-outer_scope_parsed_data = Parser.get_data_from_log_file(log_filename)
+log_filename = 'Logs/log-turnover-rates.txt'
+outer_scope_parsed_data = Parser.get_data_from_log_file(log_filename)[:1200]
 # plot_pattern_stats_from_parsed_data_v1(outer_scope_parsed_data, 3)
-plot_convergence_ratios_for_data(outer_scope_parsed_data, 40)
+# plot_convergence_ratios_for_data(outer_scope_parsed_data, 80)
 # plot_convergence_iterations_for_data(outer_scope_parsed_data, 3)
-# plot_perfect_recall_rates_for_data(outer_scope_parsed_data, dps_per_exp_config_per_subset=10)
-# plot_avg_perfect_extraction_and_spurious_patterns(outer_scope_parsed_data, dps_per_exp_config_per_subset=10)
-# plot_convergence_stats_for_turnover_rates(outer_scope_parsed_data, log_filename)
-# plot_perfect_recall_rates_for_turnover_rates(outer_scope_parsed_data, log_filename)
+# plot_perfect_recall_rates_for_data(outer_scope_parsed_data, dps_per_exp_config_per_subset=20)
+# plot_avg_perfect_extraction_and_spurious_patterns(outer_scope_parsed_data, dps_per_exp_config_per_subset=20)
+plot_convergence_stats_for_turnover_rates(outer_scope_parsed_data, log_filename)
+plot_perfect_recall_rates_for_turnover_rates(outer_scope_parsed_data, log_filename)
 
 # specific_plot_title = 'ASYNC., turnover rate = 0.04, turnover mode 1'
 # current_data = outer_scope_parsed_data[:1200]
