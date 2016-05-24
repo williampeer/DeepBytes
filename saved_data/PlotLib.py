@@ -56,7 +56,7 @@ def plot_pattern_stats_from_parsed_data_v1(parsed_data, exp_num):
     p1 = plt.bar(V, avg_recall, width=width, color='y', yerr=stds_avg_recall)
     p2 = plt.bar(V + width, avg_spurious_ratios, width=width, color='r', yerr=stds_spurious)
 
-    plt.rcParams.update({'font.size': 20})
+    plt.rcParams.update({'font.size': 25})
     plt.ylabel('Number of patterns')
     plt.xlabel('Set size')
     plt.title('Average number of patterns recalled for each sub-set')
@@ -69,15 +69,22 @@ def plot_pattern_stats_from_parsed_data_v1(parsed_data, exp_num):
     plt.show()
 
 
-def plot_convergence_ratios_for_data(parsed_data):
+def plot_convergence_ratios_for_data(parsed_data, data_points_per_experiment_config):
     convergence_data, _ = Parser.get_convergence_and_distinct_patterns_from_log_v1(parsed_data)
     # for all data: 4 buckets, containing 4x100 data points.
 
     # convergence_stats = Parser.get_convergence_avgs(convergence_data)
     ds = []
     for i in range(4):
-        ds.append([convergence_data[0][i*100:i*100 + 100], convergence_data[1][i*100:i*100 + 100],
-                   convergence_data[2][i*100:i*100 + 100], convergence_data[3][i*100:i*100 + 100]])
+        ds.append([convergence_data[0]
+                   [i * data_points_per_experiment_config:i * data_points_per_experiment_config +
+                                                          data_points_per_experiment_config],
+                   convergence_data[1][i * data_points_per_experiment_config:i * data_points_per_experiment_config +
+                                                                             data_points_per_experiment_config],
+                   convergence_data[2][i * data_points_per_experiment_config:i * data_points_per_experiment_config +
+                                                                             data_points_per_experiment_config],
+                   convergence_data[3][i * data_points_per_experiment_config:i * data_points_per_experiment_config +
+                                                                             data_points_per_experiment_config]])
     convergence_stats_async_true_mode_0 = Parser.get_convergence_avgs(ds[0])[1]
     convergence_stats_async_true_mode_1 = Parser.get_convergence_avgs(ds[1])[1]
     convergence_stats_async_false_mode_0 = Parser.get_convergence_avgs(ds[2])[1]
@@ -85,25 +92,26 @@ def plot_convergence_ratios_for_data(parsed_data):
 
     # Plotting:
     x = np.asarray([2, 3, 4, 5])
-    plt.rcParams.update({'font.size': 20})
+    plt.rcParams.update({'font.size': 25})
 
     print "y:", convergence_stats_async_true_mode_0
     # print "e:", e1.shape
     # print "e:", e1
 
-    p1 = plt.plot(x, convergence_stats_async_true_mode_0, color='y', marker='o', linestyle='--')
-    p2 = plt.plot(x, convergence_stats_async_true_mode_1, color='g', marker='s', linestyle='--')
-    p3 = plt.plot(x, convergence_stats_async_false_mode_0, color='b', marker='^', linestyle='--')
-    p4 = plt.plot(x, convergence_stats_async_false_mode_1, color='c', marker='o', linestyle='--')
+    p1 = plt.plot(x, convergence_stats_async_true_mode_0, color='y', marker='o', linestyle='--', linewidth=3.0)
+    p2 = plt.plot(x, convergence_stats_async_true_mode_1, color='g', marker='s', linestyle='--', linewidth=3.0)
+    p3 = plt.plot(x, convergence_stats_async_false_mode_0, color='b', marker='^', linestyle='--', linewidth=3.0)
+    p4 = plt.plot(x, convergence_stats_async_false_mode_1, color='c', marker='o', linestyle='--', linewidth=3.0)
 
     plt.ylabel('Average convergence rate (%)')
     plt.xlabel('Set size')
     plt.title('Average convergence rate by set size')
-    plt.xticks(x, ('2', '3', '4', '5'))
+    plt.xticks(x, ('2x5', '3x5', '4x5', '5x5'))
 
-    plt.legend((p1[0], p2[0], p3[0], p4[0]), ('Async., turnover for new sets', 'Async., turnover every iteration',
-                                              'Sync., turnover for new sets', 'Sync., turnover every iteration'))
-               # bbox_to_anchor=(0.377, 0.23))
+    plt.legend((p1[0], p2[0], p3[0], p4[0]), ('Async. tm=0', 'Async. tm=1',
+                                              'Sync. tm=0', 'Sync. tm=1'),
+               bbox_to_anchor=(0.27, 0.28))
+    plt.margins(0.025)
     plt.grid(True)
     plt.show()
 
@@ -121,10 +129,10 @@ def plot_convergence_iterations_for_data(parsed_data, exp_num):
 
     # Plotting:
     x = np.asarray([2, 3, 4, 5])
-    plt.rcParams.update({'font.size': 20})
+    plt.rcParams.update({'font.size': 25})
 
-    p1 = plt.plot(x, average_iters_convergence, color='b', marker='o', linestyle='--')
-    p2 = plt.plot(x, sigmas, color='r', marker='^', linestyle='--')
+    p1 = plt.plot(x, average_iters_convergence, color='b', marker='o', linestyle='--', linewidth=3.0)
+    p2 = plt.plot(x, sigmas, color='r', marker='^', linestyle='--', linewidth=3.0)
     # p1 = plt.plot(x, [2.78, 19.02, 15.85, 15.58], color='r', marker='o', linestyle='--')
 
     plt.ylabel('Average #iterations before convergence')
@@ -138,7 +146,7 @@ def plot_convergence_iterations_for_data(parsed_data, exp_num):
     plt.show()
 
 
-def plot_perfect_recall_rates_for_data(parsed_data):
+def plot_perfect_recall_rates_for_data(parsed_data, dps_per_exp_config_per_subset):
     perfect_recall_rates, spurious_patterns_data = Parser. \
         get_perfect_recall_rates_and_spurious_patterns_from_data(parsed_data)
     # print "len perfect_recall_rates[0]:", len(perfect_recall_rates[0])
@@ -148,7 +156,7 @@ def plot_perfect_recall_rates_for_data(parsed_data):
 
     # convergence_stats = Parser.get_convergence_avgs(convergence_data)
     ds = []
-    lf = 20
+    lf = dps_per_exp_config_per_subset
     for i in range(4):
         ds.append([perfect_recall_rates[0][i*lf:i*lf + lf], perfect_recall_rates[1][i*lf:i*lf + lf],
                    perfect_recall_rates[2][i*lf:i*lf + lf], perfect_recall_rates[3][i*lf:i*lf + lf]])
@@ -170,7 +178,7 @@ def plot_perfect_recall_rates_for_data(parsed_data):
 
     # Plotting:
     x = np.asarray([2, 3, 4, 5])
-    plt.rcParams.update({'font.size': 20})
+    plt.rcParams.update({'font.size': 25})
 
     print "y:", perf_recall_stats_async_true_mode_0
     # print "e:", e1.shape
@@ -184,17 +192,17 @@ def plot_perfect_recall_rates_for_data(parsed_data):
     plt.ylabel('Perfect recall rate (%)')
     plt.xlabel('Set size')
     plt.title('Average perfect recall rates by set size')
-    plt.xticks(x, ('2', '3', '4', '5'))
+    plt.xticks(x, ('2x5', '3x5', '4x5', '5x5'))
     plt.margins(0.05)
 
-    plt.legend((p1[0], p2[0], p3[0], p4[0]), ('Async., turnover for new sets', 'Async., turnover every iteration',
-                                              'Sync., turnover for new sets', 'Sync., turnover every iteration'))
+    plt.legend((p1[0], p2[0], p3[0], p4[0]), ('Async. tm=0', 'Async. tm=1',
+                                              'Sync. tm=0', 'Sync. tm=1'))
                # bbox_to_anchor=(0.377, 0.23))
     plt.grid(True)
     plt.show()
 
 
-def plot_avg_perfect_extraction_and_spurious_patterns(parsed_data):
+def plot_avg_perfect_extraction_and_spurious_patterns(parsed_data, dps_per_exp_config_per_subset):
     perfect_recall_rates, spurious_patterns_data = Parser. \
         get_perfect_recall_rates_and_spurious_patterns_from_data(parsed_data)
     print spurious_patterns_data
@@ -202,7 +210,7 @@ def plot_avg_perfect_extraction_and_spurious_patterns(parsed_data):
 
     ds = []
     spds = []
-    lf = 20
+    lf = dps_per_exp_config_per_subset
     for i in range(4):
         ds.append([perfect_recall_rates[0][i*lf:i*lf + lf], perfect_recall_rates[1][i*lf:i*lf + lf],
                    perfect_recall_rates[2][i*lf:i*lf + lf], perfect_recall_rates[3][i*lf:i*lf + lf]])
@@ -237,7 +245,7 @@ def plot_avg_perfect_extraction_and_spurious_patterns(parsed_data):
     # Plotting:
     width = .35
     x = np.asarray([2, 3, 4, 5])
-    plt.rcParams.update({'font.size': 20})
+    plt.rcParams.update({'font.size': 25})
 
     p1 = plt.bar(x, perf_recall_stats_async_true_mode_0, color='y', width=width/2)
     p1_e = plt.bar(x, spurpt0, color='r', width=width/2, bottom=perf_recall_stats_async_true_mode_0)
@@ -248,15 +256,15 @@ def plot_avg_perfect_extraction_and_spurious_patterns(parsed_data):
     p4 = plt.bar(x+3*width/2, perf_recall_stats_async_false_mode_1, color='c', width=width/2)
     p4_e = plt.bar(x+3*width/2, spurpf1, color='r', width=width/2, bottom=perf_recall_stats_async_false_mode_1)
 
-    plt.ylabel('Perfectly recalled patterns')
-    plt.xlabel('Set size')
-    plt.title('Average perfect recall by set size')
+    plt.ylabel('Average perfectly recalled patterns per subset')
+    plt.xlabel('Subset size')
+    plt.title('Average perfect recall per subset')
     plt.xticks(x + width, ('2', '3', '4', '5'))
     plt.yticks(np.arange(0, 6, 1))
 
     plt.legend((p1[0], p2[0], p3[0], p4[0], p4_e[0]), ('Async., turnover for new sets', 'Async., turnover every iteration',
                                               'Sync., turnover for new sets', 'Sync., turnover every iteration',
-                                              'Imperfectly recalled patterns'))
+                                              'Non-perfectly recalled patterns'))
                # bbox_to_anchor=(0.377, 1))
     plt.grid(True)
     plt.show()
@@ -274,7 +282,7 @@ def plot_convergence_stats_for_turnover_rates(parsed_data, log_filename):
     results_4 = Parser.get_avg_convergence_for_x_and_set_size(4, set_size_buckets, x)
     results_5 = Parser.get_avg_convergence_for_x_and_set_size(5, set_size_buckets, x)
 
-    plt.rcParams.update({'font.size': 20})
+    plt.rcParams.update({'font.size': 25})
     plt.ylabel('Convergence ratio')
     plt.xlabel('Turnover rate')
     plt.title('Average convergence rate by turnover rate, ASYNC., DG-weighting = 25, turnover mode 1')
@@ -309,7 +317,7 @@ def plot_perfect_recall_rates_for_turnover_rates(parsed_data, log_filename):
     results_4 = Parser.get_avg_perfect_recall_for_x_and_set_size(4, set_size_buckets, x)
     results_5 = Parser.get_avg_perfect_recall_for_x_and_set_size(5, set_size_buckets, x)
 
-    plt.rcParams.update({'font.size': 20})
+    plt.rcParams.update({'font.size': 25})
     plt.ylabel('Perfect recall rate')
     plt.xlabel('Turnover rate')
     plt.title('Average perfect recall rate by turnover rate, ASYNC., DG-weighting = 25, turnover mode 1')
@@ -342,7 +350,7 @@ def plot_convergence_stats_for_dg_weightings(parsed_data, additional_plot_title)
     results_4 = Parser.get_avg_convergence_for_x_and_set_size(4, set_size_buckets, x)
     results_5 = Parser.get_avg_convergence_for_x_and_set_size(5, set_size_buckets, x)
 
-    plt.rcParams.update({'font.size': 20})
+    plt.rcParams.update({'font.size': 25})
     plt.ylabel('Convergence ratio')
     plt.xlabel('DG-weighting')
     plt.title('Average convergence rate by DG-weighting, ' + additional_plot_title)
@@ -371,7 +379,7 @@ def plot_convergence_stats_for_dg_weightings_no_err_bars(parsed_data, additional
     results_4 = Parser.get_avg_convergence_for_x_and_set_size(4, set_size_buckets, x)
     results_5 = Parser.get_avg_convergence_for_x_and_set_size(5, set_size_buckets, x)
 
-    plt.rcParams.update({'font.size': 20})
+    plt.rcParams.update({'font.size': 25})
     plt.ylabel('Convergence ratio')
     plt.xlabel('DG-weighting')
     plt.title('Average convergence rate by DG-weighting, ' + additional_plot_title)
@@ -401,7 +409,7 @@ def plot_perfect_recall_rates_for_dg_weightings_no_err_bars(parsed_data, additio
     results_4 = Parser.get_avg_convergence_for_x_and_set_size(4, set_size_buckets, x)
     results_5 = Parser.get_avg_convergence_for_x_and_set_size(5, set_size_buckets, x)
 
-    plt.rcParams.update({'font.size': 20})
+    plt.rcParams.update({'font.size': 25})
     plt.ylabel('Convergence ratio')
     plt.xlabel('Turnover rate')
     plt.title('Average convergence rate by DG-weighting, ' + additional_plot_title)
@@ -423,17 +431,17 @@ def plot_perfect_recall_rates_for_dg_weightings_no_err_bars(parsed_data, additio
 
 # format: [set_size, #sets, [convergence_num, distinct_patterns_recalled]
 # 10 trials for the current log
-log_filename = 'dgw-exps-corrected.txt'
+log_filename = 'Logs/aggregate-log-dgws.txt'
 outer_scope_parsed_data = Parser.get_data_from_log_file(log_filename)
 # plot_pattern_stats_from_parsed_data_v1(outer_scope_parsed_data, 3)
-# plot_convergence_ratios_for_data(outer_scope_parsed_data)
-# plot_convergence_iterations_for_data(outer_scope_parsed_data, 2)
-# plot_perfect_recall_rates_for_data(outer_scope_parsed_data)
-# plot_avg_perfect_extraction_and_spurious_patterns(outer_scope_parsed_data)
+plot_convergence_ratios_for_data(outer_scope_parsed_data, 40)
+# plot_convergence_iterations_for_data(outer_scope_parsed_data, 3)
+# plot_perfect_recall_rates_for_data(outer_scope_parsed_data, dps_per_exp_config_per_subset=10)
+# plot_avg_perfect_extraction_and_spurious_patterns(outer_scope_parsed_data, dps_per_exp_config_per_subset=10)
 # plot_convergence_stats_for_turnover_rates(outer_scope_parsed_data, log_filename)
 # plot_perfect_recall_rates_for_turnover_rates(outer_scope_parsed_data, log_filename)
 
-specific_plot_title = 'ASYNC., turnover rate = 0.04, turnover mode 1'
-current_data = outer_scope_parsed_data[:1200]
+# specific_plot_title = 'ASYNC., turnover rate = 0.04, turnover mode 1'
+# current_data = outer_scope_parsed_data[:1200]
 # plot_convergence_stats_for_dg_weightings(current_data, specific_plot_title)
-plot_convergence_stats_for_dg_weightings_no_err_bars(current_data, specific_plot_title)
+# plot_convergence_stats_for_dg_weightings_no_err_bars(current_data, specific_plot_title)
