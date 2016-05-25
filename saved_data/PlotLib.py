@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 # from scipy import stats
 import Parser
+import AggregateFigurePlots
 
 
 def plot_pattern_stats_from_parsed_data_v1(parsed_data, exp_num):
@@ -340,9 +341,9 @@ def plot_perfect_recall_rates_for_turnover_rates(parsed_data, log_filename):
     plt.show()
 
 
-def plot_aggregate_test(parsed_data, log_file):
+def plot_aggregate_figure_for_turnover_rates(parsed_data, log_file):
     set_size_buckets = Parser.get_dictionary_list_of_convergence_and_perfect_recall_for_turnover_rates(
-        Parser.get_data_with_turnover_rates(parsed_data, log_filename))
+        Parser.get_data_with_turnover_rates(parsed_data, log_file))
 
     plt.figure(1)
     plt.subplot(211)
@@ -357,12 +358,7 @@ def plot_aggregate_test(parsed_data, log_file):
     plt.rcParams.update({'font.size': 25})
     plt.ylabel('Convergence ratio')
     # plt.xlabel('Turnover rate')
-    plt.title('Average convergence rate by turnover rate')
-
-    # p2 = plt.errorbar(results_2[0], results_2[3], results_2[4])
-    # p3 = plt.errorbar(results_3[0], results_3[3], results_3[4])
-    # p4 = plt.errorbar(results_4[0], results_4[3], results_4[4])
-    # p5 = plt.errorbar(results_5[0], results_5[3], results_5[4])
+    plt.title('Average convergence and perfect recall rates by turnover rate')
 
     p2 = plt.plot(results_2[0], results_2[3], linewidth=3.0)
     p3 = plt.plot(results_3[0], results_3[3], linewidth=3.0)
@@ -386,12 +382,7 @@ def plot_aggregate_test(parsed_data, log_file):
     # plt.rcParams.update({'font.size': 25})
     plt.ylabel('Perfect recall rate')
     plt.xlabel('Turnover rate')
-    plt.title('Average perfect recall rate by turnover rate')
-
-    # p2 = plt.errorbar(results_2[0], results_2[1], results_2[2])
-    # p3 = plt.errorbar(results_3[0], results_3[1], results_3[2])
-    # p4 = plt.errorbar(results_4[0], results_4[1], results_4[2])
-    # p5 = plt.errorbar(results_5[0], results_5[1], results_5[2])
+    # plt.title('Average perfect recall rate by turnover rate')
 
     p2 = plt.plot(results_2[0], results_2[1], linewidth=3.0)
     p3 = plt.plot(results_3[0], results_3[1], linewidth=3.0)
@@ -497,10 +488,70 @@ def plot_perfect_recall_rates_for_dg_weightings_no_err_bars(parsed_data, additio
     plt.show()
 
 
+def plot_aggregate_figure_for_dg_weightings(parsed_data):
+    set_size_buckets = Parser.get_dictionary_list_of_convergence_and_perfect_recall_for_dg_weightings(parsed_data)
+
+    plt.figure(1)
+    plt.subplot(211)
+
+    # x, y_iters, std_iters, y_ratios, std_ratios
+    x = range(30)
+    results_2 = Parser.get_avg_convergence_for_x_and_set_size(2, set_size_buckets, x)
+    results_3 = Parser.get_avg_convergence_for_x_and_set_size(3, set_size_buckets, x)
+    results_4 = Parser.get_avg_convergence_for_x_and_set_size(4, set_size_buckets, x)
+    results_5 = Parser.get_avg_convergence_for_x_and_set_size(5, set_size_buckets, x)
+
+    plt.rcParams.update({'font.size': 25})
+    plt.ylabel('Convergence ratio')
+    # plt.xlabel('DG-weighting')
+    plt.title('Average convergence and perfect recall rates by DG-weighting')
+
+    p2 = plt.plot(results_2[0], results_2[3], linewidth=3.0)
+    p3 = plt.plot(results_3[0], results_3[3], linewidth=3.0)
+    p4 = plt.plot(results_4[0], results_4[3], linewidth=3.0)
+    p5 = plt.plot(results_5[0], results_5[3], linewidth=3.0)
+
+    plt.xticks(np.arange(0, 30, 5))
+    plt.legend((p2[0], p3[0], p4[0], p5[0]), ('2x5', '3x5', '4x5', '5x5'),
+               bbox_to_anchor=(1.115, 1.0155), ncol=1, fancybox=True, shadow=True)
+    plt.margins(0.02)
+    plt.grid(True)
+
+    # x, y_iters, std_iters, y_ratios, std_ratios
+    results_2 = Parser.get_avg_perfect_recall_for_x_and_set_size(2, set_size_buckets, x)
+    results_3 = Parser.get_avg_perfect_recall_for_x_and_set_size(3, set_size_buckets, x)
+    results_4 = Parser.get_avg_perfect_recall_for_x_and_set_size(4, set_size_buckets, x)
+    results_5 = Parser.get_avg_perfect_recall_for_x_and_set_size(5, set_size_buckets, x)
+
+    plt.subplot(212)
+    plt.ylabel('Perfect recall rate')
+    plt.xlabel('DG-weighting')
+    # plt.title('Average perfect recall rate by turnover rate')
+
+    p2 = plt.plot(results_2[0], results_2[1], linewidth=3.0)
+    p3 = plt.plot(results_3[0], results_3[1], linewidth=3.0)
+    p4 = plt.plot(results_4[0], results_4[1], linewidth=3.0)
+    p5 = plt.plot(results_5[0], results_5[1], linewidth=3.0)
+
+    plt.legend((p2[0], p3[0], p4[0], p5[0]), ('2x5', '3x5', '4x5', '5x5'), ncol=1, bbox_to_anchor=(1.115, 1.0155),
+               fancybox=True, shadow=True)
+    plt.xticks(np.arange(0, 30, 5))
+    plt.margins(0.02)
+    plt.subplots_adjust(left=0.06)
+    plt.grid(True)
+
+    plt.show()
+
+
 # format: [set_size, #sets, [convergence_num, distinct_patterns_recalled]
 # 10 trials for the current log
+# log_filename = 'Logs/DEBUGGED-DGWs.txt'
 log_filename = 'Logs/1.txt'
-outer_scope_parsed_data = Parser.get_data_from_log_file(log_filename)
+# outer_scope_parsed_data = Parser.get_data_from_log_file(log_filename)
+parsed_data = Parser.get_data_from_log_file(log_filename)
+# AggregateFigurePlots.plot_aggregate_figure_for_dg_weightings(parsed_data[:1200])
+AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data, log_filename)
+
 # plot_pattern_stats_from_parsed_data_v1(outer_scope_parsed_data, 3)
 # plot_convergence_ratios_for_data(outer_scope_parsed_data, 80)
 # plot_convergence_iterations_for_data(outer_scope_parsed_data, 3)
@@ -508,7 +559,8 @@ outer_scope_parsed_data = Parser.get_data_from_log_file(log_filename)
 # plot_avg_perfect_extraction_and_spurious_patterns(outer_scope_parsed_data, dps_per_exp_config_per_subset=20)
 # plot_convergence_stats_for_turnover_rates(outer_scope_parsed_data, log_filename)
 # plot_perfect_recall_rates_for_turnover_rates(outer_scope_parsed_data, log_filename)
-plot_aggregate_test(outer_scope_parsed_data, log_filename)
+# plot_aggregate_figure_for_turnover_rates(outer_scope_parsed_data, log_filename)
+# plot_aggregate_figure_for_dg_weightings(outer_scope_parsed_data[3600:])
 
 # specific_plot_title = 'ASYNC., turnover rate = 0.04, turnover mode 1'
 # current_data = outer_scope_parsed_data[:1200]

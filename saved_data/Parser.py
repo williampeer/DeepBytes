@@ -130,8 +130,8 @@ def get_avg_perfect_recall_and_avg_spurious_recall_from_data_for_configs(parsed_
     one_config_data_len = iterations_per_config * 4  # for all set sizes, 2-5
     for config_ctr in range(num_of_configs):
         current_data = parsed_data[config_ctr*one_config_data_len: config_ctr*one_config_data_len + one_config_data_len]
-        print "current_data:", current_data
-        print "len(current_data):", len(current_data)
+        # print "current_data:", current_data
+        # print "len(current_data):", len(current_data)
         current_perf_recall_data, current_spurious_patts_data = \
             get_perfect_recall_rates_and_spurious_patterns_from_data(current_data)
         # print "current_perf_recall_data:", current_perf_recall_data
@@ -278,6 +278,7 @@ def get_avg_convergence_for_x_and_set_size(set_size, buckets, x):
     stds_conv_ratios = []
 
     data_set = buckets[set_size-2]
+    # print "data_set:", data_set
     for x_value in x:
         data_points = data_set[str(x_value)]  # dict., 10 data points for each turnover rate and set size
 
@@ -314,6 +315,7 @@ def get_avg(values):
 
 
 def get_convergence_stats_from_data_points(data_points):
+    # print "data_points:", data_points
     conv_data = []
     dist_p_data = []
     for dp in data_points:
