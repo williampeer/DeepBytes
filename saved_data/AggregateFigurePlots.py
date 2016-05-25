@@ -55,10 +55,10 @@ def plot_aggregate_figure_for_dg_weightings(parsed_data):
     s_x, s_y, s_z = ThreeDBarPlot.unwrap_values(values_spurious)
 
     s1, s2, s3, s4 = get_set_size_values_from_aggregate(s_z)
-    p6 = plt.plot(x, s1, linewidth=3.0, linestyle='--')
-    p7 = plt.plot(x, s2, linewidth=3.0, linestyle='--')
-    p8 = plt.plot(x, s3, linewidth=3.0, linestyle='--')
-    p9 = plt.plot(x, s4, linewidth=3.0, linestyle='--')
+    p6 = plt.plot(x, s1, linewidth=3.0, linestyle='--', color='b')
+    p7 = plt.plot(x, s2, linewidth=3.0, linestyle='--', color='g')
+    p8 = plt.plot(x, s3, linewidth=3.0, linestyle='--', color='r')
+    p9 = plt.plot(x, s4, linewidth=3.0, linestyle='--', color='c')
 
     plt.legend((p2[0], p3[0], p4[0], p5[0], p6[0], p7[0], p8[0], p9[0]),
                ('2x5', '3x5', '4x5', '5x5', '2x5', '3x5', '4x5', '5x5'), ncol=1, bbox_to_anchor=(1.115, 1.0295),
@@ -125,10 +125,10 @@ def plot_aggregate_figure_for_turnover_rates(parsed_data, log_file):
     s_x, s_y, s_z = ThreeDBarPlot.unwrap_values(values_spurious)
 
     s1, s2, s3, s4 = get_set_size_values_from_aggregate(s_z)
-    p6 = plt.plot(x, s1, linewidth=3.0, linestyle='--')
-    p7 = plt.plot(x, s2, linewidth=3.0, linestyle='--')
-    p8 = plt.plot(x, s3, linewidth=3.0, linestyle='--')
-    p9 = plt.plot(x, s4, linewidth=3.0, linestyle='--')
+    p6 = plt.plot(x, s1, linewidth=3.0, linestyle='--', color='b')
+    p7 = plt.plot(x, s2, linewidth=3.0, linestyle='--', color='g')
+    p8 = plt.plot(x, s3, linewidth=3.0, linestyle='--', color='r')
+    p9 = plt.plot(x, s4, linewidth=3.0, linestyle='--', color='c')
 
     plt.legend((p2[0], p3[0], p4[0], p5[0], p6[0], p7[0], p8[0], p9[0]),
                ('2x5', '3x5', '4x5', '5x5', '2x5', '3x5', '4x5', '5x5'), ncol=1, bbox_to_anchor=(1.115, 1.0295),

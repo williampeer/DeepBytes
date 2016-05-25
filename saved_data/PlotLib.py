@@ -546,11 +546,26 @@ def plot_aggregate_figure_for_dg_weightings(parsed_data):
 # format: [set_size, #sets, [convergence_num, distinct_patterns_recalled]
 # 10 trials for the current log
 # log_filename = 'Logs/DEBUGGED-DGWs.txt'
-log_filename = 'Logs/1.txt'
+lf1 = 'Logs/1.txt'
+lf2 = 'Logs/2.txt'
+lf3 = 'Logs/3.txt'
+lf4 = 'Logs/4.txt'
+lf5 = 'Logs/5.txt'
+lf6 = 'Logs/log-first-1_2k_async.txt'
 # outer_scope_parsed_data = Parser.get_data_from_log_file(log_filename)
-parsed_data = Parser.get_data_from_log_file(log_filename)
-# AggregateFigurePlots.plot_aggregate_figure_for_dg_weightings(parsed_data[:1200])
-AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data, log_filename)
+# parsed_data = Parser.get_data_from_log_file(lf1)
+# parsed_data = Parser.get_data_from_log_file(lf2)
+# parsed_data = Parser.get_data_from_log_file(lf3)
+# parsed_data = Parser.get_data_from_log_file(lf4)
+# parsed_data = Parser.get_data_from_log_file(lf5)
+# parsed_data = Parser.get_data_from_log_file(lf6)
+# AggregateFigurePlots.plot_aggregate_figure_for_dg_weightings(parsed_data[1200:2400])
+# AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data, lf1)
+# AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data, lf2)
+# AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data, lf3)
+# AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data, lf4)
+# AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data, lf5)
+# AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data, lf6)
 
 # plot_pattern_stats_from_parsed_data_v1(outer_scope_parsed_data, 3)
 # plot_convergence_ratios_for_data(outer_scope_parsed_data, 80)
