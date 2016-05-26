@@ -505,6 +505,7 @@ class HPC:
         print "Reached stability or max. #iterations during chaotic recall after", ctr, "iterations."
         return [ctr, found_stable_output, out_now]
 
+    # @num_of_iterations: the number of iterations recalling for one random input
     def recall_for_i_iters(self, should_display_image, num_of_iterations):
         rand_in = Tools.get_random_input(49)
         self.setup_input(rand_in)
