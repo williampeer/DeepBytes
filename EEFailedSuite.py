@@ -1,8 +1,8 @@
 from HPC import HPC
 from NeocorticalNetwork import NeocorticalNetwork
 import Experiments_4_x
-from DataWrapper import training_patterns_associative
-# from DataWrapper import training_patterns_heterogeneous
+# from DataWrapper import training_patterns_associative
+from DataWrapper import training_patterns_heterogeneous
 import Tools
 
 io_dim = 49
@@ -30,7 +30,7 @@ for i in range(20):
         hpc.reset_hpc_module()
 
         tar_patts = []
-        for p in training_patterns_associative[:5*train_set_size_ctr]:
+        for p in training_patterns_heterogeneous[:5*train_set_size_ctr]:
             tar_patts.append(p[1])
 
         ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
@@ -38,7 +38,7 @@ for i in range(20):
         print "Starting experiment 4.2, HPC chaotic recall i iters and HPC pseudopatterns..."
         # This also saves the experiment results:
         Experiments_4_x.experiment_4_2_hpc_recall_every_i_iters(
-                hpc, ann, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr], train_iters=15)
+                hpc, ann, train_set_size_ctr, training_patterns_heterogeneous[:5 * train_set_size_ctr], train_iters=15)
 
         # For now, this is the ONLY place where the counter is incremented.
         Tools.increment_experiment_counter()
@@ -50,7 +50,7 @@ for i in range(20):
         hpc.reset_hpc_module()
 
         tar_patts = []
-        for p in training_patterns_associative[:5*train_set_size_ctr]:
+        for p in training_patterns_heterogeneous[:5*train_set_size_ctr]:
             tar_patts.append(p[1])
 
         ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
@@ -58,7 +58,7 @@ for i in range(20):
         print "Starting experiment 4.2, HPC chaotic recall i iters and HPC pseudopatterns..."
         # This also saves the experiment results:
         Experiments_4_x.experiment_4_2_hpc_recall_every_i_iters_global_exposure(
-                hpc, ann, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr], train_iters=15)
+                hpc, ann, train_set_size_ctr, training_patterns_heterogeneous[:5 * train_set_size_ctr], train_iters=15)
 
         # For now, this is the ONLY place where the counter is incremented.
         Tools.increment_experiment_counter()
@@ -70,7 +70,7 @@ for i in range(20):
         hpc.reset_hpc_module()
 
         tar_patts = []
-        for p in training_patterns_associative[:5*train_set_size_ctr]:
+        for p in training_patterns_heterogeneous[:5*train_set_size_ctr]:
             tar_patts.append(p[1])
 
         ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
@@ -78,7 +78,7 @@ for i in range(20):
         print "Starting experiment 4.2, HPC chaotic recall i iters and HPC pseudopatterns..."
         # This also saves the experiment results:
         Experiments_4_x.experiment_4_2_hpc_recall_every_i_iters_global_exposure_random_stream(
-                hpc, ann, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr], train_iters=15)
+                hpc, ann, train_set_size_ctr, training_patterns_heterogeneous[:5 * train_set_size_ctr], train_iters=15)
 
         # For now, this is the ONLY place where the counter is incremented.
         Tools.increment_experiment_counter()
@@ -90,7 +90,7 @@ for i in range(20):
         hpc.reset_hpc_module()
 
         tar_patts = []
-        for p in training_patterns_associative[:5*train_set_size_ctr]:
+        for p in training_patterns_heterogeneous[:5*train_set_size_ctr]:
             tar_patts.append(p[1])
 
         ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
@@ -98,7 +98,7 @@ for i in range(20):
         print "Starting experiment 4.2, HPC chaotic recall i iters and HPC pseudopatterns..."
         # This also saves the experiment results:
         Experiments_4_x.experiment_4_2_hpc_recall_every_i_iters_global_exposure(
-                hpc, ann, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr], train_iters=15)
+                hpc, ann, train_set_size_ctr, training_patterns_heterogeneous[:5 * train_set_size_ctr], train_iters=15)
 
         # For now, this is the ONLY place where the counter is incremented.
         Tools.increment_experiment_counter()
@@ -110,7 +110,7 @@ for i in range(20):
         hpc.reset_hpc_module()
 
         tar_patts = []
-        for p in training_patterns_associative[:5*train_set_size_ctr]:
+        for p in training_patterns_heterogeneous[:5*train_set_size_ctr]:
             tar_patts.append(p[1])
 
         ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
@@ -118,7 +118,7 @@ for i in range(20):
         print "Starting experiment 4.2, HPC chaotic recall i iters and HPC pseudopatterns..."
         # This also saves the experiment results:
         Experiments_4_x.experiment_4_2_hpc_recall_every_i_iters_global_exposure_random_stream(
-                hpc, ann, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr], train_iters=15)
+                hpc, ann, train_set_size_ctr, training_patterns_heterogeneous[:5 * train_set_size_ctr], train_iters=15)
 
         # For now, this is the ONLY place where the counter is incremented.
         Tools.increment_experiment_counter()
@@ -130,7 +130,7 @@ for i in range(20):
         hpc.reset_hpc_module()
 
         tar_patts = []
-        for p in training_patterns_associative[:5*train_set_size_ctr]:
+        for p in training_patterns_heterogeneous[:5*train_set_size_ctr]:
             tar_patts.append(p[1])
 
         ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
@@ -138,7 +138,7 @@ for i in range(20):
         print "Starting experiment 4.2, HPC chaotic recall i iters and HPC pseudopatterns..."
         # This also saves the experiment results:
         Experiments_4_x.experiment_4_2_hpc_recall_every_i_iters_global_exposure(
-                hpc, ann, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr], train_iters=50)
+                hpc, ann, train_set_size_ctr, training_patterns_heterogeneous[:5 * train_set_size_ctr], train_iters=50)
 
         # For now, this is the ONLY place where the counter is incremented.
         Tools.increment_experiment_counter()
