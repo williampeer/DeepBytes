@@ -3,9 +3,11 @@
 - kWTA now gets all > elements and all == elements for count(els)<k.
 - input-ec weights are intialized only once, and have to be re-wired explicitly.
 - neuronal turnover in the dg is to be called explicitly between training sets.
+- Extracted patterns and pseudopatterns from hippocampal experiments are stored for later retrieval and consolidation
+    to the neocortical module.
 
 
-# API
+# API (incomplete)
 
 HPC-constructor:
 
@@ -22,3 +24,10 @@ HPC-constructor:
 - _k_m, _k_r: damping factors for refractoriness in the equations for chaotic neurons, located in the ca3- and output-layers
 - _a_i: constant outer stimuli / external input parameter, used in the chaotic neuron equations.
 - _alpha: the scaling factor for refractoriness
+
+
+# Storage
+
+All of the chaotically recalled patterns, as well as corresponding (hippocampal) pseudopatterns may be retrieved from
+storage using the Parser. These may then be used to rapidly consolidate the patterns to the neocortical module, and 
+ obtain the associated goodness of fit value(s).
