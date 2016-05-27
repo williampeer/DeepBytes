@@ -2,7 +2,7 @@ import numpy as np
 
 
 # returns: [ experiment: [set_size, #sets, DGW, 5x tuples: [iters_to_convergence, distinct_patterns_recalled]]]
-def get_data_from_log_file_hpc_chaotic_recall(filename, lines_of_learning_spam):
+def get_data_from_log_file_i_iters_schemes(filename, lines_of_learning_spam):
     log_file = file(filename, 'r')
     lines_per_exp = lines_of_learning_spam + 3
 
