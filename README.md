@@ -29,5 +29,5 @@ HPC-constructor:
 # Storage
 
 All of the chaotically recalled patterns, as well as corresponding (hippocampal) pseudopatterns may be retrieved from
-storage using the Parser. These may then be used to rapidly consolidate the patterns to the neocortical module, and 
+storage using the Tools.py. These may then be used to rapidly consolidate the patterns to the neocortical module, and 
  obtain the associated goodness of fit value(s).

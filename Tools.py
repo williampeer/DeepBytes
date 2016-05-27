@@ -363,3 +363,17 @@ def save_aggregate_image_from_ios(ios, im_name, im_ctr):
     if not os.path.exists('saved_data/aggregate_output_images'):
         os.mkdir('saved_data/aggregate_output_images')
     aggregate_im.save('saved_data/aggregate_output_images/'+im_name+'#'+str(im_ctr)+'.png', 'PNG')
+
+
+def retrieve_patterns_for_consolidation(exp_num, set_size):
+    file_path = 'saved_data/current-consolidation-path/' + 'chaotic_pattern_recalls_set_size' + str(set_size)
+    chaotic_patterns_filename = '/full_chaotically_recalled_patterns_exp#' + str(exp_num)
+    pseudopatterns_filename = '/pseudopatterns_exp#' + str(exp_num)
+
+    chaotic_file = file(file_path+chaotic_patterns_filename, 'rb')
+    pseudopatterns_file = file(file_path+pseudopatterns_filename, 'rb')
+
+    chaotic_patterns = cPickle.load(chaotic_file)
+    pseudpatterns = cPickle.load(pseudopatterns_file)
+
+    return [chaotic_patterns, pseudpatterns]
