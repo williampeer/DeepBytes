@@ -421,7 +421,7 @@ class HPC:
         u_next_for_elemwise_ops = [self.ca3_values.get_value(return_internal_type=True)[0]] * n_rows
         u_prev_for_elemwise_ops_transposed = [self.dg_values.get_value(return_internal_type=True)[0]] * n_cols
         self.wire_dg_to_ca3(u_prev_for_elemwise_ops_transposed, u_next_for_elemwise_ops,
-                            self.dg_ca3_weights.get_value(return_internal_tyMemorype=True))
+                            self.dg_ca3_weights.get_value(return_internal_type=True))
 
         # wire CA3 to CA3
         self.wire_ca3_to_ca3(self.ca3_values.get_value(return_internal_type=True),
