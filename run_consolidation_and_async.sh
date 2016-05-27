@@ -10,4 +10,4 @@ theano-cache clear
 echo python NeocorticalMemoryConsolidation.py
 python NeocorticalMemoryConsolidation.py
 
-#sudo poweroff
+sudo poweroff
