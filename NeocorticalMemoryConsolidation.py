@@ -3,10 +3,10 @@ import Tools
 from DataWrapper import training_patterns_associative as training_patterns
 
 
-def evaluate_goodness_of_fit(target_patterns, ann):
+def evaluate_goodness_of_fit(ann, target_patterns):
     sum_g = 0.
 
-    assert isinstance(ann, NeocorticalNetwork)
+    assert ann.classType is type(NeocorticalNetwork)
 
     # recall
     for pattern in target_patterns:
@@ -40,7 +40,7 @@ def iterate_over_experiments_suite(start_index, stop_index, scheme_num):
                                  '\n15 iters: g='+str(
             evaluate_goodness_of_fit(ann15, get_target_patterns(exp_index%4+2)))+
                                  '\n1k iters: g=' + str(
-            evaluate_goodness_of_fit(ann15, get_target_patterns(exp_index % 4 + 2))))
+            evaluate_goodness_of_fit(ann1k, get_target_patterns(exp_index % 4 + 2))))
 
 
 def get_target_patterns(subset_size):
