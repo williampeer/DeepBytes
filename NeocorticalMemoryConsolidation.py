@@ -93,7 +93,7 @@ def iterate_over_experiments_suite_span_output_demo(start_index, stop_index):
                 ann.train(training_subset)
 
         results_line = 'Neocortical module consolidation. Output as IO. Exp#'+str(exp_index)+\
-                       '\n'+str(i)+' iters: g='+str(evaluate_goodness_of_fit(ann, get_target_patterns(exp_index%4+2)))
+                       '\n'+str(i+1)+' iters: g='+str(evaluate_goodness_of_fit(ann, get_target_patterns(exp_index%4+2)))
 
         ann.reset()
         for cp_subset in current_chaotic_patterns:
@@ -103,7 +103,7 @@ def iterate_over_experiments_suite_span_output_demo(start_index, stop_index):
             for i in range(200):
                 ann.train(training_subset)
 
-        results_line += '\n'+str(i)+' iters: g=' + str(evaluate_goodness_of_fit(ann, get_target_patterns(exp_index % 4 + 2)))
+        results_line += '\n'+str(i+1)+' iters: g=' + str(evaluate_goodness_of_fit(ann, get_target_patterns(exp_index % 4 + 2)))
         t1 = time.time()
         print 'Trained and evaluated performance in '+'{:8.3f}'.format(t1-t0), 'seconds'
         print results_line
@@ -126,12 +126,12 @@ def iterate_over_experiments_suite_span_output_demo_global(start_index, stop_ind
         for i in range(15):
             ann.train(training_set)
         results_line = 'Neocortical module consolidation. Output as IO. Exp#'+str(exp_index)+\
-                       '\n'+str(i)+' iters: g='+str(evaluate_goodness_of_fit(ann, get_target_patterns(exp_index%4+2)))
+                       '\n'+str(i+1)+' iters: g='+str(evaluate_goodness_of_fit(ann, get_target_patterns(exp_index%4+2)))
 
         ann.reset()
         for i in range(200):
             ann.train(training_set)
-        results_line += '\n'+str(i)+' iters: g=' + str(evaluate_goodness_of_fit(ann, get_target_patterns(exp_index % 4 + 2)))
+        results_line += '\n'+str(i+1)+' iters: g=' + str(evaluate_goodness_of_fit(ann, get_target_patterns(exp_index % 4 + 2)))
         t1 = time.time()
         print 'Trained and evaluated performance in '+'{:8.3f}'.format(t1-t0), 'seconds'
         print results_line
