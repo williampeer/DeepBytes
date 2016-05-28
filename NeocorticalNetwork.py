@@ -23,8 +23,10 @@ class NeocorticalNetwork:
         self._h = theano.shared(name='_h', value=_h.astype(theano.config.floatX), borrow=True)
         self._out = theano.shared(name='_out', value=_out.astype(theano.config.floatX), borrow=True)
 
-        in_h_Ws = uniform_f(in_dim, h_dim)
-        h_out_Ws = uniform_f(h_dim, out_dim)
+        # in_h_Ws = uniform_f(in_dim, h_dim)
+        # h_out_Ws = uniform_f(h_dim, out_dim)
+        in_h_Ws = np.random.normal(0.5, np.sqrt(0.25), (in_dim, h_dim)).astype(np.float32)
+        h_out_Ws = np.random.normal(0.5, np.sqrt(0.25), (h_dim, out_dim)).astype(np.float32)
 
         self.in_h_Ws = theano.shared(name='in_h_Ws', value=in_h_Ws.astype(theano.config.floatX), borrow=True)
         self.h_out_Ws = theano.shared(name='h_out_Ws', value=h_out_Ws.astype(theano.config.floatX), borrow=True)
@@ -81,6 +83,9 @@ class NeocorticalNetwork:
                                                        (self.prev_delta_W_h_out, delta_W_h_out)])
 
         # self.set_input = theano.function([new_input], updates=[(self._in, new_input)])
+        new_weights = T.fmatrix('new_weights')
+        self.update_in_h_weights = theano.function([new_weights], updates=[(self.in_h_Ws, new_weights)])
+        self.update_h_out_weights = theano.function([new_weights], updates=[(self.h_out_Ws, new_weights)])
 
     def train(self, IOPairs):
         for input_pattern, output_pattern in IOPairs:
@@ -111,6 +116,14 @@ class NeocorticalNetwork:
 
         corresponding_output = self._out.get_value()
         return [input_pattern, corresponding_output]
+
+    def reset(self):
+        new_in_h_Ws = np.random.normal(0.5, np.sqrt(0.25), (self.dims[0], self.dims[1])).astype(np.float32)
+        new_h_out_Ws = np.random.normal(0.5, np.sqrt(0.25), (self.dims[1], self.dims[2])).astype(np.float32)
+
+        self.update_in_h_weights(new_in_h_Ws)
+        self.update_h_out_weights(new_h_out_Ws)
+        # OK.
 
     def print_layers(self):
         print "\nPrinting layer activation values:"

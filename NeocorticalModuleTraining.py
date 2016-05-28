@@ -5,11 +5,11 @@ from DataWrapper import training_patterns_associative
 # from DataWrapper import training_patterns_heterogeneous
 
 
-def traditional_training_with_catastrophic_interference():
+def traditional_training_with_catastrophic_interference(ss):
     io_dim = 49
     ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
     training_set = training_patterns_associative[:25]
-    ss = 2
+    # ss = 2
     for i in range(5):
         for training_iterations in range(7):
             ann.train(training_set[i*ss:i*ss+ss])
@@ -82,6 +82,7 @@ def evaluate_ann(ann, set_size):
 
     goodness_str = "goodness of fit, g=" + "{:6.4f}".format(g)
     print goodness_str
+    return g
 
 
 def evaluate_ann_with_bipolar_output(ann, set_size):
@@ -100,8 +101,16 @@ def evaluate_ann_with_bipolar_output(ann, set_size):
     print goodness_str
 
 # Tools.show_image_from(training_patterns_associative[15][0])
-# ann = traditional_training_with_catastrophic_interference()
+goodness_values = []
+for i in range(20):
+    exp_results = []
+    for ss in range(2, 6):
+        ann = traditional_training_with_catastrophic_interference(ss)
+        exp_results.append(evaluate_ann(ann, ss))
+    goodness_values.append(exp_results)
+
+print "goodness_values:", goodness_values
+
 # ann = global_sequential_FFBP_training()
-ann = train_on_chaotic_patterns()
-evaluate_ann(ann, 2)
-evaluate_ann_with_bipolar_output(ann, 2)
+# ann = train_on_chaotic_patterns()
+# evaluate_ann_with_bipolar_output(ann, ss)

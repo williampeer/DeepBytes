@@ -339,3 +339,8 @@ def get_perfect_recall_stats_from(data_points):
     avg = get_avg(values)
     std = get_standard_deviation(avg, values)
     return [avg, std]
+
+
+def parse_data_from_neocortical_consolidation_log(file_path):
+    log_file = file(file_path, 'r')
+

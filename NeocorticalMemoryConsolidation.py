@@ -42,7 +42,7 @@ def iterate_over_experiments_suite(start_index, stop_index, scheme_num):
 
         for i in range(200):
             ann.train(training_set)
-        results_line += '\n1k iters: g=' + str(evaluate_goodness_of_fit(ann, get_target_patterns(exp_index % 4 + 2)))
+        results_line += '\n215 iters: g=' + str(evaluate_goodness_of_fit(ann, get_target_patterns(exp_index % 4 + 2)))
         t1 = time.time()
         print 'Trained and evaluated performance in '+'{:8.3f}'.format(t1-t0), 'seconds'
         print results_line
@@ -122,9 +122,9 @@ def unwrapper(patterns):
 
 
 # perform all schemes for both suites
-for scheme_ctr in range(4):
-    iterate_over_experiments_suite(0, 80, scheme_num=scheme_ctr)
-    iterate_over_experiments_suite_halved_pseudopattern_size(0, 80, scheme_num=scheme_ctr)
+# for scheme_ctr in range(4):
+#     iterate_over_experiments_suite(80, 160, scheme_num=scheme_ctr)
+#     iterate_over_experiments_suite_halved_pseudopattern_size(80, 160, scheme_num=scheme_ctr)
 
 # test_chaotic_patterns, test_pseudopatterns = \
 #     Tools.retrieve_patterns_for_consolidation(720, 720 % 4 + 2)  # 2-5 looped
