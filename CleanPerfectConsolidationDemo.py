@@ -34,18 +34,6 @@ def run_trials_for_patterns_per_output(patterns_per_output):
             Tools.append_line_to_log(res_10_str)
 
 
-            # training_set_50 = generate_training_set(set_size_ctr, training_patterns_associative,
-            #                                         patterns_per_output=patterns_per_output, distortion_P=0.5)
-            # ann.reset()
-            # for i in range(100):
-            #     ann.train(training_set_50)
-            # g_50 = NeocorticalMemoryConsolidation. \
-            #     evaluate_goodness_of_fit(ann, training_patterns_associative[:2 * set_size_ctr])
-            # res_50_str = str(patterns_per_output) + ' patterns per output, P=0.5, goodness of fit, g=' + str(g_50)
-            # print res_50_str
-            # Tools.append_line_to_log(res_50_str)
-
-
 def run_trials_for_patterns_per_output_on_subsets_sequential(patterns_per_output, distortion_P):
     # 20 trials per set size, 10 patterns per chaotically recalled output:
     for round_ctr in range(20):
@@ -63,7 +51,7 @@ def run_trials_for_patterns_per_output_on_subsets_sequential(patterns_per_output
             for subset_ctr in range(5):
                 training_subset_10 = training_set_10[subset_ctr * set_size_ctr * patterns_per_output:
                     (subset_ctr + 1) * set_size_ctr * patterns_per_output]
-                for i in range(10):  # training iterations
+                for i in range(15):  # training iterations
                     ann.train(training_subset_10)
             g_10 = NeocorticalMemoryConsolidation. \
                 evaluate_goodness_of_fit(ann, training_patterns_associative[:2 * set_size_ctr])
@@ -73,25 +61,11 @@ def run_trials_for_patterns_per_output_on_subsets_sequential(patterns_per_output
             Tools.append_line_to_log(res_10_str)
 
 
-            # ann.reset()
-            # for subset_ctr in range(5):
-            #     training_subset_10 = training_set_10[subset_ctr * set_size_ctr * patterns_per_output:
-            #         (subset_ctr + 1) * set_size_ctr * patterns_per_output]
-            #     for i in range(100):  # training iterations
-            #         ann.train(training_subset_10)
-            #
-            # g_10 = NeocorticalMemoryConsolidation. \
-            #     evaluate_goodness_of_fit(ann, training_patterns_associative[:2 * set_size_ctr])
-            # res_10_str = str(i+1) + ' training iterations, ' + str(patterns_per_output) + \
-            #              ' patterns per output, P='+str(distortion_P)+', goodness of fit, g=' + str(g_10)
-            # print res_10_str
-            # Tools.append_line_to_log(res_10_str)
-
-
-
 ann = NeocorticalMemoryConsolidation.NeocorticalNetwork(49, 30, 49, 0.01, 0.9)
 # run_trials_for_patterns_per_output(10)
 # run_trials_for_patterns_per_output(20)
 
-run_trials_for_patterns_per_output_on_subsets_sequential(patterns_per_output=5, distortion_P=0.2)
-run_trials_for_patterns_per_output_on_subsets_sequential(10, distortion_P=0.2)
+run_trials_for_patterns_per_output_on_subsets_sequential(patterns_per_output=7, distortion_P=0.05)
+run_trials_for_patterns_per_output_on_subsets_sequential(patterns_per_output=7, distortion_P=0.1)
+run_trials_for_patterns_per_output_on_subsets_sequential(patterns_per_output=7, distortion_P=0.15)
+# run_trials_for_patterns_per_output_on_subsets_sequential(patterns_per_output=10, distortion_P=0.05)
