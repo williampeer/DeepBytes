@@ -188,8 +188,8 @@ def unwrapper(patterns):
 
 
 # perform all schemes for both suites
-# iterate_over_experiments_suite_span_output_demo(0, 80)
-iterate_over_experiments_suite_span_output_demo_global(0, 80)
+iterate_over_experiments_suite_span_output_demo(80, 160)
+# iterate_over_experiments_suite_span_output_demo_global(80, 160)
 # for scheme_ctr in range(4):
     # iterate_over_experiments_suite(80, 160, scheme_num=scheme_ctr)
     # iterate_over_experiments_suite_halved_pseudopattern_size(80, 160, scheme_num=scheme_ctr)
