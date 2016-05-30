@@ -343,4 +343,16 @@ def get_perfect_recall_stats_from(data_points):
 
 def parse_data_from_neocortical_consolidation_log(file_path):
     log_file = file(file_path, 'r')
+    contents = log_file.read()
+    log_file.close()
 
+    lines = contents.split('\n')
+    set_size_data_15 = [[], [], [], []]
+    set_size_data_200 = [[], [], [], []]
+    for exp_i in range(len(lines)/3):
+        g_15 = float(lines[exp_i*3+1].split('=')[-1])
+        g_200 = float(lines[exp_i*3+2].split('=')[-1])
+        set_size_data_15[exp_i % 4].append(g_15)
+        set_size_data_200[exp_i % 4].append(g_200)
+
+    return [set_size_data_15, set_size_data_200]
