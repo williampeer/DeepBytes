@@ -5,13 +5,13 @@ from DataWrapper import training_patterns_associative
 # from DataWrapper import training_patterns_heterogeneous
 
 
-def traditional_training_with_catastrophic_interference(ss):
+def traditional_training_with_catastrophic_interference(ss, training_iterations):
     io_dim = 49
     ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
     training_set = training_patterns_associative[:25]
     # ss = 2
     for i in range(5):
-        for training_iterations in range(15):
+        for training_iteration in range(training_iterations):
             ann.train(training_set[i*ss:i*ss+ss])
     # for j in range(ss*5):
     #     Tools.show_image_from(ann.get_IO(training_set[j][0])[1])
@@ -19,11 +19,11 @@ def traditional_training_with_catastrophic_interference(ss):
     return ann
 
 
-def global_sequential_FFBP_training(ss):
+def global_sequential_FFBP_training(ss, training_iterations):
     io_dim = 49
     ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
     training_set = training_patterns_associative[:5*ss]
-    for i in range(15):
+    for i in range(training_iterations):
         ann.train(training_set)
 
     return ann

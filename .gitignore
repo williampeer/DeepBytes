@@ -14,3 +14,4 @@ saved_data/*
 !saved_data/PlotLibHpcRecallData.py
 !saved_data/ThreeDBarPlot.py
 !saved_data/AggregateFigurePlots.py
+!saved_data/BaselineAvgs.py

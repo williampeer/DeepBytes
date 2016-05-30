@@ -40,12 +40,12 @@ def iterate_over_experiments_suite(start_index, stop_index, scheme_num):
         for i in range(15):
             ann.train(training_set)
         results_line = 'Neocortical module consolidation. Scheme: '+str(scheme_num)+'. Exp#'+str(exp_index)+ \
-                       '\n15 iters: g='+str(evaluate_goodness_of_fit(ann, get_target_patterns(exp_index%4+2)))
+                       '\n'+str(i+1)+' iters: g='+str(evaluate_goodness_of_fit(ann, get_target_patterns(exp_index%4+2)))
 
         ann.reset()
         for i in range(200):
             ann.train(training_set)
-        results_line += '\n215 iters: g=' + str(evaluate_goodness_of_fit(ann, get_target_patterns(exp_index % 4 + 2)))
+        results_line += '\n'+str(i+1)+' iters: g=' + str(evaluate_goodness_of_fit(ann, get_target_patterns(exp_index % 4 + 2)))
         t1 = time.time()
         print 'Trained and evaluated performance in '+'{:8.3f}'.format(t1-t0), 'seconds'
         print results_line
@@ -75,7 +75,7 @@ def iterate_over_experiments_suite_halved_pseudopattern_size(start_index, stop_i
         Tools.append_line_to_log(results_line)
 
 
-def iterate_over_experiments_suite_span_output_demo(start_index, stop_index):
+def iterate_over_experiments_suite_span_output_demo_local(start_index, stop_index):
     ann = NeocorticalNetwork(49, 30, 49, 0.01, 0.9)
 
     for exp_index in range(start_index, stop_index):
@@ -188,7 +188,7 @@ def unwrapper(patterns):
 
 
 # perform all schemes for both suites
-# iterate_over_experiments_suite_span_output_demo(80, 160)
+# iterate_over_experiments_suite_span_output_demo_local(80, 160)
 # iterate_over_experiments_suite_span_output_demo_global(80, 160)
 # for scheme_ctr in range(4):
     # iterate_over_experiments_suite(80, 160, scheme_num=scheme_ctr)

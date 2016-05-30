@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 # from scipy import stats
 import Parser
+import BaselineAvgs
 
 def plot_pattern_stats_from_parsed_data_v1(parsed_data, exp_num):
     _, distinct_patterns_data = Parser.get_convergence_and_distinct_patterns_from_log_v1(parsed_data)
@@ -580,7 +581,11 @@ def plot_aggregate_figure_for_dg_weightings(parsed_data):
 # plot_convergence_stats_for_dg_weightings(current_data, specific_plot_title)
 # plot_convergence_stats_for_dg_weightings_no_err_bars(current_data, specific_plot_title)
 
-lf_path = 'Consolidation-logs/consolidation sync tm1 tr30 dgw25.txt'
+lf_path_sync_15 = 'Consolidation-logs/consolidation-log sync tr30 tm1 15 iters local span output local demo catastrophic ' \
+                  'forgetting reduced according to goodness of fit.txt'
+lf_path_sync_50 = 'Consolidation-logs/consolidation subsets span io, sync 50 iters.txt'
+lf_path_async_15 = 'Consolidation-logs/async tm0 tr50 dgw25 local, output span both local and global, reduced catastrophic ' \
+          'forgetting.txt'
 
 
 def plot_avgs_for_consolidation_log(lf_path, experiments_start, experiments_stop):
@@ -593,11 +598,16 @@ def plot_avgs_for_consolidation_log(lf_path, experiments_start, experiments_stop
         exp_avgs_15.append(Parser.get_avgs_from_set_size_lists(data1))
         exp_avgs_200.append(Parser.get_avgs_from_set_size_lists(data2))
 
-    plot_from_avgs(exp_avgs_15[experiments_start: experiments_stop])
-    plot_from_avgs(exp_avgs_200[experiments_start: experiments_stop])
+    # plot_from_avgs(exp_avgs_15[experiments_start: experiments_stop])
+    # plot_from_avgs(exp_avgs_200[experiments_start: experiments_stop])
+    plot_from_avgs([exp_avgs_15[0], exp_avgs_15[2], exp_avgs_15[4], exp_avgs_15[6]])
+    plot_from_avgs([exp_avgs_200[0], exp_avgs_200[2], exp_avgs_200[4], exp_avgs_200[6]])
+    plot_from_avgs([exp_avgs_15[1], exp_avgs_15[3], exp_avgs_15[5], exp_avgs_15[7]])
+    plot_from_avgs([exp_avgs_200[1], exp_avgs_200[3], exp_avgs_200[5], exp_avgs_200[7]])
 
 
 def plot_from_avgs(avgs_for_experiments):
+    # print "avgs:", avgs_for_experiments
     plt.rcParams.update({'font.size': 25})
     plt.ylabel('Average goodness of fit')
     # plt.xlabel('DG-weighting')
@@ -608,14 +618,29 @@ def plot_from_avgs(avgs_for_experiments):
     p3 = plt.plot(x, avgs_for_experiments[1], marker='o', linestyle='--', linewidth=3.0)
     p4 = plt.plot(x, avgs_for_experiments[2], marker='o', linestyle='--', linewidth=3.0)
     p5 = plt.plot(x, avgs_for_experiments[3], marker='o', linestyle='--', linewidth=3.0)
+    p6 = plt.plot(x, avgs_for_experiments[4], marker='o', linestyle='--', linewidth=3.0)
+    p7 = plt.plot(x, avgs_for_experiments[5], marker='o', linestyle='--', linewidth=3.0)
+    p8 = plt.plot(x, BaselineAvgs.avgs, marker='^', linestyle='-', color='black', linewidth=3.0)
 
     plt.xticks(range(2,6), ['2x5', '3x5', '4x5', '5x5'])
     plt.xlabel('Set size')
-    plt.legend((p2[0], p3[0], p4[0], p5[0]), ('Chaotic', '+ pseudopatterns I',
-                                              '+ pseudopatterns II', 'All'),
-               bbox_to_anchor=(1, 1.0), ncol=4, fancybox=True, shadow=True)
+    plt.legend((p2[0], p3[0], p4[0], p5[0], p6[0], p7[0], p8[0]), ('(15) Sync 15 iters', '(15) Sync 50 iters',
+                                                            '(15) Async 15 iters', '(200) Sync 15 iters',
+                                                            '(200) Sync 50 iters', '(200) Async 15 iters',
+                                                            '(15) Baseline averages'),
+               bbox_to_anchor=(1, 1.0), ncol=2, fancybox=True, shadow=True)
     plt.margins(0.14)
     plt.grid(True)
     plt.show()
 
-plot_avgs_for_consolidation_log(lf_path, 4, 8)
+# plot_avgs_for_consolidation_log(lf_path, 0, 8)
+lfs = [lf_path_sync_15, lf_path_sync_50, lf_path_async_15]
+avgs_15 = []
+avgs_200 = []
+for lf in lfs:
+    parsed_data = Parser.parse_data_from_neocortical_consolidation_log_lines(
+        Parser.retrieve_log_lines_for_experiment(lf, 3, 0, 80))
+    avgs_15.append(Parser.get_avgs_from_set_size_lists(parsed_data[0]))
+    avgs_200.append(Parser.get_avgs_from_set_size_lists(parsed_data[1]))
+plot_from_avgs(avgs_for_experiments=avgs_15 + avgs_200)
+# plot_from_avgs(avgs_for_experiments=avgs_200)
