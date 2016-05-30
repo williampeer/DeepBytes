@@ -480,7 +480,7 @@ def experiment_4_2_hpc_generate_output_images_for_every_learning_iteration(
         chaotic_recall_patterns.append(current_chaotic_recall_patts)
 
         test_hpc = Tools.set_to_equal_parameters(hpc, test_hpc)
-        current_io_trials = Tools.generate_recall_attempt_results(test_hpc, current_training_set)
+        current_io_trials = Tools.generate_recall_attempt_results_hpc(test_hpc, current_training_set)
         io_trials.append(current_io_trials)
         # generate pseudopatterns:
         pseudopatterns_I.append(HPCWrappers.hpc_generate_pseudopatterns_I_recall_i_iters_wrapper(test_hpc, 10, 1))

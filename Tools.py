@@ -5,6 +5,8 @@ from PIL import Image
 import numpy as np
 import cPickle
 import os
+# from NeocorticalNetwork import NeocorticalNetwork
+# from HPC import HPC
 
 theano.config.floatX = 'float32'
 
@@ -340,13 +342,23 @@ def network_visualization(hpc):
     pass
 
 
-def generate_recall_attempt_results(hpc, training_patterns):
+def generate_recall_attempt_results_hpc(hpc, training_patterns):
     io_trials = []
+    # assert isinstance(hpc, HPC)
     for pattern in training_patterns:
         current_letter_ios = []
         for i in range(15):  # recall for 15 iterations, save IO every time
             current_letter_ios.append([pattern[0], hpc.recall_for_i_iters_with_input(pattern[0], num_of_iterations=1)])
         io_trials.append(current_letter_ios)
+    # generate aggregate image of all outputs.
+    return io_trials
+
+
+def generate_recall_attempt_results_for_ann(ann, training_patterns):
+    io_trials = []
+    # assert isinstance(ann, NeocorticalNetwork)
+    for pattern in training_patterns:
+        io_trials.append(ann.get_IO(pattern[0]))
     # generate aggregate image of all outputs.
     return io_trials
 
@@ -377,3 +389,10 @@ def retrieve_patterns_for_consolidation(exp_num, set_size):
     pseudpatterns = cPickle.load(pseudopatterns_file)
 
     return [chaotic_patterns, pseudpatterns]
+
+
+def get_avg(values):
+    holder = 0
+    for val in values:
+        holder += val
+    return holder / float(len(values))

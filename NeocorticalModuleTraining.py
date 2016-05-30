@@ -11,7 +11,7 @@ def traditional_training_with_catastrophic_interference(ss):
     training_set = training_patterns_associative[:25]
     # ss = 2
     for i in range(5):
-        for training_iterations in range(7):
+        for training_iterations in range(15):
             ann.train(training_set[i*ss:i*ss+ss])
     # for j in range(ss*5):
     #     Tools.show_image_from(ann.get_IO(training_set[j][0])[1])
@@ -19,12 +19,11 @@ def traditional_training_with_catastrophic_interference(ss):
     return ann
 
 
-def global_sequential_FFBP_training():
+def global_sequential_FFBP_training(ss):
     io_dim = 49
     ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
-    ss = 2
     training_set = training_patterns_associative[:5*ss]
-    for i in range(7):
+    for i in range(15):
         ann.train(training_set)
 
     return ann
@@ -101,15 +100,15 @@ def evaluate_ann_with_bipolar_output(ann, set_size):
     print goodness_str
 
 # Tools.show_image_from(training_patterns_associative[15][0])
-goodness_values = []
-for i in range(20):
-    exp_results = []
-    for ss in range(2, 6):
-        ann = traditional_training_with_catastrophic_interference(ss)
-        exp_results.append(evaluate_ann(ann, ss))
-    goodness_values.append(exp_results)
-
-print "goodness_values:", goodness_values
+# goodness_values = []
+# for i in range(20):
+#     exp_results = []
+#     for ss in range(2, 6):
+#         ann = traditional_training_with_catastrophic_interference(ss)
+#         exp_results.append(evaluate_ann(ann, ss))
+#     goodness_values.append(exp_results)
+#
+# print "goodness_values:", goodness_values
 
 # ann = global_sequential_FFBP_training()
 # ann = train_on_chaotic_patterns()
