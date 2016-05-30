@@ -2,8 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 # from scipy import stats
 import Parser
-import AggregateFigurePlots
-
 
 def plot_pattern_stats_from_parsed_data_v1(parsed_data, exp_num):
     _, distinct_patterns_data = Parser.get_convergence_and_distinct_patterns_from_log_v1(parsed_data)
@@ -546,26 +544,26 @@ def plot_aggregate_figure_for_dg_weightings(parsed_data):
 # format: [set_size, #sets, [convergence_num, distinct_patterns_recalled]
 # 10 trials for the current log
 # log_filename = 'Logs/DEBUGGED-DGWs.txt'
-lf1 = 'Logs/1.txt'
-lf2 = 'Logs/2.txt'
-lf3 = 'Logs/3.txt'
-lf4 = 'Logs/4.txt'
-lf5 = 'Logs/5.txt'
-lf6 = 'Logs/6.txt'
+# lf1 = 'Logs/1.txt'
+# lf2 = 'Logs/2.txt'
+# lf3 = 'Logs/3.txt'
+# lf4 = 'Logs/4.txt'
+# lf5 = 'Logs/5.txt'
+# lf6 = 'Logs/6.txt'
 # outer_scope_parsed_data = Parser.get_data_from_log_file(log_filename)
-parsed_data1 = Parser.get_data_from_log_file(lf1)
-parsed_data2 = Parser.get_data_from_log_file(lf2)
-parsed_data3 = Parser.get_data_from_log_file(lf3)
-parsed_data4 = Parser.get_data_from_log_file(lf4)
-parsed_data5 = Parser.get_data_from_log_file(lf5)
-parsed_data6 = Parser.get_data_from_log_file(lf6)
+# parsed_data1 = Parser.get_data_from_log_file(lf1)
+# parsed_data2 = Parser.get_data_from_log_file(lf2)
+# parsed_data3 = Parser.get_data_from_log_file(lf3)
+# parsed_data4 = Parser.get_data_from_log_file(lf4)
+# parsed_data5 = Parser.get_data_from_log_file(lf5)
+# parsed_data6 = Parser.get_data_from_log_file(lf6)
 # AggregateFigurePlots.plot_aggregate_figure_for_dg_weightings(parsed_data[1200:2400])
-AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data1, lf1)
-AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data2, lf2)
-AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data3, lf3)
-AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data4, lf4)
-AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data5, lf5)
-AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data6, lf6)
+# AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data1, lf1)
+# AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data2, lf2)
+# AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data3, lf3)
+# AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data4, lf4)
+# AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data5, lf5)
+# AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data6, lf6)
 
 # plot_pattern_stats_from_parsed_data_v1(outer_scope_parsed_data, 3)
 # plot_convergence_ratios_for_data(outer_scope_parsed_data, 80)
@@ -581,3 +579,43 @@ AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data6, lf6)
 # current_data = outer_scope_parsed_data[:1200]
 # plot_convergence_stats_for_dg_weightings(current_data, specific_plot_title)
 # plot_convergence_stats_for_dg_weightings_no_err_bars(current_data, specific_plot_title)
+
+lf_path = 'Consolidation-logs/consolidation sync tm1 tr30 dgw25.txt'
+
+
+def plot_avgs_for_consolidation_log(lf_path, experiments_start, experiments_stop):
+
+    exp_avgs_15 = []
+    exp_avgs_200 = []
+    for i in range(8):
+        log_lines = Parser.retrieve_log_lines_for_experiment(lf_path, lines_per_exp=3, start_exp=i*80, num=(i*80+80))
+        data1, data2 = Parser.parse_data_from_neocortical_consolidation_log_lines(log_lines)
+        exp_avgs_15.append(Parser.get_avgs_from_set_size_lists(data1))
+        exp_avgs_200.append(Parser.get_avgs_from_set_size_lists(data2))
+
+    plot_from_avgs(exp_avgs_15[experiments_start: experiments_stop])
+    plot_from_avgs(exp_avgs_200[experiments_start: experiments_stop])
+
+
+def plot_from_avgs(avgs_for_experiments):
+    plt.rcParams.update({'font.size': 25})
+    plt.ylabel('Average goodness of fit')
+    # plt.xlabel('DG-weighting')
+    plt.title('Average goodness of fit by set size and consolidation scheme')
+
+    x = [2, 3, 4, 5]
+    p2 = plt.plot(x, avgs_for_experiments[0], marker='o', linestyle='--', linewidth=3.0)
+    p3 = plt.plot(x, avgs_for_experiments[1], marker='o', linestyle='--', linewidth=3.0)
+    p4 = plt.plot(x, avgs_for_experiments[2], marker='o', linestyle='--', linewidth=3.0)
+    p5 = plt.plot(x, avgs_for_experiments[3], marker='o', linestyle='--', linewidth=3.0)
+
+    plt.xticks(range(2,6), ['2x5', '3x5', '4x5', '5x5'])
+    plt.xlabel('Set size')
+    plt.legend((p2[0], p3[0], p4[0], p5[0]), ('Chaotic', '+ pseudopatterns I',
+                                              '+ pseudopatterns II', 'All'),
+               bbox_to_anchor=(1, 1.0), ncol=4, fancybox=True, shadow=True)
+    plt.margins(0.14)
+    plt.grid(True)
+    plt.show()
+
+plot_avgs_for_consolidation_log(lf_path, 4, 8)

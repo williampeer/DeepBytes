@@ -341,12 +341,16 @@ def get_perfect_recall_stats_from(data_points):
     return [avg, std]
 
 
-def parse_data_from_neocortical_consolidation_log(file_path):
+def retrieve_log_lines_for_experiment(file_path, lines_per_exp, start_exp, num):
     log_file = file(file_path, 'r')
     contents = log_file.read()
     log_file.close()
 
     lines = contents.split('\n')
+    return lines[start_exp * lines_per_exp: num * lines_per_exp]
+
+
+def parse_data_from_neocortical_consolidation_log_lines(lines):
     set_size_data_15 = [[], [], [], []]
     set_size_data_200 = [[], [], [], []]
     for exp_i in range(len(lines)/3):
@@ -356,3 +360,10 @@ def parse_data_from_neocortical_consolidation_log(file_path):
         set_size_data_200[exp_i % 4].append(g_200)
 
     return [set_size_data_15, set_size_data_200]
+
+
+def get_avgs_from_set_size_lists(ss_lists):
+    avgs = []
+    for ss_list in ss_lists:
+        avgs.append(get_avg(ss_list))
+    return avgs
