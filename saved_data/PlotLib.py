@@ -633,14 +633,53 @@ def plot_from_avgs(avgs_for_experiments):
     plt.grid(True)
     plt.show()
 
+
+def plot_from_holy_tri(avgs_for_experiments):
+    print "avgs:", avgs_for_experiments
+    plt.rcParams.update({'font.size': 25})
+    plt.ylabel('Average goodness of fit')
+    # plt.xlabel('DG-weighting')
+    plt.title('Measure by set size for the most successful model scheme')
+
+    x = [2, 3, 4, 5]
+    p2 = plt.plot(x, avgs_for_experiments[0], marker='o', linestyle='-', linewidth=3.0)
+    p3 = plt.plot(x, avgs_for_experiments[1], marker='s', linestyle='-', linewidth=3.0)
+    p4 = plt.plot(x, avgs_for_experiments[2], marker='D', linestyle='-', linewidth=3.0)
+    p8 = plt.plot(x, BaselineAvgs.avgs, marker='^', linestyle='--', color='black', linewidth=3.0)
+
+    plt.xticks(range(2,6), ['2x5', '3x5', '4x5', '5x5'])
+    plt.xlabel('Set size')
+    plt.legend((p2[0], p3[0], p4[0], p8[0]), ('a', 'b', '(15) Goodness of fit', '(15) Baseline averages'),
+               bbox_to_anchor=(1, 1.0), ncol=2, fancybox=True, shadow=True)
+    plt.margins(0.14)
+    plt.grid(True)
+    plt.show()
+
 # plot_avgs_for_consolidation_log(lf_path, 0, 8)
-lfs = [lf_path_sync_15, lf_path_sync_50, lf_path_async_15]
-avgs_15 = []
-avgs_200 = []
-for lf in lfs:
-    parsed_data = Parser.parse_data_from_neocortical_consolidation_log_lines(
-        Parser.retrieve_log_lines_for_experiment(lf, 3, 0, 80))
-    avgs_15.append(Parser.get_avgs_from_set_size_lists(parsed_data[0]))
-    avgs_200.append(Parser.get_avgs_from_set_size_lists(parsed_data[1]))
-plot_from_avgs(avgs_for_experiments=avgs_15 + avgs_200)
+# lfs = [lf_path_sync_15, lf_path_sync_50, lf_path_async_15]
+# avgs_15 = []
+# avgs_200 = []
+# for lf in lfs:
+#     parsed_data = Parser.parse_data_from_neocortical_consolidation_log_lines(
+#         Parser.retrieve_log_lines_for_experiment(lf, 3, 0, 80))
+#     avgs_15.append(Parser.get_avgs_from_set_size_lists(parsed_data[0]))
+#     avgs_200.append(Parser.get_avgs_from_set_size_lists(parsed_data[1]))
+# plot_from_avgs(avgs_for_experiments=avgs_15 + avgs_200)
 # plot_from_avgs(avgs_for_experiments=avgs_200)
+
+log_filename_best_sync_15 = 'Logs/relaxed-criterion-logs/homo/sync-tm1-tr30-dgw25-local-15-iters.txt'
+parsed_data_sync_15 = Parser.get_data_from_log_file_i_iters_schemes(log_filename_best_sync_15, 5)  # 1 config.
+prr_by_config_list, spurious_by_config_list, stds_prr, stds_spurious = \
+    Parser.get_avg_perfect_recall_and_avg_spurious_recall_from_data_for_configs(
+        parsed_data_sync_15, iterations_per_config=20, num_of_configs=1)
+
+print "prr_by_config_list:", prr_by_config_list[0]
+print "spurious_by_config_list:", spurious_by_config_list[0]
+perfect_recall_avgs = prr_by_config_list[0]
+spurious_avgs = spurious_by_config_list[0]
+goodness_avgs = Parser.get_avgs_from_set_size_lists(
+    Parser.parse_data_from_neocortical_consolidation_log_lines(
+        Parser.retrieve_log_lines_for_experiment(lf_path_sync_15, 3, 0, 80)
+    )
+)
+plot_from_holy_tri([perfect_recall_avgs, spurious_avgs, goodness_avgs])
