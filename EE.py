@@ -9,7 +9,7 @@ io_dim = 49
 
 turnover_rate = 0.30  # (Tools.get_parameter_counter() % 18) * 0.02 + 0.32
 weighting_dg = 25  # Tools.get_experiment_counter() % 26
-_ASYNC_FLAG = False
+_ASYNC_FLAG = True
 _TURNOVER_MODE = 1  # 0 for between every new set. 1 for every set iteration.
 
 # print "TRIAL #", trial, "turnover rate:", turnover_rate
@@ -37,9 +37,9 @@ for i in range(20):
 
         print "Starting experiment 4.2, HPC chaotic recall i iters and HPC pseudopatterns..."
         # This also saves the experiment results:
+        # relative frequency as in successful 2x5 goodness of fit.
         Experiments_4_x.experiment_4_2_hpc_recall_every_i_iters(
-                hpc, ann, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr], train_iters=
-            train_set_size_ctr*5*3/2)  # relative frequency as in successful 2x5 goodness of fit.
+                hpc, ann, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr], train_iters=15)
 
         # For now, this is the ONLY place where the counter is incremented.
         Tools.increment_experiment_counter()
