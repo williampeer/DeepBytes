@@ -581,11 +581,11 @@ def plot_aggregate_figure_for_dg_weightings(parsed_data):
 # plot_convergence_stats_for_dg_weightings(current_data, specific_plot_title)
 # plot_convergence_stats_for_dg_weightings_no_err_bars(current_data, specific_plot_title)
 
-lf_path_sync_15 = 'Consolidation-logs/consolidation-log sync tr30 tm1 15 iters local span output local demo catastrophic ' \
-                  'forgetting reduced according to goodness of fit.txt'
+lf_path_sync_15 = 'Consolidation-logs/consolidation-log sync tr30 tm1 15 iters local span output local demo ' \
+                  'catastrophic forgetting reduced according to goodness of fit.txt'
 lf_path_sync_50 = 'Consolidation-logs/consolidation subsets span io, sync 50 iters.txt'
-lf_path_async_15 = 'Consolidation-logs/async tm0 tr50 dgw25 local, output span both local and global, reduced catastrophic ' \
-          'forgetting.txt'
+lf_path_async_15 = 'Consolidation-logs/async tm0 tr50 dgw25 local, output span both local, reduced catastrophic ' \
+                   'forgetting.txt'
 
 
 def plot_avgs_for_consolidation_log(lf_path, experiments_start, experiments_stop):
@@ -634,12 +634,12 @@ def plot_from_avgs(avgs_for_experiments):
     plt.show()
 
 
-def plot_from_holy_tri(avgs_for_experiments):
-    print "avgs:", avgs_for_experiments
+def plot_from_main_measures(avgs_for_experiments):
+    # print "avgs:", avgs_for_experiments
     plt.rcParams.update({'font.size': 25})
     plt.ylabel('Average goodness of fit')
     # plt.xlabel('DG-weighting')
-    plt.title('Measure by set size for the most successful model scheme')
+    plt.title('Measure by set size for the most successful async model scheme')
 
     x = [2, 3, 4, 5]
     p2 = plt.plot(x, avgs_for_experiments[0], marker='o', linestyle='-', linewidth=3.0)
@@ -649,9 +649,9 @@ def plot_from_holy_tri(avgs_for_experiments):
 
     plt.xticks(range(2,6), ['2x5', '3x5', '4x5', '5x5'])
     plt.xlabel('Set size')
-    plt.legend((p2[0], p3[0], p4[0], p8[0]), ('a', 'b', '(15) Goodness of fit', '(15) Baseline averages'),
+    plt.legend((p2[0], p3[0], p4[0], p8[0]), ('Perfect recall rates', 'Spurious recall rates', '(15) Goodness of fit', '(15) Baseline averages'),
                bbox_to_anchor=(1, 1.0), ncol=2, fancybox=True, shadow=True)
-    plt.margins(0.14)
+    plt.margins(0.22)
     plt.grid(True)
     plt.show()
 
@@ -667,19 +667,19 @@ def plot_from_holy_tri(avgs_for_experiments):
 # plot_from_avgs(avgs_for_experiments=avgs_15 + avgs_200)
 # plot_from_avgs(avgs_for_experiments=avgs_200)
 
-log_filename_best_sync_15 = 'Logs/relaxed-criterion-logs/homo/sync-tm1-tr30-dgw25-local-15-iters.txt'
-parsed_data_sync_15 = Parser.get_data_from_log_file_i_iters_schemes(log_filename_best_sync_15, 5)  # 1 config.
+log_filename_best_async_15 = 'Logs/relaxed-criterion-logs/homo/processed/async-tm0-tr50-dgw1-local.txt'
+parsed_data_async_15 = Parser.get_data_from_log_file_i_iters_schemes(log_filename_best_async_15, 5)  # 1 config.
 prr_by_config_list, spurious_by_config_list, stds_prr, stds_spurious = \
     Parser.get_avg_perfect_recall_and_avg_spurious_recall_from_data_for_configs(
-        parsed_data_sync_15, iterations_per_config=20, num_of_configs=1)
+        parsed_data_async_15, iterations_per_config=20, num_of_configs=1)
 
-print "prr_by_config_list:", prr_by_config_list[0]
-print "spurious_by_config_list:", spurious_by_config_list[0]
+# print "prr_by_config_list:", prr_by_config_list[0]
+# print "spurious_by_config_list:", spurious_by_config_list[0]
 perfect_recall_avgs = prr_by_config_list[0]
 spurious_avgs = spurious_by_config_list[0]
 goodness_avgs = Parser.get_avgs_from_set_size_lists(
     Parser.parse_data_from_neocortical_consolidation_log_lines(
-        Parser.retrieve_log_lines_for_experiment(lf_path_sync_15, 3, 0, 80)
-    )
+        Parser.retrieve_log_lines_for_experiment(lf_path_async_15, 3, 0, 80)
+    )[0]
 )
-plot_from_holy_tri([perfect_recall_avgs, spurious_avgs, goodness_avgs])
+plot_from_main_measures([perfect_recall_avgs, spurious_avgs, goodness_avgs])

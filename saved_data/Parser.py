@@ -364,6 +364,7 @@ def parse_data_from_neocortical_consolidation_log_lines(lines):
 
 def get_avgs_from_set_size_lists(ss_lists):
     avgs = []
+    # print "ss_lists:", ss_lists
     for ss_list in ss_lists:
         avgs.append(get_avg(ss_list))
     return avgs

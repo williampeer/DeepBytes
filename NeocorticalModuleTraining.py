@@ -113,3 +113,12 @@ def evaluate_ann_with_bipolar_output(ann, set_size):
 # ann = global_sequential_FFBP_training()
 # ann = train_on_chaotic_patterns()
 # evaluate_ann_with_bipolar_output(ann, ss)
+gs = []
+# a,b = training_patterns_associative[-1]
+# print a
+# print b
+# for i in range(20):
+#     ann = traditional_training_with_catastrophic_interference(2, 200)
+#     gs.append(evaluate_ann(ann, 2))
+# print gs
+# print "avg g:", Tools.get_avg(gs)
