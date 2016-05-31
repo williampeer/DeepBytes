@@ -670,7 +670,7 @@ def plot_from_main_measures(avgs_for_experiments):
     plt.rcParams.update({'font.size': 25})
     plt.ylabel('Average goodness of fit')
     # plt.xlabel('DG-weighting')
-    plt.title('Measure by set size for the most successful async model scheme')
+    plt.title('Measure by set size for model scheme')
 
     x = [2, 3, 4, 5]
     p2 = plt.plot(x, avgs_for_experiments[0], marker='o', linestyle='-', linewidth=3.0)
@@ -682,7 +682,7 @@ def plot_from_main_measures(avgs_for_experiments):
     plt.xlabel('Set size')
     plt.legend((p2[0], p3[0], p4[0], p8[0]), ('Perfect recall rates', 'Spurious recall rates', '(15) Goodness of fit', '(15) Baseline averages'),
                bbox_to_anchor=(1, 1.0), ncol=2, fancybox=True, shadow=True)
-    plt.margins(0.22)
+    plt.margins(0.20)
     plt.grid(True)
     plt.show()
 
@@ -698,7 +698,7 @@ def plot_from_main_measures(avgs_for_experiments):
 # plot_from_avgs(avgs_for_experiments=avgs_15 + avgs_200)
 # plot_from_avgs(avgs_for_experiments=avgs_200)
 
-lf_cur = 'Logs/relaxed-criterion-logs/homo/sync tr30 tm1 dgw25 relative iters.txt'
+lf_cur = 'Logs/relaxed-criterion-logs/homo/sync-tm1-tr50-dgw25-local.txt'
 parsed_data_async_15 = Parser.get_data_from_log_file_i_iters_schemes(lf_cur, 5)  # 1 config.
 prr_by_config_list, spurious_by_config_list, stds_prr, stds_spurious = \
     Parser.get_avg_perfect_recall_and_avg_spurious_recall_from_data_for_configs(
@@ -710,7 +710,7 @@ perfect_recall_avgs = prr_by_config_list[0]
 spurious_avgs = spurious_by_config_list[0]
 goodness_avgs = Parser.get_avgs_from_set_size_lists(
     Parser.parse_data_from_neocortical_consolidation_log_lines(
-        Parser.retrieve_log_lines_for_experiment('Consolidation-logs/consolidation-log-sync-tm1-tr30-relative-i-iters.txt', 3, 0, 80)
+        Parser.retrieve_log_lines_for_experiment('Consolidation-logs/consolidation-log-sync-tm1-tr50-local.txt', 3, 0, 80)
     )[0]
 )
 plot_from_main_measures([perfect_recall_avgs, spurious_avgs, goodness_avgs])
