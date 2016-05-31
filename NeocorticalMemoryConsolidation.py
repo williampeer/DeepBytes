@@ -191,7 +191,7 @@ def unwrapper(patterns):
 
 
 # perform all schemes for both suites
-ann = iterate_over_experiments_suite_span_output_demo_local(160, 240)
+ann = iterate_over_experiments_suite_span_output_demo_local(720, 800)
 # ann = traditional_training_with_catastrophic_interference(2, 15)
 # ios = Tools.generate_recall_attempt_results_for_ann(ann, training_patterns[:2*5])
 # Tools.save_aggregate_image_from_ios(ios, 'traditional-with-catastrophic-15-neo-iters', 0)

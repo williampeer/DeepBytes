@@ -23,7 +23,7 @@ def bar_plot_3d(values_3d, title, x_ticks_labels, y_label, y_ticks_values, y_tic
     for x_val in xpos:
         colours.append(cmaps[int(x_val % 4)])
     ax1.bar3d(xpos, ypos, zpos, dx, dy, dz, color=colours, alpha=opacity_value)
-    ax1.set_zlabel('Recall ratio')
+    ax1.set_zlabel('Recall rate')
     plt.xticks([2, 3, 4, 5], x_ticks_labels)
     plt.xlabel('Set size')
     plt.yticks(y_ticks_values, y_ticks_labels)
@@ -83,25 +83,31 @@ def unwrap_values(values_3d):
     return [xpos, ypos, zpos]
 
 # log_filename = 'Logs/relaxed-criterion-logs/homo/sync-async-local.txt'
+log_filename = 'Logs/relaxed-criterion-logs/homo/trs-aggregate.txt'
+# log_filename = 'Logs/relaxed-criterion-logs/hetero/.txt'
 # # log_filename2 = 'Logs/relaxed-criterion-logs/homo/local-sync-50iters.txt'
 # parsed_data = Parser.get_data_from_log_file_i_iters_schemes(log_filename, 5)  # 1 config.
 # # parsed_data2 = Parser.get_data_from_log_file_i_iters_schemes(log_filename2, 5)  # 2 configs.
 # # aggregate_parsed_data = parsed_data2 + parsed_data
-#
-# values_prrs, values_spurious = process_3d_data(parsed_data, iterations_per_config=20, num_of_configs=5)
-# # values_prrs, values_spurious = process_3d_data(aggregate_parsed_data, iterations_per_config=20, num_of_configs=4)
-# title = 'Recall ratio by set size and model configuration (local)'
-# title_spurious = 'Non-perfect recall ratio by set size and configuration (local)'
-# y_label = 'Configurations'
-# num_of_configs = 5
-# y_ticks_values = np.arange(num_of_configs)+np.ones(num_of_configs)*0.5
+parsed_data = Parser.get_data_from_log_file_i_iters_schemes(log_filename, 5)  # async tm1
+
+values_prrs, values_spurious = process_3d_data(parsed_data, iterations_per_config=20, num_of_configs=2)
+# values_prrs, values_spurious = process_3d_data(aggregate_parsed_data, iterations_per_config=20, num_of_configs=4)
+title = 'Recall rate by set size and model configuration (local)'
+title_spurious = 'Non-perfect recall rate by set size and configuration (local)'
+y_label = 'Configurations'
+num_of_configs = 2
+y_ticks_values = np.arange(num_of_configs)+np.ones(num_of_configs)*0.5
 # y_ticks_labels = ('Sync., '+r'$\tau$=0.50'+',\ntm=0, DGW=25', 'Sync., '+r'$\tau$=0.04'+',\ntm=1, DGW=25',
-#                   'Sync., '+r'$\tau$=0.50'+',\ntm=1, DGW=25',
-#                   'Async.,'+r'$\tau=0.50$,'+'\ntm=0, DGW=1', 'Async.,'+r'$\tau=0.04$,'+'\ntm=0, DGW=25')
-# x_ticks_labels = ('2x5', '3x5', '4x5', '5x5')  # local
-# # # x_ticks_labels = ('10', '15', '20', '25')  # global
-# bar_plot_3d(values_prrs, title, x_ticks_labels, y_label, y_ticks_values, y_ticks_labels, opacity_value=0.5)
-# bar_plot_3d(values_spurious, title_spurious, x_ticks_labels, y_label, y_ticks_values, y_ticks_labels, opacity_value=0.5)
+#                   'Sync., ' + r'$\tau$=0.30' + ',\ntm=1, DGW=25', 'Sync., '+r'$\tau$=0.50'+',\ntm=1, DGW=25',
+#                   'Async.,'+r'$\tau=0.50$,'+'\ntm=0, DGW=1', 'Async.,'+r'$\tau=0.04$,'+'\ntm=0, DGW=25',
+#                   'Async.,'+r'$\tau=0.30$,'+'\ntm=1, DGW=25')
+y_ticks_labels = ('Sync., '+r'$\tau$=0.50'+',\ntm=1, DGW=25', 'Sync., '+r'$\tau$=0.30'+',\ntm=1, DGW=25, '
+                                                                                       'relative #training iterations')
+x_ticks_labels = ('2x5', '3x5', '4x5', '5x5')  # local
+# # x_ticks_labels = ('10', '15', '20', '25')  # global
+bar_plot_3d(values_prrs, title, x_ticks_labels, y_label, y_ticks_values, y_ticks_labels, opacity_value=0.5)
+bar_plot_3d(values_spurious, title_spurious, x_ticks_labels, y_label, y_ticks_values, y_ticks_labels, opacity_value=0.5)
 
 # values_prrs, values_spurious = process_3d_data(parsed_data[3600:4800], iterations_per_config=10, num_of_configs=30)
 # title = 'Recall ratio by set size and DG-weighting'

@@ -686,7 +686,7 @@ def plot_from_main_measures(avgs_for_experiments):
     plt.grid(True)
     plt.show()
 
-plot_avgs_for_consolidation_log_all_original_consolidation_schemes(lf_path_async_tm1_15)
+# plot_avgs_for_consolidation_log_all_original_consolidation_schemes(lf_path_async_tm1_15)
 # lfs = [lf_path_sync_15, lf_path_sync_50, lf_path_async_tm0_15, lf_path_async_tm1_15]
 # avgs_15 = []
 # avgs_200 = []
@@ -698,19 +698,19 @@ plot_avgs_for_consolidation_log_all_original_consolidation_schemes(lf_path_async
 # plot_from_avgs(avgs_for_experiments=avgs_15 + avgs_200)
 # plot_from_avgs(avgs_for_experiments=avgs_200)
 
-# log_filename_best_async_15 = 'Logs/relaxed-criterion-logs/homo/async dgw 25 tm1 tr30 local.txt'
-# parsed_data_async_15 = Parser.get_data_from_log_file_i_iters_schemes(log_filename_best_async_15, 5)  # 1 config.
-# prr_by_config_list, spurious_by_config_list, stds_prr, stds_spurious = \
-#     Parser.get_avg_perfect_recall_and_avg_spurious_recall_from_data_for_configs(
-#         parsed_data_async_15, iterations_per_config=20, num_of_configs=1)
-#
-# # print "prr_by_config_list:", prr_by_config_list[0]
-# # print "spurious_by_config_list:", spurious_by_config_list[0]
-# perfect_recall_avgs = prr_by_config_list[0]
-# spurious_avgs = spurious_by_config_list[0]
-# goodness_avgs = Parser.get_avgs_from_set_size_lists(
-#     Parser.parse_data_from_neocortical_consolidation_log_lines(
-#         Parser.retrieve_log_lines_for_experiment(lf_path_async_tm1_15, 3, 0, 80)
-#     )[0]
-# )
-# plot_from_main_measures([perfect_recall_avgs, spurious_avgs, goodness_avgs])
+lf_cur = 'Logs/relaxed-criterion-logs/homo/sync tr30 tm1 dgw25 relative iters.txt'
+parsed_data_async_15 = Parser.get_data_from_log_file_i_iters_schemes(lf_cur, 5)  # 1 config.
+prr_by_config_list, spurious_by_config_list, stds_prr, stds_spurious = \
+    Parser.get_avg_perfect_recall_and_avg_spurious_recall_from_data_for_configs(
+        parsed_data_async_15, iterations_per_config=20, num_of_configs=1)
+
+# print "prr_by_config_list:", prr_by_config_list[0]
+# print "spurious_by_config_list:", spurious_by_config_list[0]
+perfect_recall_avgs = prr_by_config_list[0]
+spurious_avgs = spurious_by_config_list[0]
+goodness_avgs = Parser.get_avgs_from_set_size_lists(
+    Parser.parse_data_from_neocortical_consolidation_log_lines(
+        Parser.retrieve_log_lines_for_experiment('Consolidation-logs/consolidation-log-sync-tm1-tr30-relative-i-iters.txt', 3, 0, 80)
+    )[0]
+)
+plot_from_main_measures([perfect_recall_avgs, spurious_avgs, goodness_avgs])
