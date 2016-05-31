@@ -584,29 +584,31 @@ def plot_aggregate_figure_for_dg_weightings(parsed_data):
 lf_path_sync_15 = 'Consolidation-logs/consolidation-log sync tr30 tm1 15 iters local span output local demo ' \
                   'catastrophic forgetting reduced according to goodness of fit.txt'
 lf_path_sync_50 = 'Consolidation-logs/consolidation subsets span io, sync 50 iters.txt'
-lf_path_async_15 = 'Consolidation-logs/async tm0 tr50 dgw25 local, output span both local, reduced catastrophic ' \
+lf_path_async_tm0_15 = 'Consolidation-logs/async tm0 tr50 dgw25 local, output span both local, reduced catastrophic ' \
                    'forgetting.txt'
+lf_path_async_tm1_15 = 'Consolidation-logs/all-consolidation-original-schemes-async-tm1-tr30-dgw25.txt'
 
 
-def plot_avgs_for_consolidation_log(lf_path, experiments_start, experiments_stop):
+def plot_avgs_for_consolidation_log_all_original_consolidation_schemes(lf_path):
 
     exp_avgs_15 = []
     exp_avgs_200 = []
     for i in range(8):
         log_lines = Parser.retrieve_log_lines_for_experiment(lf_path, lines_per_exp=3, start_exp=i*80, num=(i*80+80))
+        print log_lines
         data1, data2 = Parser.parse_data_from_neocortical_consolidation_log_lines(log_lines)
         exp_avgs_15.append(Parser.get_avgs_from_set_size_lists(data1))
         exp_avgs_200.append(Parser.get_avgs_from_set_size_lists(data2))
 
     # plot_from_avgs(exp_avgs_15[experiments_start: experiments_stop])
     # plot_from_avgs(exp_avgs_200[experiments_start: experiments_stop])
-    plot_from_avgs([exp_avgs_15[0], exp_avgs_15[2], exp_avgs_15[4], exp_avgs_15[6]])
-    plot_from_avgs([exp_avgs_200[0], exp_avgs_200[2], exp_avgs_200[4], exp_avgs_200[6]])
-    plot_from_avgs([exp_avgs_15[1], exp_avgs_15[3], exp_avgs_15[5], exp_avgs_15[7]])
-    plot_from_avgs([exp_avgs_200[1], exp_avgs_200[3], exp_avgs_200[5], exp_avgs_200[7]])
+    # plot_from_quad_avgs([exp_avgs_15[0], exp_avgs_15[2], exp_avgs_15[4], exp_avgs_15[6]])
+    # plot_from_quad_avgs([exp_avgs_200[0], exp_avgs_200[2], exp_avgs_200[4], exp_avgs_200[6]])
+    # plot_from_quad_avgs([exp_avgs_15[1], exp_avgs_15[3], exp_avgs_15[5], exp_avgs_15[7]])
+    plot_from_quad_avgs([exp_avgs_200[1], exp_avgs_200[3], exp_avgs_200[5], exp_avgs_200[7]])
 
 
-def plot_from_avgs(avgs_for_experiments):
+def plot_from_quad_avgs(avgs_for_experiments):
     # print "avgs:", avgs_for_experiments
     plt.rcParams.update({'font.size': 25})
     plt.ylabel('Average goodness of fit')
@@ -618,17 +620,46 @@ def plot_from_avgs(avgs_for_experiments):
     p3 = plt.plot(x, avgs_for_experiments[1], marker='o', linestyle='--', linewidth=3.0)
     p4 = plt.plot(x, avgs_for_experiments[2], marker='o', linestyle='--', linewidth=3.0)
     p5 = plt.plot(x, avgs_for_experiments[3], marker='o', linestyle='--', linewidth=3.0)
+
+    plt.xticks(range(2,6), ['2x5', '3x5', '4x5', '5x5'])
+    plt.xlabel('Set size')
+    plt.legend((p2[0], p3[0], p4[0], p5[0]),
+               ('Chaotic P\'s', '+ P. I & II', 'only + P. I', 'only + P. II'),
+               bbox_to_anchor=(1, 1.0), ncol=4, fancybox=True, shadow=True)
+    plt.margins(0.14)
+    plt.grid(True)
+    plt.show()
+
+
+def plot_from_avgs(avgs_for_experiments):
+    # print "avgs:", avgs_for_experiments
+    plt.rcParams.update({'font.size': 25})
+    plt.ylabel('Average goodness of fit')
+    # plt.xlabel('DG-weighting')
+    plt.title('Average goodness of fit by set size and consolidation scheme')
+
+    x = [2, 3, 4, 5]
+    p2 = plt.plot(x, avgs_for_experiments[0], marker='o', linestyle='--', linewidth=3.0)
     p6 = plt.plot(x, avgs_for_experiments[4], marker='o', linestyle='--', linewidth=3.0)
+
+    p3 = plt.plot(x, avgs_for_experiments[1], marker='o', linestyle='--', linewidth=3.0)
     p7 = plt.plot(x, avgs_for_experiments[5], marker='o', linestyle='--', linewidth=3.0)
+
+    p4 = plt.plot(x, avgs_for_experiments[2], marker='o', linestyle='--', linewidth=3.0)
+    p9 = plt.plot(x, avgs_for_experiments[6], marker='o', linestyle='--', linewidth=3.0)
+
+    p5 = plt.plot(x, avgs_for_experiments[3], marker='o', linestyle='--', linewidth=3.0)
+    p10 = plt.plot(x, avgs_for_experiments[7], marker='o', linestyle='--', linewidth=3.0)
+
     p8 = plt.plot(x, BaselineAvgs.avgs, marker='^', linestyle='-', color='black', linewidth=3.0)
 
     plt.xticks(range(2,6), ['2x5', '3x5', '4x5', '5x5'])
     plt.xlabel('Set size')
-    plt.legend((p2[0], p3[0], p4[0], p5[0], p6[0], p7[0], p8[0]), ('(15) Sync 15 iters', '(15) Sync 50 iters',
-                                                            '(15) Async 15 iters', '(200) Sync 15 iters',
-                                                            '(200) Sync 50 iters', '(200) Async 15 iters',
-                                                            '(15) Baseline averages'),
-               bbox_to_anchor=(1, 1.0), ncol=2, fancybox=True, shadow=True)
+    plt.legend((p2[0], p6[0], p3[0], p7[0], p4[0], p9[0], p5[0], p10[0], p8[0]),
+               ('(15) Sync 15 iters', '(200) Sync 15 iters', '(15) Sync 50 iters', '(200) Sync 50 iters',
+                '(15) Async 15 iters, tm=0', '(200) Async 15 iters, tm=0', '(15) Async 15 iters, tm=1',
+                '(200) Async 15 iters, tm=1', '(15) Baseline averages'),
+               bbox_to_anchor=(1, 1.0), ncol=1, fancybox=True, shadow=True)
     plt.margins(0.14)
     plt.grid(True)
     plt.show()
@@ -655,8 +686,8 @@ def plot_from_main_measures(avgs_for_experiments):
     plt.grid(True)
     plt.show()
 
-# plot_avgs_for_consolidation_log(lf_path, 0, 8)
-# lfs = [lf_path_sync_15, lf_path_sync_50, lf_path_async_15]
+plot_avgs_for_consolidation_log_all_original_consolidation_schemes(lf_path_async_tm1_15)
+# lfs = [lf_path_sync_15, lf_path_sync_50, lf_path_async_tm0_15, lf_path_async_tm1_15]
 # avgs_15 = []
 # avgs_200 = []
 # for lf in lfs:
@@ -667,19 +698,19 @@ def plot_from_main_measures(avgs_for_experiments):
 # plot_from_avgs(avgs_for_experiments=avgs_15 + avgs_200)
 # plot_from_avgs(avgs_for_experiments=avgs_200)
 
-log_filename_best_async_15 = 'Logs/relaxed-criterion-logs/homo/processed/async-tm0-tr50-dgw1-local.txt'
-parsed_data_async_15 = Parser.get_data_from_log_file_i_iters_schemes(log_filename_best_async_15, 5)  # 1 config.
-prr_by_config_list, spurious_by_config_list, stds_prr, stds_spurious = \
-    Parser.get_avg_perfect_recall_and_avg_spurious_recall_from_data_for_configs(
-        parsed_data_async_15, iterations_per_config=20, num_of_configs=1)
-
-# print "prr_by_config_list:", prr_by_config_list[0]
-# print "spurious_by_config_list:", spurious_by_config_list[0]
-perfect_recall_avgs = prr_by_config_list[0]
-spurious_avgs = spurious_by_config_list[0]
-goodness_avgs = Parser.get_avgs_from_set_size_lists(
-    Parser.parse_data_from_neocortical_consolidation_log_lines(
-        Parser.retrieve_log_lines_for_experiment(lf_path_async_15, 3, 0, 80)
-    )[0]
-)
-plot_from_main_measures([perfect_recall_avgs, spurious_avgs, goodness_avgs])
+# log_filename_best_async_15 = 'Logs/relaxed-criterion-logs/homo/async dgw 25 tm1 tr30 local.txt'
+# parsed_data_async_15 = Parser.get_data_from_log_file_i_iters_schemes(log_filename_best_async_15, 5)  # 1 config.
+# prr_by_config_list, spurious_by_config_list, stds_prr, stds_spurious = \
+#     Parser.get_avg_perfect_recall_and_avg_spurious_recall_from_data_for_configs(
+#         parsed_data_async_15, iterations_per_config=20, num_of_configs=1)
+#
+# # print "prr_by_config_list:", prr_by_config_list[0]
+# # print "spurious_by_config_list:", spurious_by_config_list[0]
+# perfect_recall_avgs = prr_by_config_list[0]
+# spurious_avgs = spurious_by_config_list[0]
+# goodness_avgs = Parser.get_avgs_from_set_size_lists(
+#     Parser.parse_data_from_neocortical_consolidation_log_lines(
+#         Parser.retrieve_log_lines_for_experiment(lf_path_async_tm1_15, 3, 0, 80)
+#     )[0]
+# )
+# plot_from_main_measures([perfect_recall_avgs, spurious_avgs, goodness_avgs])

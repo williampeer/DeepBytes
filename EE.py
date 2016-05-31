@@ -38,7 +38,7 @@ for i in range(20):
         print "Starting experiment 4.2, HPC chaotic recall i iters and HPC pseudopatterns..."
         # This also saves the experiment results:
         # relative frequency as in successful 2x5 goodness of fit.
-        Experiments_4_x.experiment_4_2_hpc_recall_every_i_iters(
+        Experiments_4_x.experiment_4_2_hpc_recall_every_i_iters_global_exposure(
                 hpc, ann, train_set_size_ctr, training_patterns_associative[:5 * train_set_size_ctr], train_iters=15)
 
         # For now, this is the ONLY place where the counter is incremented.

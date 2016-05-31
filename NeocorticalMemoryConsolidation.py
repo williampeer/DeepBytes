@@ -96,13 +96,13 @@ def iterate_over_experiments_suite_span_output_demo_local(start_index, stop_inde
         results_line = 'Neocortical module consolidation. Output as IO. Exp#'+str(exp_index)+\
                        '\n'+str(i+1)+' iters: g='+str(evaluate_goodness_of_fit(ann, get_target_patterns(exp_index%4+2)))
 
-        # ann.reset()
-        # for cp_subset in current_chaotic_patterns:
-        #     training_subset = []
-        #     for cp in cp_subset:
-        #         training_subset.append([cp[1], cp[1]])
-        #     for i in range(200):
-        #         ann.train(training_subset)
+        ann.reset()
+        for cp_subset in current_chaotic_patterns:
+            training_subset = []
+            for cp in cp_subset:
+                training_subset.append([cp[1], cp[1]])
+            for i in range(200):
+                ann.train(training_subset)
 
         results_line += '\n'+str(i+1)+' iters: g=' + str(evaluate_goodness_of_fit(ann, get_target_patterns(exp_index % 4 + 2)))
         t1 = time.time()
@@ -191,14 +191,14 @@ def unwrapper(patterns):
 
 
 # perform all schemes for both suites
-ann = iterate_over_experiments_suite_span_output_demo_local(0, 1)
-# ann = traditional_training_with_catastrophic_interference(2, 200)
-ios = Tools.generate_recall_attempt_results_for_ann(ann, training_patterns[:2*5])
-Tools.save_aggregate_image_from_ios(ios, 'one-2x5-run-async-15-iters-15-neo-iters', 0)
+ann = iterate_over_experiments_suite_span_output_demo_local(160, 240)
+# ann = traditional_training_with_catastrophic_interference(2, 15)
+# ios = Tools.generate_recall_attempt_results_for_ann(ann, training_patterns[:2*5])
+# Tools.save_aggregate_image_from_ios(ios, 'traditional-with-catastrophic-15-neo-iters', 0)
 # iterate_over_experiments_suite_span_output_demo_global(80, 160)
 # for scheme_ctr in range(4):
-    # iterate_over_experiments_suite(80, 160, scheme_num=scheme_ctr)
-    # iterate_over_experiments_suite_halved_pseudopattern_size(80, 160, scheme_num=scheme_ctr)
+#     iterate_over_experiments_suite(160, 240, scheme_num=scheme_ctr)
+#     iterate_over_experiments_suite_halved_pseudopattern_size(160, 240, scheme_num=scheme_ctr)
 
 # test_chaotic_patterns, test_pseudopatterns = \
 #     Tools.retrieve_patterns_for_consolidation(720, 720 % 4 + 2)  # 2-5 looped
