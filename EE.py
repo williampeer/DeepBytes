@@ -25,7 +25,7 @@ hpc = HPC([io_dim, 240, 1600, 480, io_dim],
           _ASYNC_FLAG=_ASYNC_FLAG, _TURNOVER_MODE=_TURNOVER_MODE)
 
 # ============ Config. 1: ============
-for i in range(20):
+for i in range(6):
     for train_set_size_ctr in range(2, 6):
         hpc.reset_hpc_module()
 
@@ -45,7 +45,7 @@ for i in range(20):
         Tools.increment_experiment_counter()
 
 # ============ Config. 2: ============
-for i in range(20):
+for i in range(11):
     for train_set_size_ctr in range(2, 6):
         hpc.reset_hpc_module()
 
@@ -102,6 +102,33 @@ for i in range(20):
         # relative frequency as in successful 2x5 goodness of fit.
         Experiments_4_x.experiment_4_2_hpc_recall_every_i_iters(
                 hpc, ann, train_set_size_ctr, training_patterns_heterogeneous[:5 * train_set_size_ctr], train_iters=15)
+
+        # For now, this is the ONLY place where the counter is incremented.
+        Tools.increment_experiment_counter()
+
+# ============ Config. optimized: ============
+training_sets_ass = []
+# tar_pattss = []
+for i in range(1,6):
+    cur_ss = training_patterns_associative[:5*i]
+    training_sets_ass.append(cur_ss)
+
+    # tar_patts = []
+    # for p in cur_ss:
+    #     tar_patts.append(p[1])
+    # tar_pattss.append(tar_patts)
+
+for i in range(20):
+    for train_set_size_ctr in range(2, 6):
+        hpc.reset_hpc_module()
+
+        ann = NeocorticalNetwork(io_dim, 30, io_dim, 0.01, 0.9)
+
+        print "Starting experiment 4.2, HPC chaotic recall i iters and HPC pseudopatterns..."
+        # This also saves the experiment results:
+        # relative frequency as in successful 2x5 goodness of fit.
+        Experiments_4_x.experiment_4_2_hpc_recall_every_i_iters(
+                hpc, ann, train_set_size_ctr, training_sets_ass[train_set_size_ctr-2], train_iters=15)
 
         # For now, this is the ONLY place where the counter is incremented.
         Tools.increment_experiment_counter()

@@ -558,7 +558,7 @@ def plot_aggregate_figure_for_dg_weightings(parsed_data):
 # parsed_data4 = Parser.get_data_from_log_file(lf4)
 # parsed_data5 = Parser.get_data_from_log_file(lf5)
 # parsed_data6 = Parser.get_data_from_log_file(lf6)
-# AggregateFigurePlots.plot_aggregate_figure_for_dg_weightings(parsed_data[1200:2400])
+
 # AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data1, lf1)
 # AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data2, lf2)
 # AggregateFigurePlots.plot_aggregate_figure_for_turnover_rates(parsed_data3, lf3)
@@ -581,12 +581,12 @@ def plot_aggregate_figure_for_dg_weightings(parsed_data):
 # plot_convergence_stats_for_dg_weightings(current_data, specific_plot_title)
 # plot_convergence_stats_for_dg_weightings_no_err_bars(current_data, specific_plot_title)
 
-lf_path_sync_15 = 'Consolidation-logs/consolidation-log sync tr30 tm1 15 iters local span output local demo ' \
-                  'catastrophic forgetting reduced according to goodness of fit.txt'
-lf_path_sync_50 = 'Consolidation-logs/consolidation subsets span io, sync 50 iters.txt'
-lf_path_async_tm0_15 = 'Consolidation-logs/async tm0 tr50 dgw25 local, output span both local, reduced catastrophic ' \
-                   'forgetting.txt'
-lf_path_async_tm1_15 = 'Consolidation-logs/all-consolidation-original-schemes-async-tm1-tr30-dgw25.txt'
+# lf_path_sync_15 = 'Consolidation-logs/consolidation-log sync tr30 tm1 15 iters local span output local demo ' \
+#                   'catastrophic forgetting reduced according to goodness of fit.txt'
+# lf_path_sync_50 = 'Consolidation-logs/consolidation subsets span io, sync 50 iters.txt'
+# lf_path_async_tm0_15 = 'Consolidation-logs/async tm0 tr50 dgw25 local, output span both local, reduced catastrophic ' \
+#                    'forgetting.txt'
+# lf_path_async_tm1_15 = 'Consolidation-logs/all-consolidation-original-schemes-async-tm1-tr30-dgw25.txt'
 
 
 def plot_avgs_for_consolidation_log_all_original_consolidation_schemes(lf_path):
@@ -698,19 +698,23 @@ def plot_from_main_measures(avgs_for_experiments):
 # plot_from_avgs(avgs_for_experiments=avgs_15 + avgs_200)
 # plot_from_avgs(avgs_for_experiments=avgs_200)
 
-lf_cur = 'Logs/relaxed-criterion-logs/homo/sync-tm1-tr50-dgw25-local.txt'
-parsed_data_async_15 = Parser.get_data_from_log_file_i_iters_schemes(lf_cur, 5)  # 1 config.
+# lf_cur = 'Logs/relaxed-criterion-logs/homo/sync-tm1-tr50-dgw25-local.txt'
+# parsed_data_async_15 = Parser.get_data_from_log_file_i_iters_schemes(lf_cur, 5)  # 1 config.
+lfhetero = 'Logs/newest/logs-sync-tm1-tr30-and-tr50-dgw25-hetero.txt'
+parsed_data_hetero = Parser.get_data_from_log_file_i_iters_schemes(lfhetero, 5)
 prr_by_config_list, spurious_by_config_list, stds_prr, stds_spurious = \
     Parser.get_avg_perfect_recall_and_avg_spurious_recall_from_data_for_configs(
-        parsed_data_async_15, iterations_per_config=20, num_of_configs=1)
+        parsed_data_hetero, iterations_per_config=20, num_of_configs=2)
 
-# print "prr_by_config_list:", prr_by_config_list[0]
-# print "spurious_by_config_list:", spurious_by_config_list[0]
-perfect_recall_avgs = prr_by_config_list[0]
-spurious_avgs = spurious_by_config_list[0]
-goodness_avgs = Parser.get_avgs_from_set_size_lists(
-    Parser.parse_data_from_neocortical_consolidation_log_lines(
-        Parser.retrieve_log_lines_for_experiment('Consolidation-logs/consolidation-log-sync-tm1-tr50-local.txt', 3, 0, 80)
-    )[0]
-)
-plot_from_main_measures([perfect_recall_avgs, spurious_avgs, goodness_avgs])
+
+
+# # print "prr_by_config_list:", prr_by_config_list[0]
+# # print "spurious_by_config_list:", spurious_by_config_list[0]
+# perfect_recall_avgs = prr_by_config_list[0]
+# spurious_avgs = spurious_by_config_list[0]
+# goodness_avgs = Parser.get_avgs_from_set_size_lists(
+#     Parser.parse_data_from_neocortical_consolidation_log_lines(
+#         Parser.retrieve_log_lines_for_experiment('Consolidation-logs/consolidation-log-sync-tm1-tr50-local.txt', 3, 0, 80)
+#     )[0]
+# )
+# plot_from_main_measures([perfect_recall_avgs, spurious_avgs, goodness_avgs])

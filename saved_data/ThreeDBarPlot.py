@@ -24,6 +24,7 @@ def bar_plot_3d(values_3d, title, x_ticks_labels, y_label, y_ticks_values, y_tic
         colours.append(cmaps[int(x_val % 4)])
     ax1.bar3d(xpos, ypos, zpos, dx, dy, dz, color=colours, alpha=opacity_value)
     ax1.set_zlabel('Recall rate')
+    plt.rcParams.update({'font.size': 18})
     plt.xticks([2, 3, 4, 5], x_ticks_labels)
     plt.xlabel('Set size')
     plt.yticks(y_ticks_values, y_ticks_labels)
@@ -83,29 +84,40 @@ def unwrap_values(values_3d):
     return [xpos, ypos, zpos]
 
 # log_filename = 'Logs/relaxed-criterion-logs/homo/sync-async-local.txt'
-log_filename = 'Logs/relaxed-criterion-logs/homo/trs-aggregate.txt'
-# log_filename = 'Logs/relaxed-criterion-logs/hetero/.txt'
+# log_filename = 'Logs/relaxed-criterion-logs/homo/trs-aggregate.txt'
+log_filename_global = 'Logs/newest/sync-async-global.txt'
+# log_filename_local = 'Logs/newest/local-50-iters-sync-tm1-tr50.txt'
 # # log_filename2 = 'Logs/relaxed-criterion-logs/homo/local-sync-50iters.txt'
-# parsed_data = Parser.get_data_from_log_file_i_iters_schemes(log_filename, 5)  # 1 config.
+parsed_data = Parser.get_data_from_log_file_i_iters_schemes(log_filename_global, 15)  # 1 config.
 # # parsed_data2 = Parser.get_data_from_log_file_i_iters_schemes(log_filename2, 5)  # 2 configs.
 # # aggregate_parsed_data = parsed_data2 + parsed_data
-parsed_data = Parser.get_data_from_log_file_i_iters_schemes(log_filename, 5)  # async tm1
+# parsed_data_local = Parser.get_data_from_log_file_i_iters_schemes(log_filename_local, 5)  # local
+# parsed_data_global = Parser.get_data_from_log_file_i_iters_schemes(log_filename_global, 50)  # globals
+# parsed_data = parsed_data_local + parsed_data_global
 
-values_prrs, values_spurious = process_3d_data(parsed_data, iterations_per_config=20, num_of_configs=2)
+num_of_configs = 5
+values_prrs, values_spurious = process_3d_data(parsed_data, iterations_per_config=20, num_of_configs=num_of_configs)
 # values_prrs, values_spurious = process_3d_data(aggregate_parsed_data, iterations_per_config=20, num_of_configs=4)
-title = 'Recall rate by set size and model configuration (local)'
-title_spurious = 'Non-perfect recall rate by set size and configuration (local)'
-y_label = 'Configurations'
-num_of_configs = 2
+title = 'Recall rate by set size and model configuration (GLOBAL)'
+title_spurious = 'Non-perfect recall rate by set size and configuration (GLOBAL)'
+y_label = '\n\n\n\nConfigurations'
 y_ticks_values = np.arange(num_of_configs)+np.ones(num_of_configs)*0.5
-# y_ticks_labels = ('Sync., '+r'$\tau$=0.50'+',\ntm=0, DGW=25', 'Sync., '+r'$\tau$=0.04'+',\ntm=1, DGW=25',
-#                   'Sync., ' + r'$\tau$=0.30' + ',\ntm=1, DGW=25', 'Sync., '+r'$\tau$=0.50'+',\ntm=1, DGW=25',
-#                   'Async.,'+r'$\tau=0.50$,'+'\ntm=0, DGW=1', 'Async.,'+r'$\tau=0.04$,'+'\ntm=0, DGW=25',
-#                   'Async.,'+r'$\tau=0.30$,'+'\ntm=1, DGW=25')
-y_ticks_labels = ('Sync., '+r'$\tau$=0.50'+',\ntm=1, DGW=25', 'Sync., '+r'$\tau$=0.30'+',\ntm=1, DGW=25, '
-                                                                                       'relative #training iterations')
-x_ticks_labels = ('2x5', '3x5', '4x5', '5x5')  # local
-# # x_ticks_labels = ('10', '15', '20', '25')  # global
+# y_ticks_labels = ('(local) Sync.,\n' + r'$\tau$=0.50' + ',\ntm=1, \nDGW=25',
+#                   '(global) Sync.,\n' + r'$\tau$=0.50' + ',\ntm=1, \nDGW=25',
+#                   # '(local) Sync.,\ntm=0\nDGW=25',
+#                   '(global) Async.,\ntm=0\nDGW=25',
+#                   '(global) Async.,\n' + r'$\tau=0.30$,' + '\ntm=1, \nDGW=25')
+y_ticks_labels = ('Sync.,\n' + r'$\tau$=0.50' + ',\ntm=1, \nDGW=25',
+                  # 'Sync.,'+ ',tm=0, \nDGW=1',
+                  'Sync.,'+ ',tm=0, \nDGW=25',
+                  'Async., tm=0, \nDGW=1',
+                  'Async., tm=0, \nDGW=25',
+                  'Async.,\n' + r'$\tau=0.30$,' + '\ntm=1, \nDGW=25')
+# y_ticks_labels = ('Sync., '+r'$\tau$=0.50'+',\ntm=1, DGW=25', 'Sync., '+r'$\tau$=0.30'+',\ntm=1, DGW=25, '
+#                                                                                        'relative #training iterations')
+# x_ticks_labels = ('2x5', '3x5', '4x5', '5x5')  # local
+# x_ticks_labels = ('10 or \n2x5', '15 or \n3x5', '20 or \n4x5', '25 or\n5x5')  # hybrid
+x_ticks_labels = ('10', '15', '20', '25')  # global
 bar_plot_3d(values_prrs, title, x_ticks_labels, y_label, y_ticks_values, y_ticks_labels, opacity_value=0.5)
 bar_plot_3d(values_spurious, title_spurious, x_ticks_labels, y_label, y_ticks_values, y_ticks_labels, opacity_value=0.5)
 
