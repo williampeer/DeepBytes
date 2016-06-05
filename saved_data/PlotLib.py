@@ -700,13 +700,6 @@ def plot_from_main_measures(avgs_for_experiments):
 
 # lf_cur = 'Logs/relaxed-criterion-logs/homo/sync-tm1-tr50-dgw25-local.txt'
 # parsed_data_async_15 = Parser.get_data_from_log_file_i_iters_schemes(lf_cur, 5)  # 1 config.
-lfhetero = 'Logs/newest/logs-sync-tm1-tr30-and-tr50-dgw25-hetero.txt'
-parsed_data_hetero = Parser.get_data_from_log_file_i_iters_schemes(lfhetero, 5)
-prr_by_config_list, spurious_by_config_list, stds_prr, stds_spurious = \
-    Parser.get_avg_perfect_recall_and_avg_spurious_recall_from_data_for_configs(
-        parsed_data_hetero, iterations_per_config=20, num_of_configs=2)
-
-
 
 # # print "prr_by_config_list:", prr_by_config_list[0]
 # # print "spurious_by_config_list:", spurious_by_config_list[0]
@@ -718,3 +711,55 @@ prr_by_config_list, spurious_by_config_list, stds_prr, stds_spurious = \
 #     )[0]
 # )
 # plot_from_main_measures([perfect_recall_avgs, spurious_avgs, goodness_avgs])
+
+def plot_aggregate_figure_for_hetero_performance(parsed_data_hetero):
+    prr_by_config_list, spurious_by_config_list, stds_prr, stds_spurious = \
+        Parser.get_avg_perfect_recall_and_avg_spurious_recall_from_data_for_configs(
+            parsed_data_hetero, iterations_per_config=20, num_of_configs=2)
+
+    plt.rcParams.update({'font.size': 25})
+    plt.title('Average number of recalled patterns by subset')
+
+    # Plotting:
+    width = .35
+    x = np.asarray([2, 3, 4, 5])
+    plt.rcParams.update({'font.size': 25})
+
+    print prr_by_config_list[0]
+    print prr_by_config_list[1]
+
+    for list_ctr in range(len(prr_by_config_list)):
+        for el_ctr in range(len(prr_by_config_list[0])):
+            prr_by_config_list[list_ctr][el_ctr] *= (el_ctr+2)
+            spurious_by_config_list[list_ctr][el_ctr] *= (el_ctr+2)
+
+    # print "prr[0]:", prr_by_config_list[0]
+    p1 = plt.bar(x, prr_by_config_list[0], color='y', width= width)
+    p1_e = plt.bar(x, spurious_by_config_list[0], color='r', width=width, bottom=prr_by_config_list[0])
+    p2 = plt.bar(x + width, prr_by_config_list[1], color='g', width=width)
+    p2_2 = plt.bar(x + width, spurious_by_config_list[1], color='r', width=width,
+                   bottom=prr_by_config_list[1])
+
+    plt.ylabel('Average number of recalled patterns')
+    plt.xlabel('Subset size')
+    plt.xticks(x + width, ('2x5', '3x5', '4x5', '5x5'))
+    # plt.yticks(np.arange(0, 6, 1))
+
+    plt.legend((p1[0], p2[0], p2_2),
+               ('Perfectly recalled patterns, '+r'$\tau=0.30$',
+                'Perfectly recalled patterns, '+r'$\tau=0.50$',
+                'Spuriously recalled patterns'), bbox_to_anchor=(0.73, 1.0), ncol=1, fancybox=True, shadow=True)
+
+    # p2 = plt.plot(results_2[0], res
+    # plt.legend((p2[0], p3[0], p4[0], p5[0]), ('2x5', '3x5', '4x5', '5x5'),
+    #            bbox_to_anchor=(1.115, 1.0155), ncol=1, fancybox=True, shadow=True)
+    plt.margins(0.02)
+    plt.subplots_adjust(left=0.06)
+    plt.grid(True)
+
+    # plt.show()
+
+
+# lfhetero = 'Logs/newest/hetero-sync-tm1-tr30-and-tr50-dgw25.txt'
+# parsed_data_hetero = Parser.get_data_from_log_file_i_iters_schemes(lfhetero, 5)
+# plot_aggregate_figure_for_hetero_performance(parsed_data_hetero)
