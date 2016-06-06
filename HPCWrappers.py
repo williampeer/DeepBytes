@@ -120,6 +120,7 @@ def learn_patterns_for_i_iters_hpc_wrapper(hpc, patterns, num_of_iters):
     time_start_overall = time.time()
 
     for i in range(num_of_iters):
+        print "Training... Current training iteration: " + str(i)
         # scope: for every training set iteration
         if hpc._TURNOVER_MODE == 1:
             neuronal_turnover_helper(hpc)

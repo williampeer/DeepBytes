@@ -270,11 +270,12 @@ def experiment_4_2_neo_pseudorehearsal_with_chaotic_patterns(hpc, ann, training_
 
 def experiment_4_2_hpc_recall_every_i_iters(hpc, training_set_size, original_training_patterns, train_iters):
     # LOG:
-    Tools.append_line_to_log("INIT. EXPERIMENT #" + str(Tools.get_experiment_counter()) +
-                             ". Type: 4.2 Chaotic recall version" +
-                             ": ASYNC-flag:" + str(hpc._ASYNC_FLAG) + ". " + str(training_set_size) + "x5. " +
-                             "Turnover mode: " + str(hpc._TURNOVER_MODE) + ". Turnover rate:" +
-                             str(hpc._turnover_rate) + ", DG-weighting: " + str(hpc._weighting_dg) + ".")
+    experiment_str = "INIT. EXPERIMENT #" + str(Tools.get_experiment_counter()) + \
+                     ". Type: 4.2 Chaotic recall version" + ": ASYNC-flag:" + str(hpc._ASYNC_FLAG) + \
+                     ". " + str(training_set_size) + "x5. " + "Turnover mode: " + str(hpc._TURNOVER_MODE) + \
+                     ". Turnover rate:" + str(hpc._turnover_rate) + ", DG-weighting: " + str(hpc._weighting_dg) + "."
+    Tools.append_line_to_log(experiment_str)
+    print experiment_str
 
     chaotic_recall_patterns = []
     pseudopatterns_I = []
@@ -288,6 +289,7 @@ def experiment_4_2_hpc_recall_every_i_iters(hpc, training_set_size, original_tra
                    _ASYNC_FLAG=hpc._ASYNC_FLAG, _TURNOVER_MODE=hpc._TURNOVER_MODE)
 
     for i in range(5):
+        print "Training on subset #" + str(i)
         # scope: for every new set
         if hpc._TURNOVER_MODE == 0:
             HPCWrappers.neuronal_turnover_helper(hpc)
