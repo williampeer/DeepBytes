@@ -313,12 +313,17 @@ def log_perfect_recall_rate(hipp_chaotic_outputs, train_set):
 
     perfect_recall_rate = perf_recalls / float(len(train_set))
 
-    file_contents += "Perfect recall rate: " + "{:6.3f}".format(perfect_recall_rate) + '\n'
-    file_contents += "Spurious patterns: " + str(len(hipp_chaotic_outputs) - perf_recalls) + '\n'
+    append_str = ""
+    append_str += "Perfect recall rate: " + "{:6.3f}".format(perfect_recall_rate) + '\n'
+    append_str += "Spurious patterns: " + str(len(hipp_chaotic_outputs) - perf_recalls) + '\n'
 
+    print append_str
+    file_contents += append_str
     log_f = file(log_path, 'wb')
     log_f.write(file_contents)
     log_f.close()
+
+    print "Successfully logged the results."
 
 
 def flip_bits_f(input_vector, flip_P):
