@@ -111,7 +111,7 @@ def neuronal_turnover_helper(hpc):
     t0 = time.time()
     hpc.neuronal_turnover_dg()
     t1 = time.time()
-    print "Completed neuronal turnover for " + str(hpc._turnover_rate * 100) + " % of the neurons in " + \
+    print "Completed neuronal turnover for " + str(hpc._turnover_rate * 100) + " % of the neurons in the DG in " + \
           "{:6.3f}".format(t1-t0), "seconds."
 
 
