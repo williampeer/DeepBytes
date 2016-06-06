@@ -46,6 +46,6 @@ for i in range(1):
         Tools.increment_experiment_counter()
 
     print "Performing memory consolidation.."
-    NeocorticalMemoryConsolidation.iterate_over_experiments_suite_span_output_demo_local(4*i, 4*i+train_set_size_ctr)
+    NeocorticalMemoryConsolidation.iterate_over_experiments_suite_span_output_demo_local(4*i, 4*i+train_set_size_ctr-1)
 
     print "Please see the saved_data/ folder for the associated experiment output."
