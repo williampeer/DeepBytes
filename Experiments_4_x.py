@@ -268,7 +268,7 @@ def experiment_4_2_neo_pseudorehearsal_with_chaotic_patterns(hpc, ann, training_
     return [pseudopatterns_I, pseudopatterns_II, neocortically_recalled_pairs, ann, g]
 
 
-def experiment_4_2_hpc_recall_every_i_iters(hpc, ann, training_set_size, original_training_patterns, train_iters):
+def experiment_4_2_hpc_recall_every_i_iters(hpc, training_set_size, original_training_patterns, train_iters):
     # LOG:
     Tools.append_line_to_log("INIT. EXPERIMENT #" + str(Tools.get_experiment_counter()) +
                              ". Type: 4.2 Chaotic recall version" +
@@ -313,7 +313,7 @@ def experiment_4_2_hpc_recall_every_i_iters(hpc, ann, training_set_size, origina
                                       original_training_patterns)
 
 
-def experiment_4_2_hpc_recall_every_i_iters_global_exposure(hpc, ann, training_set_size, original_training_patterns, train_iters):
+def experiment_4_2_hpc_recall_every_i_iters_global_exposure(hpc, training_set_size, original_training_patterns, train_iters):
     # LOG:
     Tools.append_line_to_log("INIT. EXPERIMENT #" + str(Tools.get_experiment_counter()) +
                              ". Type: 4.2 Chaotic recall version" +

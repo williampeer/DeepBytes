@@ -19,3 +19,7 @@ sudo pip install --upgrade --no-deps theano
 # sudo pip install --upgrade theano
 
 sudo apt-get install imagemagick
+
+echo Installer complete! Attempting to run a model demo..
+
+python demo.py

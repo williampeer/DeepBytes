@@ -1,3 +1,11 @@
+# Setup
+- Please see: http://deeplearning.net/software/theano/install_ubuntu.html
+- On Ubuntu 14.04 LTS, the included setup script may be run, which installs the packages and Theano for CPU-execution 
+    using the most common options, as included in the link provided above.
+    NOTE: This installs using sudo, and installs python and the packages in the global system scope. You might want to
+    consider creating a testing environment for the packages, in case they will interfere with some of the system's
+    previous variables and packages.
+
 # DeepBytes
 
 - kWTA now gets all > elements and all == elements for count(els)<k.
@@ -7,7 +15,7 @@
     to the neocortical module.
 
 
-# API (incomplete)
+# HPC-parametrization
 
 HPC-constructor:
 
