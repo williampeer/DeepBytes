@@ -27,7 +27,7 @@ hpc = HPC([io_dim, 240, 1600, 480, io_dim],
 
 # ============ Config. X: ============
 for i in range(1):
-    for train_set_size_ctr in range(2, 6):
+    for train_set_size_ctr in range(2, 3):
         hpc.reset_hpc_module()
 
         tar_patts = []
