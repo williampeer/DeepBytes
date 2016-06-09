@@ -192,6 +192,11 @@ def save_chaotic_recall_results(chaotically_recalled_patterns, pseudopatterns_I,
             if not set_contains_pattern(unique_chaotically_recalled_outputs, pair[1]):
                 unique_chaotically_recalled_outputs.append(pair[1])
 
+    # The following three lines are for demo-purposes only, and should be commented out or removed if using the model.
+    print "Showing the distinct, chaotically recalled images..."
+    for unique_output in unique_chaotically_recalled_outputs:
+        show_image_from(unique_output)
+
     tar_patts = []
     for patt in original_patterns:
         tar_patts.append(patt[1])

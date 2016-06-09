@@ -396,17 +396,8 @@ class HPC:
             self.fire_all_to_ca3(l_ec_vals, l_ec_ca3_Ws, l_dg_vals, l_dg_ca3_Ws, l_ca3_vals, l_ca3_ca3_Ws, l_nu_ca3,
                              l_zeta_ca3)
 
-        # print "Showing CA3 activation values before kWTA!"
-        # Tools.show_image_ca3(self.ca3_values.get_value())
-        # kWTA
-        # arr = self.ca3_values.get_value()
-        # arr = np.sort(arr)
-        # print "CA3 min, max before kWTA"
-        # print "min:", arr[0][0], "max:", arr[0][arr.shape[1]-1]
         self.set_ca3_values(
                 self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory copy
-        # print "Displaying the CA3-representation after kWTA..."
-        # Tools.show_image_ca3(self.ca3_values.get_value())
 
         # wire EC to CA3
         n_rows = self.ec_values.get_value(return_internal_type=True).shape[1]
@@ -430,10 +421,6 @@ class HPC:
         self.wire_ca3_out(self.ca3_values.get_value(return_internal_type=True),
                           self.output_values.get_value(return_internal_type=True),
                           self.ca3_out_weights.get_value(return_internal_type=True))
-
-        # DEBUGGING:
-        # self.print_activation_values_sum()
-        # self.print_min_max_weights()
 
     def setup_input(self, input_pattern):
         self.set_input(input_pattern)
@@ -468,8 +455,6 @@ class HPC:
                                      self.zeta_ca3.get_value(return_internal_type=True))
 
         # kWTA CA3
-        # print "Showing CA3 activation values before kWTA!"
-        # Tools.show_image_ca3(self.ca3_values.get_value())
         self.set_ca3_values(
                 self.kWTA(self.ca3_values.get_value(return_internal_type=True), self.firing_rate_ca3))  # in-memory
 
