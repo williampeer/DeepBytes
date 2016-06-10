@@ -388,7 +388,7 @@ def save_aggregate_image_from_ios(ios, im_name, im_ctr):
 
 
 def retrieve_patterns_for_consolidation(exp_num, set_size):
-    file_path = 'saved_data/current-consolidation-path/' + 'chaotic_pattern_recalls_set_size_' + str(set_size)
+    file_path = 'saved_data/' + 'chaotic_pattern_recalls_set_size_' + str(set_size)
     chaotic_patterns_filename = '/full_chaotically_recalled_patterns_exp#' + str(exp_num)+'.save'
     pseudopatterns_filename = '/pseudopatterns_exp#' + str(exp_num)+'.save'
 
